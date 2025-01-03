@@ -1,0 +1,72 @@
+:root {
+  --black: #000;
+  --blue500: #0d6efd;
+  --gray400: #2f2f2f;
+  --white: #fff;
+
+  --bg: var(--white);
+  --bg-card-1: var(--white);
+
+  --bg-menu: var(--white);
+  --color-menu: #121212;
+
+  --color-card-1: #000;
+  --color-title-card: #000;
+  --color-subtitle-card: #8d8d8d;
+
+  --bg-skeleton: #eee;
+  --gradient-skeleton: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+
+  --input-bg: var(--white);
+  --input-border: rgb(217, 217, 217);
+  --input-color: var(--black);
+  --input-color-disabled: #747474;
+  --input-item-bg: #efefef;
+  --input-item-color: #434343;
+  --input-border-color: rgb(217, 217, 217);
+  --input-switch-bg: #d9d9d9;
+  --input-switch-ball-unchecked: #feffff;
+}
+
+html[theme='dark'] {
+  --bg: #232323;
+  --bg-card-1: #3a3a3a;
+
+  --bg-menu: #232323;
+  --color-menu: #e3e3e3;
+
+  --color-card-1: #f3f3f3;
+  --color-title-card: #f9f9f9;
+  --color-subtitle-card: #b4b4b4;
+
+  --bg-skeleton: #4c4c4c;
+  --gradient-skeleton: linear-gradient(110deg, #5e5e5e 8%, #7a7a7a 18%, #5e5e5e 33%);;
+
+  --input-bg: #4c4c4c;
+  --input-border: #3f3f3f;
+  --input-color: var(--white);
+  --input-color-disabled: #939393;
+  --input-item-bg: #505050;
+  --input-item-color: #cdcdcd;
+  --input-border-color: #505050;
+  --input-switch-bg: #505050;
+  --input-switch-ball-unchecked: #f1f1f1;
+}
+
+body {
+  background: var(--bg);
+}
+
+* {
+  font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+    sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+.collapsing {
+  height: 0px;
+  transition: height 0.35s ease;
+  overflow: hidden;
+}

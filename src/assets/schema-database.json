@@ -1,0 +1,31 @@
+{
+  "title": "Base de Dados de Suepermercados",
+  "disclaimer": "Os dados não foram disponibilizados por nenhuma rede de supermercado e são coletados mensalmente pela nota fiscal de compras e por isso podem ocorrer inconsistência nos preços",
+  "last_update": "2024-07-25T12:58:10.206Z",
+  "list": [
+    {
+      "name": "Mix Matheus - CEASA",
+      "adress": "",
+      "coords": [],
+      "last_update": "2024-07-25T12:58:10.206Z",
+      "products": [
+        {
+          "code": 1,
+          "name": "LEITE PIRACANJUBA",
+          "short_name": "leite",
+          "unit": "L",
+          "last_update": "2024-07-25T12:58:10.206Z",
+          "barcode": "121231231123",
+          "price": 5.75,
+          "wholesale": [
+            {
+              "description": "Pague 3 leve 4",
+              "min": 4,
+              "price": 5.10
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
