@@ -1,5 +1,6 @@
 <div style="display: flex; gap: 8px">
 <img src="https://img.shields.io/badge/react-%2361DAFB.svg?&style=for-the-badge&logo=react&logoColor=black" />
+<img src="https://img.shields.io/badge/typescript-%233178C6.svg?&style=for-the-badge&logo=typescript&logoColor=white" />
 <img src="https://img.shields.io/badge/styled--components-%23DB7093.svg?&style=for-the-badge&logo=styled-components&logoColor=white" />
 <img src="https://img.shields.io/badge/leaflet-%23199900.svg?&style=for-the-badge&logo=leaflet&logoColor=white" />
 <img src="https://img.shields.io/badge/redux-%23764ABC.svg?&style=for-the-badge&logo=redux&logoColor=white" />
