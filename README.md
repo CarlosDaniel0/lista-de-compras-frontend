@@ -1,6 +1,25 @@
+<div style="display: flex; gap: 8px">
+<img src="https://img.shields.io/badge/react-%2361DAFB.svg?&style=for-the-badge&logo=react&logoColor=black" />
+<img src="https://img.shields.io/badge/styled--components-%23DB7093.svg?&style=for-the-badge&logo=styled-components&logoColor=white" />
+<img src="https://img.shields.io/badge/leaflet-%23199900.svg?&style=for-the-badge&logo=leaflet&logoColor=white" />
+<img src="https://img.shields.io/badge/redux-%23764ABC.svg?&style=for-the-badge&logo=redux&logoColor=white" />
+<img src="https://img.shields.io/badge/mapbox-%23000000.svg?&style=for-the-badge&logo=mapbox&logoColor=white" />
+</div>
+
 # Lista de Compras
 
 Faça suas listas de compras e acompanhe o valor gasto em um só lugar
+
+## Bibliotecas
+
+- [x] [date-fns](https://date-fns.org/)
+- [x] [Leaflet](https://leafletjs.com/)
+- [x] [React.js](https://react.dev/)
+- [x] [Redux](https://redux.js.org/)
+- [x] [Styled Components](https://styled-components.com/)
+- [x] [Tesseract.js](https://tesseract.projectnaptha.com/)
+- [x] [Vite](https://vite.dev/)
+- [x] [Zxing](https://www.npmjs.com/package/@zxing/library)
 
 ## Início Rápido
 
