@@ -46,7 +46,8 @@ const Github = styled(Link)`
   align-items: center;
   gap: 8px;
   position: absolute;
-  left: calc(50% - 40px);
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 10px;
   color: inherit;
   text-decoration: none;
@@ -76,7 +77,12 @@ export default function Home() {
           </p>
         </section>
         <Row>
-          <GoogleLogin onSuccess={handleSuccess} onError={handleError} />
+          <GoogleLogin
+            text='signin_with'
+            shape='circle'
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
         </Row>
       </Card>
       <Github to="https://github.com/carlosdaniel0">

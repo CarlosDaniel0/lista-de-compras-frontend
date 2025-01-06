@@ -31,6 +31,7 @@ Faça suas listas de compras e acompanhe o valor gasto em um só lugar
 - [Style ID](https://docs.mapbox.com/api/maps/styles/)
 - [Token](https://console.mapbox.com/account/access-tokens/)
 - [API URL](https://github.com/CarlosDaniel0/lista-de-compras-backend)
+- [Google Client ID](https://console.cloud.google.com/apis/credentials?hl=pt-br)
 
 ![Exemplo de configuração de estilo de camada com o mapbox](/docs/mapbox.png)
 
