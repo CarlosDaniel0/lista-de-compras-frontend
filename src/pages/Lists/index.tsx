@@ -9,6 +9,7 @@ import useEffectOnce from '../../hooks/useEffectOnce'
 import ListCard from './components/ListCard'
 import { List } from '../../util/types'
 import CreateOrUpdatePanel, { FormList } from './components/CreateOrUpdatePanel'
+import { store } from '../../redux/store'
 
 const Container = styled.div`
   height: calc(100dvh - 46px);
@@ -47,6 +48,7 @@ export default function Lists() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<List[]>([])
+  const { user } = store.getState()
 
   const loadContent = async () => {
     setLists(loadingList)
@@ -117,7 +119,7 @@ export default function Lists() {
       '/list',
       {
         date: new Date().toISOString(),
-        user_id: 'b7781cb7-6afe-4882-bfb4-169edf436f94',
+        user_id: user.id,
         name: list.name,
       },
       'POST'

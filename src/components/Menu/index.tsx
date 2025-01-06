@@ -4,7 +4,11 @@ import { useEffect } from 'react'
 import { BsX } from 'react-icons/bs'
 import { FaMapMarkerAlt } from 'react-icons/fa'
 import { FaCartShopping, FaClipboardList, FaReceipt } from 'react-icons/fa6'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { store } from '../../redux/store'
+import { googleLogout } from '@react-oauth/google'
+import { signOut } from '../../redux/slices/config'
+import { useDispatch } from 'react-redux'
 
 interface MenuProps {
   show: boolean
@@ -69,13 +73,17 @@ const Item = styled.li`
     text-decoration: none;
   }
 
-  & a, & span {
+  & a,
+  & span {
     font-size: 1.18em;
   }
 `
 
 function Menu(props: MenuProps) {
   const { setShow, show } = props
+  const { user } = store.getState()
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (show) document.body.style.overflow = 'hidden'
@@ -113,6 +121,44 @@ function Menu(props: MenuProps) {
             </Link>
           </Item>
         </List>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            bottom: 5,
+            position: 'absolute',
+            width: '100%'
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              gap: 9,
+              alignItems: 'center',
+              marginLeft: 10
+            }}
+          >
+            <div style={{ width: 75, height: 75, position: 'relative' }}>
+              <img
+                style={{
+                  objectFit: 'contain',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '100%',
+                }}
+                src={user.picture}
+                alt={user?.name}
+              />
+            </div>
+            <span style={{ fontWeight: 500 }}>{user?.name}</span>
+          </div>
+          <button onClick={() => {
+            googleLogout()
+            dispatch(signOut())
+            navigate('/')
+          }} style={{ padding: '0.4em 0.8em', marginRight: 10, border: '1px solid rgb(217, 217, 217)', background: 'transparent', borderRadius: '1.1em', fontSize: '1.05em', cursor: 'pointer' }}>Sair</button>
+        </div>
       </Container>
     </>
   )

@@ -1,8 +1,16 @@
 import { FaClipboardList, FaGithub } from 'react-icons/fa6'
 import styled from 'styled-components'
 import Card from '../../components/Card'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
+import { request } from '../../util'
+import { useState } from 'react'
+import { Loader } from '../../components/Loading'
+import { User } from '../../util/types'
+import { useDispatch } from 'react-redux'
+import { signIn } from '../../redux/slices/config'
+import useEffectOnce from '../../hooks/useEffectOnce'
+import { store } from '../../redux/store'
 
 const Container = styled.main`
   width: 100%;
@@ -54,37 +62,70 @@ const Github = styled(Link)`
 `
 
 export default function Home() {
+  const [loading, setLoading] = useState(false)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
   const handleSuccess = (credentialResponse: CredentialResponse) => {
-    console.log(credentialResponse)
+    setLoading(true)
+    request<{ status: boolean; message: string; data: { user: User } }>(
+      '/auth',
+      credentialResponse,
+      'POST'
+    )
+      .then((res) => {
+        if (!res.status) throw new Error(res.message)
+        dispatch(signIn(res.data.user))
+        setTimeout(() => navigate('/list'), 50)
+      })
+      .catch((err) => {console.log(err.message)})
+      .finally(() => setLoading(false))
   }
 
   const handleError = () => {
     console.log('Login Failed')
   }
 
+  useEffectOnce(() => {
+    const { token, user } = store.getState()
+    if (token && !user?.id)
+      handleSuccess({
+        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        select_by: 'btn',
+        credential: token,
+      })
+  }, [])
+
   return (
     <Container>
-      <Card style={{ padding: '0.8em 1.4em', margin: '0 15px' }}>
-        <section>
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <span>
-              <FaClipboardList size={43} />
-            </span>
-          </div>
-          <h2 style={{ textAlign: 'center' }}>Lista de Compras</h2>
-          <p>
-            Faça suas listas de compras e acompanhe o valor gasto em um só lugar
-          </p>
-        </section>
-        <Row>
-          <GoogleLogin
-            text='signin_with'
-            shape='circle'
-            onSuccess={handleSuccess}
-            onError={handleError}
-          />
-        </Row>
-      </Card>
+      {!loading ? (
+        <Card style={{ padding: '0.8em 1.4em', margin: '0 15px' }}>
+          <section>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <span>
+                <FaClipboardList size={43} />
+              </span>
+            </div>
+            <h2 style={{ textAlign: 'center' }}>Lista de Compras</h2>
+            <p>
+              Faça suas listas de compras e acompanhe o valor gasto em um só
+              lugar
+            </p>
+          </section>
+          <Row>
+            <GoogleLogin
+              text="signin_with"
+              shape="circle"
+              onSuccess={handleSuccess}
+              onError={handleError}
+            />
+          </Row>
+        </Card>
+      ) : (
+        <Card style={{ padding: '0.8em 1.4em', margin: '0 15px' }}>
+          <Loader />
+        </Card>
+      )}
       <Github to="https://github.com/carlosdaniel0">
         <FaGithub size={24} />{' '}
         <span style={{ fontSize: '1.1em' }}>Carlos Daniel</span>

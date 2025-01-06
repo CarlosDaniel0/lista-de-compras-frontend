@@ -11,11 +11,14 @@ import Home from '../../pages/Home'
 import PrivacyPolicy from '../../pages/PrivacyPolicy'
 import TermsOfUse from '../../pages/TermsOfUse'
 import ProtectedRouters from './ProtectedRouters'
+import RedirectRouters from './RedirectRouters'
 
 function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route element={<RedirectRouters />}>
+        <Route path="/" element={<Home />} />
+      </Route>
       <Route element={<ProtectedRouters />}>
         <Route path="/list" element={<Lists />} />
         <Route path="/list/:id" element={<List />} />
