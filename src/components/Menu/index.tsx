@@ -139,7 +139,7 @@ function Menu(props: MenuProps) {
               marginLeft: 10
             }}
           >
-            <div style={{ width: 75, height: 75, position: 'relative' }}>
+            <div style={{ width: 60, height: 60, position: 'relative' }}>
               <img
                 style={{
                   objectFit: 'contain',
@@ -157,7 +157,7 @@ function Menu(props: MenuProps) {
             googleLogout()
             dispatch(signOut())
             navigate('/')
-          }} style={{ padding: '0.4em 0.8em', marginRight: 10, border: '1px solid rgb(217, 217, 217)', background: 'transparent', borderRadius: '1.1em', fontSize: '1.05em', cursor: 'pointer' }}>Sair</button>
+          }} style={{ padding: '0.3em 0.8em', marginRight: 10, border: '1px solid rgb(217, 217, 217)', background: 'transparent', borderRadius: '1em', fontSize: '1.05em', cursor: 'pointer' }}>Sair</button>
         </div>
       </Container>
     </>

@@ -6,12 +6,12 @@ import Register from '../../pages/Register'
 import Supermarkets from '../../pages/Supermarkets'
 import Map from '../Map'
 import Reciepts from '../../pages/Reciepts'
-import List from '../../pages/List'
 import Home from '../../pages/Home'
 import PrivacyPolicy from '../../pages/PrivacyPolicy'
 import TermsOfUse from '../../pages/TermsOfUse'
 import ProtectedRouters from './ProtectedRouters'
 import RedirectRouters from './RedirectRouters'
+import Products from '../../pages/Products/list'
 
 function Router() {
   return (
@@ -21,7 +21,7 @@ function Router() {
       </Route>
       <Route element={<ProtectedRouters />}>
         <Route path="/list" element={<Lists />} />
-        <Route path="/list/:id" element={<List />} />
+        <Route path="/list/:id" element={<Products />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
         <Route path="/reciepts" element={<Reciepts />} />
         <Route path="/map" element={<Map />} />

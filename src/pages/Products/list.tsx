@@ -41,8 +41,8 @@ interface Product {
   supermarket_id?: number
 }
 
-export default function Products(props: { name: string }) {
-  const { name } = props
+export default function Products() {
+  const name = 'Produtos'
   const { state, setState } = useContext(ParamsContext)
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)

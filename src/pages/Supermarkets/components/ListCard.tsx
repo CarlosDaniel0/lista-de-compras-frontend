@@ -1,17 +1,16 @@
 import styled, { css } from 'styled-components'
 import Card from '../../../components/Card'
-import { List } from '../../../util/types'
-import { format } from 'date-fns'
+import { Supermarket } from '../../../util/types'
 import { BiMinus } from 'react-icons/bi'
 import { FaPen } from 'react-icons/fa6'
 import { DialogService } from '../../../contexts/Dialog'
-import CreateOrUpdatePanel, { FormList } from './CreateOrUpdatePanel'
 import { skeleton } from '../../../components/Loading/Skeleton'
 import { Link } from 'react-router-dom'
+import { FormList } from '../../Lists/components/CreateOrUpdatePanel'
 
 interface ListCardProps {
-  list: List
-  handleEdit: (list: List) => void
+  supermarket: Supermarket
+  handleEdit: (list: Supermarket) => void
   handleRemove: (id: string) => void
   Dialog: DialogService
   loading: boolean
@@ -66,9 +65,9 @@ const loadingSkeleton = css`
 `
 
 export default function ListCard(props: ListCardProps) {
-  const { list, handleEdit, handleRemove, Dialog, loading } = props
+  const { supermarket, handleEdit, handleRemove, Dialog, loading } = props
   return (
-    <Link to={`/list/${list?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+    <Link to={`/supermarket/${supermarket?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
       <Card
         css={loading ? loadingSkeleton : undefined}
         style={{
@@ -80,9 +79,9 @@ export default function ListCard(props: ListCardProps) {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span className="label" style={{ color: 'var(--color-title-card)' }}>{list.name}</span> 
+          <span className="label" style={{ color: 'var(--color-title-card)' }}>{supermarket.name}</span> 
           <span className="date" style={{ color: 'var(--color-subtitle-card)' }}>
-            {list.date && format(new Date(list.date), 'dd/MM/yyyy')}
+            {supermarket.address}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>
@@ -92,16 +91,16 @@ export default function ListCard(props: ListCardProps) {
               evt.preventDefault()
               Dialog.info.show({
                 content: (
-                  <CreateOrUpdatePanel list={list} request={handleEdit} />
+                  <></>
                 ),
-                form: { name: list.name },
+                form: { name: supermarket.name },
                 onConfirm: {
                   label: 'Confirmar',
                   color: '#00a365',
                   onClick: (setShow, form: FormList) => {
                     if (!form?.name) return
                     setShow(false)
-                    handleEdit({ ...list, name: form?.name })
+                    handleEdit({ ...supermarket, name: form?.name })
                   },
                 },
               })
@@ -113,7 +112,7 @@ export default function ListCard(props: ListCardProps) {
             className="button"
             onClick={(evt) => {
               evt.preventDefault()
-              handleRemove(list.id)
+              handleRemove(supermarket.id)
             }}
           >
             {!loading && <BiMinus size={20} />}

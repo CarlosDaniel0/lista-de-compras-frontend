@@ -27,7 +27,10 @@ export default function List() {
   return (
     <>
       <TabBar label={list.name || "Carregando..."} back />
-      <Container></Container>
+      <Container>
+
+        
+      </Container>
     </>
   )
 }

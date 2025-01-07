@@ -11,12 +11,12 @@ import { List } from '../../util/types'
 import CreateOrUpdatePanel, { FormList } from './components/CreateOrUpdatePanel'
 import { store } from '../../redux/store'
 
-const Container = styled.div`
+export const Container = styled.div`
   height: calc(100dvh - 46px);
   overflow: auto;
 `
 
-const ButtonAdd = styled.button`
+export const ButtonAdd = styled.button`
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
   position: fixed;
   bottom: 10px;
