@@ -3,16 +3,12 @@ import Card from '../../../components/Card'
 import { Supermarket } from '../../../util/types'
 import { BiMinus } from 'react-icons/bi'
 import { FaPen } from 'react-icons/fa6'
-import { DialogService } from '../../../contexts/Dialog'
 import { skeleton } from '../../../components/Loading/Skeleton'
-import { Link } from 'react-router-dom'
-import { FormList } from '../../Lists/components/CreateOrUpdatePanel'
+import { Link, useNavigate } from 'react-router-dom'
 
 interface ListCardProps {
   supermarket: Supermarket
-  handleEdit: (list: Supermarket) => void
   handleRemove: (id: string) => void
-  Dialog: DialogService
   loading: boolean
 }
 
@@ -65,7 +61,8 @@ const loadingSkeleton = css`
 `
 
 export default function ListCard(props: ListCardProps) {
-  const { supermarket, handleEdit, handleRemove, Dialog, loading } = props
+  const navigate = useNavigate()
+  const { supermarket, handleRemove, loading } = props
   return (
     <Link to={`/supermarket/${supermarket?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
       <Card
@@ -89,21 +86,7 @@ export default function ListCard(props: ListCardProps) {
             className="button"
             onClick={(evt) => {
               evt.preventDefault()
-              Dialog.info.show({
-                content: (
-                  <></>
-                ),
-                form: { name: supermarket.name },
-                onConfirm: {
-                  label: 'Confirmar',
-                  color: '#00a365',
-                  onClick: (setShow, form: FormList) => {
-                    if (!form?.name) return
-                    setShow(false)
-                    handleEdit({ ...supermarket, name: form?.name })
-                  },
-                },
-              })
+              navigate(`/supermarkets/update/${supermarket.id}`)
             }}
           >
             {!loading && <FaPen size={20} />}

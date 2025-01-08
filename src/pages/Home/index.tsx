@@ -76,9 +76,14 @@ export default function Home() {
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         dispatch(signIn(res.data.user))
-        setTimeout(() => navigate('/list'), 50)
+        setTimeout(() => {
+          navigate('/list')
+          history.replaceState({}, '', '/list')
+        }, 50)
       })
-      .catch((err) => {console.log(err.message)})
+      .catch((err) => {
+        console.log(err.message)
+      })
       .finally(() => setLoading(false))
   }
 

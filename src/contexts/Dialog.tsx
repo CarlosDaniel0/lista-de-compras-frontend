@@ -2,7 +2,11 @@
 import { createContext, useState } from 'react'
 import { SetState } from '../util/types'
 
-export type ActionDialog = () => void
+export type ActionDialog = (
+  setShow: SetState<boolean>,
+  form: Record<string, unknown>,
+  evt: React.MouseEvent<HTMLButtonElement>
+) => void
 export interface ButtonDialog
   extends Omit<React.ComponentPropsWithoutRef<'button'>, 'onClick'> {
   label?: string

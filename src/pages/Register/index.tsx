@@ -21,7 +21,7 @@ const ButtonExtra = styled.button`
   font-size: 1.1em;
   cursor: pointer;
   margin-top: 10px;
-  color: #0525b3
+  color: #0525b3;
 `
 
 export default function Register() {

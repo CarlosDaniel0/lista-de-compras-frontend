@@ -6,4 +6,5 @@ export const Container = styled.button`
   padding: 0.4em 0.8em;
   background: transparent;
   border: solid 1px rgb(217, 217, 217);
+  cursor: pointer;
 `

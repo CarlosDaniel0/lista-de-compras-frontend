@@ -47,7 +47,7 @@ export default function ServiceWorker() {
       if (reloadSW === 'true') {
         r &&
           setInterval(() => {
-            console.log('Checking for sw update')
+            if (DEBUG) console.log('Checking for sw update')
             r.update()
           }, 20000 /* 20s for testing purposes */)
       } else {

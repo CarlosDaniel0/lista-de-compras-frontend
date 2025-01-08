@@ -5,6 +5,7 @@ import { useMask } from "../../hooks/useMask";
 export type IconProps = React.ComponentPropsWithoutRef<'span' | 'button'> & { value?: React.ReactNode, type?: 'span' | 'button' }
 
 export interface InputProps extends React.ComponentPropsWithoutRef<'input'> {
+  field?: string,
   label?: string | LabelProps,
   container?: React.ComponentPropsWithoutRef<'div'>,
   mask?: 'currency',

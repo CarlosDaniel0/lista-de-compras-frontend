@@ -12,6 +12,7 @@ import TermsOfUse from '../../pages/TermsOfUse'
 import ProtectedRouters from './ProtectedRouters'
 import RedirectRouters from './RedirectRouters'
 import Products from '../../pages/Products/list'
+import CreateOrUpdateSupermarket from '../../pages/Supermarkets/CreateOrUpdate'
 
 function Router() {
   return (
@@ -23,6 +24,8 @@ function Router() {
         <Route path="/list" element={<Lists />} />
         <Route path="/list/:id" element={<Products />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
+        <Route path="/supermarkets/create" element={<CreateOrUpdateSupermarket />} />
+        <Route path="/supermarkets/update/:id" element={<CreateOrUpdateSupermarket />} />
         <Route path="/reciepts" element={<Reciepts />} />
         <Route path="/map" element={<Map />} />
         <Route path="/barcode" element={<Barcode />} />

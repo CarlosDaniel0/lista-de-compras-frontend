@@ -2,13 +2,13 @@ import { useContext, useState } from 'react'
 import TabBar from '../../components/TabBar'
 import { genId, request } from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
-// import { store } from '../../redux/store'
 import { Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { ButtonAdd, Container } from '../Lists'
 import { PiPlus } from 'react-icons/pi'
 import ListCard from './components/ListCard'
+import { useNavigate } from 'react-router-dom'
 
 const loadingSupermarket: Supermarket[] = Array.from(
   { length: 5 },
@@ -19,6 +19,7 @@ export default function Supermarkets() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<Supermarket[]>([])
+  const navigate = useNavigate()
   // const { user } = store.getState()
 
   const loadContent = async () => {
@@ -51,7 +52,7 @@ export default function Supermarkets() {
         .finally(() => setLoading(false))
     }
     Dialog.option.show({
-      message: 'Deseja remover essa lista?',
+      message: 'Deseja remover esse Supermercado?',
       onConfirm: {
         label: 'Sim',
         onClick: (setShow) => {
@@ -64,46 +65,6 @@ export default function Supermarkets() {
       },
     })
   }
-
-  const handleEdit = (supermarket: Supermarket) => {
-    setLoading(true)
-    request<{ status: boolean; message: string; data: { supermarket: Supermarket } }>(
-      `/supermarket/${supermarket?.id}`,
-      supermarket,
-      'PUT'
-    )
-      .then((res) => {
-        if (!res.status) throw new Error(res?.message)
-        setLists((prev) => [
-          ...prev.map((item) =>
-            item?.id === supermarket?.id ? (supermarket as Supermarket) : item
-          ),
-        ])
-        return Dialog.info.show({ message: res.message })
-      })
-      .catch((err) => Dialog.info.show({ message: err.message }))
-      .finally(() => setLoading(false))
-  }
-
-  // const handleCreate = (supermarket: Supermarket) => {
-  //   setLoading(true)
-  //   request<{ status: boolean; message: string; data: { supermarket: Supermarket } }>(
-  //     '/list',
-  //     {
-  //       date: new Date().toISOString(),
-  //       user_id: user.id,
-  //       name: supermarket.name,
-  //     },
-  //     'POST'
-  //   )
-  //     .then((res) => {
-  //       if (!res.status) throw new Error(res?.message)
-  //       setLists((prev) => [...prev, res.data.list])
-  //       return Dialog.info.show({ message: res.message })
-  //     })
-  //     .catch((err) => Dialog.info.show({ message: err.message }))
-  //     .finally(() => setLoading(false))
-  // }
 
   useEffectOnce(loadContent, [])
 
@@ -118,9 +79,7 @@ export default function Supermarkets() {
               key={genId(`list-${i}`)}
               {...{
                 supermarket,
-                handleEdit,
                 handleRemove,
-                Dialog,
                 loading: !supermarket.id,
               }}
             />
@@ -128,22 +87,7 @@ export default function Supermarkets() {
         </div>
         <ButtonAdd
           onClick={async () => {
-            // Dialog.info.show({
-            //   content: <CreateOrUpdatePanel request={handleCreate} />,
-            //   onConfirm: {
-            //     label: 'Continuar',
-            //     onClick: (setShow, form: FormList) => {
-            //       if (!form.name) return
-            //       setShow(false)
-            //       handleCreate({
-            //         name: form?.name,
-            //         date: '',
-            //         id: '',
-            //         user_id: '',
-            //       })
-            //     },
-            //   },
-            // })
+            navigate('/supermarkets/create')
           }}
         >
           <PiPlus size={32} />

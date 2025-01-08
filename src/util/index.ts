@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import { API_URL, MAX_REQUEST_TIMEOUT } from './constants'
+import { API_URL, DEBUG, MAX_REQUEST_TIMEOUT } from './constants'
 
 
 
@@ -34,6 +34,7 @@ const print =
     url: string = '',
     method: HTTPMethod = 'GET'
   ) => {
+    if (!DEBUG) return
     const now = format(new Date(), 'dd/MM/yyyy, HH:mm:ss')
     const [str, color] = hightlight(message, typeLog)
     const header = `${url !== '' ? `\n${method}` : ''}:${url !== '' ? `${url}\n` : ''}`
