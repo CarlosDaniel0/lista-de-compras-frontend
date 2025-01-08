@@ -64,7 +64,7 @@ export default function ListCard(props: ListCardProps) {
   const navigate = useNavigate()
   const { supermarket, handleRemove, loading } = props
   return (
-    <Link to={`/supermarket/${supermarket?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+    <Link to={`/supermarkets/${supermarket?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
       <Card
         css={loading ? loadingSkeleton : undefined}
         style={{

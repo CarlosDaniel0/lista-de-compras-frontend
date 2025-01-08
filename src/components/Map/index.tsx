@@ -110,14 +110,13 @@ function MapController(props: MapProps) {
 
   useEffect(() => {
     const [coords, zoom] = formatSearchParams(searchParams.get('p'))
-    if (coords)
-      map.setView(coords, zoom)
+    if (coords) map.setView(coords, zoom)
   }, [map, searchParams])
 
   useEffectOnce(() => {
-    if (mutex.current || marker?.lat === -1) return
+    if (mutex.current || marker?.lat === -1 || !marker) return
     mutex.current = 1
-    map.setView([marker!.lat, marker!.lng], 15)
+    if (marker.lat && marker.lng) map.setView([marker.lat, marker.lng], 15)
   }, [marker])
   return <></>
 }
@@ -183,11 +182,9 @@ function Map(props: MapProps) {
           />
           <Markers
             zoom={typeof setMarker === 'undefined'}
-            markers={
-              [marker]
-                .filter((item) => item?.lat !== -1)
-                .map((position) => ({ position } as MarkerItem)) ?? []
-            }
+            markers={[marker]
+              .filter((item) => item && item?.lat !== -1)
+              .map((position) => ({ position } as MarkerItem))}
           />
           <MapController {...props} />
         </MapContainer>

@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import { SetState } from '../../util/types'
 import { useEffect } from 'react'
 import { BsX } from 'react-icons/bs'
-import { FaMapMarkerAlt } from 'react-icons/fa'
+// import { FaMapMarkerAlt } from 'react-icons/fa'
 import { FaCartShopping, FaClipboardList, FaReceipt } from 'react-icons/fa6'
 import { Link, useNavigate } from 'react-router-dom'
 import { store } from '../../redux/store'
@@ -115,11 +115,11 @@ function Menu(props: MenuProps) {
               <FaReceipt /> <span>Comprovantes</span>
             </Link>
           </Item>
-          <Item>
+          {/* <Item>
             <Link to="/map" onClick={close}>
               <FaMapMarkerAlt /> <span>Mapa</span>
             </Link>
-          </Item>
+          </Item> */}
         </List>
         <div
           style={{
@@ -157,6 +157,8 @@ function Menu(props: MenuProps) {
             googleLogout()
             dispatch(signOut())
             navigate('/')
+            const theme = document.querySelector('meta[name="theme-color"]')
+            if (theme) theme.setAttribute('content', '#ffffff')
           }} style={{ padding: '0.3em 0.8em', marginRight: 10, border: '1px solid rgb(217, 217, 217)', background: 'transparent', borderRadius: '1em', fontSize: '1.05em', cursor: 'pointer' }}>Sair</button>
         </div>
       </Container>

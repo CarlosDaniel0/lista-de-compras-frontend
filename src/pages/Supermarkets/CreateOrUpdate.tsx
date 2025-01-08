@@ -30,6 +30,15 @@ const TileHelp = styled.div`
   padding: 0 15px;
 `
 
+const ContainerMap = styled.div`
+  position: relative;
+  height: calc(100% - 45px);
+
+  @media screen and (max-width: 410px) {
+    height: calc(100% - 65px);
+  }
+`
+
 export default function CreateOrUpdate() {
   const { id } = useParams()
   const [marker, setMarker] = useState<LatLngLiteral>({ lat: -1, lng: -1 })
@@ -130,7 +139,7 @@ export default function CreateOrUpdate() {
           <label htmlFor="" style={{ fontSize: '1.2em' }}>
             Localização
           </label>
-          <div style={{ height: 'calc(100% - 45px)', position: 'relative' }}>
+          <ContainerMap>
             {show && (
               <TileHelp onClick={() => setShow(false)}>
                 <span
@@ -142,11 +151,12 @@ export default function CreateOrUpdate() {
             )}
             <Map {...{ marker, setMarker }} />
             {marker.lat !== -1 && (
-              <span>
-                lat:{marker.lat}, long: {marker.lng}
-              </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 5 }}>
+                <span style={{ margin: 0 }}>lat: <b>{marker.lat}</b></span>
+                <span style={{ margin: 0 }}>long: <b>{marker.lng}</b></span>
+              </div>
             )}
-          </div>
+          </ContainerMap>
         </div>
         <Button
           style={{

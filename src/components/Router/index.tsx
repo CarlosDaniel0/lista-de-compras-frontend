@@ -4,7 +4,7 @@ import Error from '../../pages/Error'
 import Barcode from '../Reader/Barcode'
 import Register from '../../pages/Register'
 import Supermarkets from '../../pages/Supermarkets'
-import Map from '../Map'
+// import Map from '../Map'
 import Reciepts from '../../pages/Reciepts'
 import Home from '../../pages/Home'
 import PrivacyPolicy from '../../pages/PrivacyPolicy'
@@ -24,10 +24,11 @@ function Router() {
         <Route path="/list" element={<Lists />} />
         <Route path="/list/:id" element={<Products />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
+        <Route path="/supermarkets/:id" element={<Products />} />
         <Route path="/supermarkets/create" element={<CreateOrUpdateSupermarket />} />
         <Route path="/supermarkets/update/:id" element={<CreateOrUpdateSupermarket />} />
         <Route path="/reciepts" element={<Reciepts />} />
-        <Route path="/map" element={<Map />} />
+        {/* <Route path="/map" element={<Map />} /> */}
         <Route path="/barcode" element={<Barcode />} />
         <Route path="/edit" element={<Register />} />
       </Route>

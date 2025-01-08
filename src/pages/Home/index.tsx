@@ -77,6 +77,8 @@ export default function Home() {
         if (!res.status) throw new Error(res.message)
         dispatch(signIn(res.data.user))
         setTimeout(() => {
+          const theme = document.querySelector('meta[name="theme-color"]')
+          if (theme) theme.setAttribute('content', '#272727')
           navigate('/list')
           history.replaceState({}, '', '/list')
         }, 50)
@@ -127,9 +129,10 @@ export default function Home() {
           </Row>
         </Card>
       ) : (
-        <Card style={{ padding: '0.8em 1.4em', margin: '0 15px' }}>
+        <>
           <Loader />
-        </Card>
+          <span style={{ fontSize: '1.2em', marginTop: 10 }}>Entrando...</span>
+        </>
       )}
       <Github to="https://github.com/carlosdaniel0">
         <FaGithub size={24} />{' '}
