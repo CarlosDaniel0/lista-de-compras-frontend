@@ -1,21 +1,19 @@
 import { format } from 'date-fns'
 import { API_URL, DEBUG, MAX_REQUEST_TIMEOUT } from './constants'
 
-
-
 type HTTPMethod = 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE'
-const colors = {
-  error: 'color: #fc5858;',
-  warn: 'color: #fff373;',
-  info: 'color: #82aaff;',
-}
+// const colors = {
+//   error: 'color: #fc5858;',
+//   warn: 'color: #fff373;',
+//   info: 'color: #82aaff;',
+//   log: 'color:rgb(235, 235, 235);'
+// }
 
 const hightlight = (
-  obj: string | Record<string, unknown>,
-  type: 'error' | 'warn' | 'info'
+  value: string
+  // type: 'error' | 'warn' | 'info' | 'log'
 ) => {
-  if (typeof obj === 'string') return [`%c${obj}`, [colors[type]]]
-  let str = JSON.stringify(obj, null, 2)
+  let str = value
 
   const styles: string[] = []
   str = str.replace(/"(.*?)"/g, (item) => {
@@ -23,11 +21,46 @@ const hightlight = (
     styles.push('')
     return `%c${item}%c`
   })
-  return ['Body: \n' + str, styles]
+  return [str, styles]
 }
 
+const groupConsoles = <T extends [(...value: string[]) => void, string[]]>(
+  acc: T[],
+  item: T
+) => {
+  const index = Math.max(acc.length - 1, 0)
+  if (
+    ['log', 'info', 'warn', 'wrror'].includes(item[0].name) &&
+    acc.length &&
+    acc[index][0].name === 'log'
+  ) {
+    acc[index][1][0] += `\n${item[1][0]}`
+    item[1].slice(1).forEach((style) => acc[index][1].push(style))
+  } else acc.push(item)
+  return acc
+}
+
+export const collapseJSON = (str: string) => {
+  const lines = (
+    str.split('\n').flatMap((line, i) => {
+      const formatted = line.replace(/(\s+)/, '  ')
+      const hasOpen = ['{', '['].some((char) => formatted.includes(char))
+      const hasClose = ['}', ']'].some((char) => formatted.includes(char))
+      const [str, color] = hightlight(formatted)
+      const value = [str, ...color]
+      if (hasOpen && !hasClose) return [[console?.[i ? 'group' : 'groupCollapsed'], value]]
+      if (hasClose && !hasOpen)
+        return [[console.log, value], [console.groupEnd]]
+      return [[console.log, value]]
+    }) as [(...value: string[]) => void, string[]][]
+  ).reduce<[(...value: string[]) => void, string[]][]>(groupConsoles, [])
+
+  lines.forEach(([fn, line]) => (line?.length ? fn(...line) : fn()))
+}
+
+// typeLog: 'error' | 'warn' | 'info' | 'log'
 const print =
-  (typeLog: 'error' | 'warn' | 'info') =>
+  () =>
   (
     type: 'req' | 'res',
     message: string | Record<string, unknown>,
@@ -36,19 +69,23 @@ const print =
   ) => {
     if (!DEBUG) return
     const now = format(new Date(), 'dd/MM/yyyy, HH:mm:ss')
-    const [str, color] = hightlight(message, typeLog)
-    const header = `${url !== '' ? `\n${method}` : ''}:${url !== '' ? `${url}\n` : ''}`
+    const header = `${url !== '' ? `\n${method}` : ''}:${
+      url !== '' ? `${url}\n` : ''
+    }`
     console.log(
-      `${type === 'req' ? 'Requisição' : 'Resposta'}${' '.repeat(5)}${now}${header}
-${str}`,
-      ...color
+      `${type === 'req' ? 'Requisição' : 'Resposta'}${' '.repeat(
+        5
+      )}${now}${header}`
     )
+    if (!message) return
+    console.log('Body: ')
+    collapseJSON(JSON.stringify(message, null, 2))
   }
 
 export const log = {
-  error: print('error'),
-  info: print('info'),
-  warn: print('warn'),
+  error: print(), // 'error'
+  info: print(), // 'info'
+  warn: print(), // 'warn'
 }
 
 export const currency = Intl.NumberFormat('pt-BR', {
@@ -72,14 +109,20 @@ export const request = async <T = never, K = unknown>(
     method: method ?? 'GET',
     headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined,
-    signal: controller.signal
+    signal: controller.signal,
   })
     .then((res) => {
-      switch(res.status) {
-        case 401: throw new Error('Usuário não autorizado')
-        case 404: throw new Error('Rota não encontrada')
-        case 200: return res.text()
-        default: throw new Error(`Ocorreu um erro inesperado: Status Code: ${res.status}`)
+      switch (res.status) {
+        case 401:
+          throw new Error('Usuário não autorizado')
+        case 404:
+          throw new Error('Rota não encontrada')
+        case 200:
+          return res.text()
+        default:
+          throw new Error(
+            `Ocorreu um erro inesperado: Status Code: ${res.status}`
+          )
       }
     })
     .then((res) => {
@@ -91,17 +134,21 @@ export const request = async <T = never, K = unknown>(
       }
       log.info('res', json)
       return json as T
-    }).catch(err => {
-      if (err.message.includes('Failed to fetch')) throw new Error('API Indisponível')
+    })
+    .catch((err) => {
+      if (err.message.includes('Failed to fetch'))
+        throw new Error('API Indisponível')
       throw err
     })
 }
 
-export  const setTheme = (theme: 'dark' | 'light') => {
+export const setTheme = (theme: 'dark' | 'light') => {
   const html = document.querySelector('html')
   if (!html) return
   html.setAttribute('theme', theme)
 }
 
-export const parseCurrencyToNumber = (value: string) => Number(value.replace(/\./g, '').replace(/,/g, '.'))
-export const parseNumberToCurrency = (value?: string | number) => currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
+export const parseCurrencyToNumber = (value: string) =>
+  Number(value.replace(/\./g, '').replace(/,/g, '.'))
+export const parseNumberToCurrency = (value?: string | number) =>
+  currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
