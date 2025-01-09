@@ -75,21 +75,50 @@ export const CheckboxContainer = styled.input.attrs(attr => ({ ...attr, type: 'c
   }
 `
 
-export const CheckboxSwitch = styled.input.attrs(attr => ({ ...attr, type: 'checkbox' }))`
+const sizes = {
+  1: {
+    width: '2.25em',
+    height: '1.27em',
+    borderRadius: '0.6em',
+    icon: {
+      borderRadius: '50%',
+      top: '0.08em',
+      left: '1.25px',
+      width: '1.1em',
+      height: '1.1em',
+      diffEnd: '0.08em',
+    },
+  },
+  2: {
+    width: '3.25em',
+    height: '1.71em',
+    borderRadius: '0.81em',
+    icon: {
+      borderRadius: '50%',
+      top: '0.11em',
+      left: '1.69px',
+      width: '1.49em',
+      height: '1.49em',
+      diffEnd: '0.04em',
+    },
+  }
+}
+
+export const CheckboxSwitch = styled.input.attrs(attr => ({ ...attr, type: 'checkbox' }))<{ $size?: keyof typeof sizes }>`
   appearance: none;
-  width: 2.25em;
-  height: 1.27em; 
-  border-radius: 0.6em;
+  width: ${attr => sizes[attr?.$size ?? 1].width};
+  height: ${attr => sizes[attr?.$size ?? 1].height}; 
+  border-radius: ${attr => sizes[attr?.$size ?? 1].borderRadius};
   background-color: var(--input-switch-bg);
 
   &::after {
     content: '';
     background-color: var(--input-switch-ball-unchecked);
     border-radius: 50%;
-    top: 0.08em;
-    left: 1.25px;
-    width: 1.1em;
-    height: 1.1em;
+    top: ${attr => sizes[attr?.$size ?? 1].icon.top};
+    left: ${attr => sizes[attr?.$size ?? 1].icon.left};
+    width: ${attr => sizes[attr?.$size ?? 1].icon.width};
+    height: ${attr => sizes[attr?.$size ?? 1].icon.height};
     position: relative;
     display: block;
     transition: all ease-in 150ms;
@@ -100,7 +129,7 @@ export const CheckboxSwitch = styled.input.attrs(attr => ({ ...attr, type: 'chec
 
     &::after {
       background-color: var(--white);
-      transform: translateX(calc(100% - 0.08em));
+      transform: translateX(calc(100% - ${attr => sizes[attr?.$size ?? 1].icon.diffEnd}));
     }
   }
   

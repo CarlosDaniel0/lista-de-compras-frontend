@@ -13,6 +13,7 @@ import ProtectedRouters from './ProtectedRouters'
 import RedirectRouters from './RedirectRouters'
 import Products from '../../pages/Products/list'
 import CreateOrUpdateSupermarket from '../../pages/Supermarkets/CreateOrUpdate'
+import CreateOrUpdateReciept from '../../pages/Reciepts/CreateOrUpdate'
 
 function Router() {
   return (
@@ -28,9 +29,11 @@ function Router() {
         <Route path="/supermarkets/create" element={<CreateOrUpdateSupermarket />} />
         <Route path="/supermarkets/update/:id" element={<CreateOrUpdateSupermarket />} />
         <Route path="/reciepts" element={<Reciepts />} />
-        {/* <Route path="/map" element={<Map />} /> */}
+        <Route path="/reciepts/create" element={<CreateOrUpdateReciept />} />
+        <Route path="/reciepts/update/:id" element={<CreateOrUpdateReciept />} />
         <Route path="/barcode" element={<Barcode />} />
         <Route path="/edit" element={<Register />} />
+        {/* <Route path="/map" element={<Map />} /> */}
       </Route>
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-use" element={<TermsOfUse />} />

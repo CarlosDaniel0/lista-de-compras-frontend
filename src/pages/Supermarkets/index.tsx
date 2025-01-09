@@ -5,12 +5,12 @@ import { DialogContext } from '../../contexts/Dialog'
 import { Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
-import { ButtonAdd, Container } from '../Lists'
-import { PiPlus } from 'react-icons/pi'
+import { Container } from '../Lists'
 import ListCard from './components/ListCard'
 import { useNavigate } from 'react-router-dom'
+import { ButtonAdd } from '../../components/Button'
 
-const loadingSupermarket: Supermarket[] = Array.from(
+const loadingSupermarkets: Supermarket[] = Array.from(
   { length: 5 },
   () => ({ address: '', coords: [], id: '', name: '' } as Supermarket)
 )
@@ -18,34 +18,34 @@ const loadingSupermarket: Supermarket[] = Array.from(
 export default function Supermarkets() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
-  const [lists, setLists] = useState<Supermarket[]>([])
+  const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const navigate = useNavigate()
   // const { user } = store.getState()
 
   const loadContent = async () => {
-    setLists(loadingSupermarket)
+    setSupermarkets(loadingSupermarkets)
     request<{ status: boolean; message: string; data: { supermarkets: Supermarket[] } }>(
-      '/supermarket'
+      '/supermarkets'
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
-        setLists(res.data.supermarkets)
+        setSupermarkets(res.data.supermarkets)
       })
       .catch((err) => Dialog.info.show({ message: err.message }))
-      .finally(() => setLists((prev) => (!prev[0]?.id ? [] : prev)))
+      .finally(() => setSupermarkets((prev) => (!prev[0]?.id ? [] : prev)))
   }
 
   const handleRemove = (id: string) => {
     const onYes = () => {
       setLoading(true)
       request<{ status: boolean; message: string; data: { supermarket: Supermarket } }>(
-        `/supermarket/${id}`,
+        `/supermarkets/${id}`,
         {},
         'DELETE'
       )
         .then((res) => {
           if (!res.status) throw new Error(res?.message)
-          setLists((prev) => prev.filter((list) => list.id !== id))
+          setSupermarkets((prev) => prev.filter((list) => list.id !== id))
           return Dialog.info.show({ message: res.message })
         })
         .catch((err) => Dialog.info.show({ message: err.message }))
@@ -74,9 +74,9 @@ export default function Supermarkets() {
       <TabBar label="Supermercados" />
       <Container>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {lists.map((supermarket, i) => (
+          {supermarkets.map((supermarket, i) => (
             <ListCard
-              key={genId(`list-${i}`)}
+              key={genId(`supermarket-${i}`)}
               {...{
                 supermarket,
                 handleRemove,
@@ -89,9 +89,7 @@ export default function Supermarkets() {
           onClick={async () => {
             navigate('/supermarkets/create')
           }}
-        >
-          <PiPlus size={32} />
-        </ButtonAdd>
+        />
       </Container>
     </>
   )

@@ -4,13 +4,14 @@ import Card from '../../components/Card'
 import { Link, useNavigate } from 'react-router-dom'
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
 import { request } from '../../util'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Loader } from '../../components/Loading'
 import { User } from '../../util/types'
 import { useDispatch } from 'react-redux'
 import { signIn } from '../../redux/slices/config'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { store } from '../../redux/store'
+import { DialogContext } from '../../contexts/Dialog'
 
 const Container = styled.main`
   width: 100%;
@@ -65,6 +66,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const Dialog = useContext(DialogContext)
 
   const handleSuccess = (credentialResponse: CredentialResponse) => {
     setLoading(true)
@@ -90,7 +92,7 @@ export default function Home() {
   }
 
   const handleError = () => {
-    console.log('Login Failed')
+    Dialog.info.show({ message: 'Falha ao efetuar o login'})
   }
 
   useEffectOnce(() => {

@@ -25,6 +25,19 @@
   <div id="root"></div>
   <div id='modal-portal'></div>
   <script type="module" src="/src/main.tsx"></script>
+  <script>
+    const setTheme = (theme) => {
+      const html = document.querySelector('html')
+      if (!html) return
+      html.setAttribute('theme', theme)
+    }
+
+    const root = localStorage.getItem('persist:root')
+    try {
+      const json = JSON.parse(root)
+      setTheme(json.theme.replace(/\"/g, ''))
+    } catch(_) {}
+  </script>
 </body>
 
 </html>

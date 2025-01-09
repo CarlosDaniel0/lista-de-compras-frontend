@@ -1,6 +1,7 @@
 import { LabelProps } from "./label";
 import { Container } from "./styles";
 import { useMask } from "../../hooks/useMask";
+import { forwardRef } from "react";
 
 export type IconProps = React.ComponentPropsWithoutRef<'span' | 'button'> & { value?: React.ReactNode, type?: 'span' | 'button' }
 
@@ -16,19 +17,21 @@ export interface InputProps extends React.ComponentPropsWithoutRef<'input'> {
 }
 
 function Icon(props: IconProps) {
-  const { type, value, ...rest } = props
+  const { type, value, children, ...rest } = props
   if (type === 'button') return <button {...rest}>{value}</button>
-  return <span {...rest}>{value}</span>
+  return <span {...rest}>{value ?? children}</span>
 }
 
-export default function Input(props: Omit<InputProps, 'label' | 'container'>) {
+const Input = forwardRef<HTMLInputElement, Omit<InputProps, 'label' | 'container'>>((props, ref) => {
   const { icon, mask, ...rest } = props
   useMask(mask, `#${rest?.id}`)
 
   return (<Container>
     {icon?.left && <Icon {...icon?.left} />}
-    <input {...rest} />
+    <input ref={ref} {...rest} />
     {icon?.right && <Icon {...icon?.right} />}
   </Container>
   )
-}
+})
+
+export default Input

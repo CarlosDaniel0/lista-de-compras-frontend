@@ -39,9 +39,9 @@ export interface ProductReciept {
 export interface Reciept {
   id: string;
   name: string;
-  date: Date;
-  total: number;
-  discount: number;
+  date: string;
+  total: number | string;
+  discount: number | string;
   supermarket_id: string;
   supermarket?: Supermarket;
   user_id: string

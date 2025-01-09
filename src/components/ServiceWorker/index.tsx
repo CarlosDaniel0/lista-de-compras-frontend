@@ -12,7 +12,12 @@ const Panel = styled.div`
   border-radius: 0.4em;
   padding: 0.4em 0.5em;
   background: var(--bg-card-1);
+  color: var(--color-card-1);
   margin: 0 15px;
+
+  * {
+    color: var(--color-card-1);
+  }
 `
 
 const Button = styled.button`

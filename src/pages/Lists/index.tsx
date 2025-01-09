@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import TabBar from '../../components/TabBar'
-import { PiPlus } from 'react-icons/pi'
 import { useContext, useState } from 'react'
 import { DialogContext } from '../../contexts/Dialog'
 import { genId, request } from '../../util'
@@ -10,36 +9,14 @@ import ListCard from './components/ListCard'
 import { List } from '../../util/types'
 import CreateOrUpdatePanel, { FormList } from './components/CreateOrUpdatePanel'
 import { store } from '../../redux/store'
+import { ButtonAdd } from '../../components/Button'
 
 export const Container = styled.div`
   height: calc(100dvh - 46px);
   overflow: auto;
 `
 
-export const ButtonAdd = styled.button`
-  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
-  position: fixed;
-  bottom: 10px;
-  right: 5px;
-  width: 42px;
-  height: 42px;
-  border: none;
-  border-radius: 100%;
-  padding: 5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #0cb853;
-  color: #fff;
-  cursor: pointer;
-
-  &:active {
-    scale: 0.89;
-    transition: scale 0.15s ease-in;
-  }
-`
-
-const loadingList: List[] = Array.from(
+const loadingLists: List[] = Array.from(
   { length: 5 },
   () => ({ date: '', id: '', name: '', user_id: '' } as List)
 )
@@ -51,22 +28,23 @@ export default function Lists() {
   const { user } = store.getState()
 
   const loadContent = async () => {
-    setLists(loadingList)
+    setLists(loadingLists)
     request<{ status: boolean; message: string; data: { lists: List[] } }>(
-      '/list'
-    ).then((res) => {
-      if (!res.status) throw new Error(res.message)
-      setLists(res.data.lists)
-    })
-    .catch(err => Dialog.info.show({ message: err.message }))
-    .finally(() => setLists(prev => !prev[0]?.date ? [] : prev))
+      '/lists'
+    )
+      .then((res) => {
+        if (!res.status) throw new Error(res.message)
+        setLists(res.data.lists)
+      })
+      .catch((err) => Dialog.info.show({ message: err.message }))
+      .finally(() => setLists((prev) => (!prev[0]?.date ? [] : prev)))
   }
 
   const handleRemove = (id: string) => {
     const onYes = () => {
       setLoading(true)
       request<{ status: boolean; message: string; data: { list: List } }>(
-        `/list/${id}`,
+        `/lists/${id}`,
         {},
         'DELETE'
       )
@@ -96,7 +74,7 @@ export default function Lists() {
   const handleEdit = (list: List) => {
     setLoading(true)
     request<{ status: boolean; message: string; data: { list: List } }>(
-      `/list/${list?.id}`,
+      `/lists/${list?.id}`,
       list,
       'PUT'
     )
@@ -116,7 +94,7 @@ export default function Lists() {
   const handleCreate = (list: List) => {
     setLoading(true)
     request<{ status: boolean; message: string; data: { list: List } }>(
-      '/list',
+      '/lists',
       {
         date: new Date().toISOString(),
         user_id: user.id,
@@ -173,9 +151,7 @@ export default function Lists() {
               },
             })
           }}
-        >
-          <PiPlus size={32} />
-        </ButtonAdd>
+        />
       </Container>
     </>
   )

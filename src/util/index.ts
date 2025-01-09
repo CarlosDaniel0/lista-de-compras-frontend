@@ -96,3 +96,12 @@ export const request = async <T = never, K = unknown>(
       throw err
     })
 }
+
+export  const setTheme = (theme: 'dark' | 'light') => {
+  const html = document.querySelector('html')
+  if (!html) return
+  html.setAttribute('theme', theme)
+}
+
+export const parseCurrencyToNumber = (value: string) => Number(value.replace(/\./g, '').replace(/,/g, '.'))
+export const parseNumberToCurrency = (value?: string | number) => currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')

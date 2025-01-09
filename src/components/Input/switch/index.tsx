@@ -1,20 +1,24 @@
+import { useContext } from "react";
 import { InputProps } from "..";
+import { FormContext } from "../../../contexts/Form";
 import { genId } from "../../../util";
 import Label from "../label";
 import { CheckboxSwitch } from "../styles";
 
 export default function Switch(props: InputProps) {
-  const { label, container, ...rest } = props
+  const { label, container, field, size, ...rest } = props
+   const { form, setForm } = useContext(FormContext)
   const labelProps = typeof label === 'string' ? { value: label } : label
-  const onClick = (evt: React.MouseEvent<HTMLInputElement>) => {
-    const { value } = evt.currentTarget
-    if (rest?.mask === 'currency') return evt.currentTarget.setSelectionRange(value.length, value.length)
-    return rest?.onClick?.(evt)
+  const id = rest?.id ?? genId('swc')
+  const checked = form?.[(field ?? '') as never] ?? false
+
+  const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = evt.currentTarget
+    setForm?.((prev: Record<string, never>) => ({ ...prev, [field ?? '']: checked }))
   }
-  const id = rest?.id ?? genId('chk')
 
   return <div {...container} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-    <CheckboxSwitch {...rest} id={id} onClick={onClick} />
+    <CheckboxSwitch $size={size as 1 | 2} checked={checked} onChange={onChange} {...rest} id={id} />
     <Label {...labelProps} htmlFor={id} />
   </div>
 }

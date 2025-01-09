@@ -17,6 +17,16 @@
   --bg-skeleton: #eee;
   --gradient-skeleton: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
 
+  --bg-button-add: #0cb853;
+
+  --border-button: rgb(217, 217, 217);
+  --bg-button: transparent;
+  --color-button: #000;
+
+  --color: #010101;
+
+  --bg-search-item: #f3f3f3;
+
   --input-bg: var(--white);
   --input-border: rgb(217, 217, 217);
   --input-color: var(--black);
@@ -40,7 +50,17 @@ html[theme='dark'] {
   --color-subtitle-card: #b4b4b4;
 
   --bg-skeleton: #4c4c4c;
-  --gradient-skeleton: linear-gradient(110deg, #5e5e5e 8%, #7a7a7a 18%, #5e5e5e 33%);;
+  --gradient-skeleton: linear-gradient(110deg, #5e5e5e 8%, #7a7a7a 18%, #5e5e5e 33%);
+
+  --bg-button-add:#5e5e5e;
+
+  --border-button: rgb(70, 70, 70);
+  --bg-button: #505050;
+  --color-button: #e9e9e9;
+
+  --color: #f8f8f8;
+
+  --bg-search-item: #484848;
 
   --input-bg: #4c4c4c;
   --input-border: #3f3f3f;
@@ -53,8 +73,13 @@ html[theme='dark'] {
   --input-switch-ball-unchecked: #f1f1f1;
 }
 
+html[theme='dark'] input[type='date'] {
+  color-scheme: dark;
+}
+
 body {
   background: var(--bg);
+  color: var(--color);
 }
 
 * {

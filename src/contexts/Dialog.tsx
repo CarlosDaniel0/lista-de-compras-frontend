@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { createContext, useState } from 'react'
 import { SetState } from '../util/types'
+import useEffectOnce from '../hooks/useEffectOnce'
 
 export type ActionDialog = (
   setShow: SetState<boolean>,
@@ -20,7 +21,7 @@ export interface ButtonDialog
 export interface DialogProps {
   content?: React.ReactNode
   message?: string
-  form?: Record<string, unknown>,
+  form?: Record<string, unknown>
   onConfirm?: ButtonDialog | ActionDialog
 }
 
@@ -89,6 +90,17 @@ export default function DialogProvider(props: { children?: React.ReactNode }) {
       showFn(p)
     },
   })
+
+  const closeModal = () => {
+    setForm({})
+    setShow(false)
+    setDialogProps({})
+  }
+
+  useEffectOnce(() => {
+    window.addEventListener('popstate', closeModal)
+    return () => window.removeEventListener('popstate', closeModal)
+  }, [])
 
   const params = {
     info: changeType('info'),

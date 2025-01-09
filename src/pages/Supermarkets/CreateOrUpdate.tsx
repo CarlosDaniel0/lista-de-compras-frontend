@@ -57,7 +57,7 @@ export default function CreateOrUpdate() {
       status: boolean
       message: string
       data: { supermarket: Supermarket }
-    }>(`/supermarket/${id}`, '', 'GET')
+    }>(`/supermarkets/${id}`, '', 'GET')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         setData(res.data.supermarket)
@@ -75,7 +75,7 @@ export default function CreateOrUpdate() {
       status: boolean
       message: string
       data: { supermerket: Supermarket }
-    }>(`/supermarket/`, data, 'POST')
+    }>(`/supermarkets/`, data, 'POST')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         Dialog.info.show({
@@ -96,7 +96,7 @@ export default function CreateOrUpdate() {
       status: boolean
       message: string
       data: { supermerket: Supermarket }
-    }>(`/supermarket/${id}`, data, 'PUT')
+    }>(`/supermarkets/${id}`, data, 'PUT')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         Dialog.info.show({
