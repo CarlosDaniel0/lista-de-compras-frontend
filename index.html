@@ -28,8 +28,10 @@
   <script>
     const setTheme = (theme) => {
       const html = document.querySelector('html')
-      if (!html) return
+      const themeColor = document.querySelector('meta[name="theme-color"]')
+      if (!html || !themeColor) return
       html.setAttribute('theme', theme)
+      if (theme === 'dark') themeColor.setAttribute('content', '#232323')
     }
 
     const root = localStorage.getItem('persist:root')
