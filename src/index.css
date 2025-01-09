@@ -27,6 +27,8 @@
 
   --bg-search-item: #f3f3f3;
 
+  --bg-leaflet: #e4e4e4;
+
   --input-bg: var(--white);
   --input-border: rgb(217, 217, 217);
   --input-color: var(--black);
@@ -62,6 +64,8 @@ html[theme='dark'] {
 
   --bg-search-item: #484848;
 
+  --bg-leaflet: #3a3a3a;
+
   --input-bg: #4c4c4c;
   --input-border: #3f3f3f;
   --input-color: var(--white);
@@ -94,4 +98,9 @@ body {
   height: 0px;
   transition: height 0.35s ease;
   overflow: hidden;
+}
+
+
+.leaflet-container {
+  background: var(--bg-leaflet);
 }
