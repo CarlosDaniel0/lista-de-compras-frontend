@@ -6,6 +6,7 @@
 
   --bg: var(--white);
   --bg-card-1: var(--white);
+  --bg-options: var(--white);
 
   --bg-menu: var(--white);
   --color-menu: #121212;
@@ -43,6 +44,7 @@
 html[theme='dark'] {
   --bg: #232323;
   --bg-card-1: #3a3a3a;
+  --bg-options: #535353;
 
   --bg-menu: #232323;
   --color-menu: #e3e3e3;

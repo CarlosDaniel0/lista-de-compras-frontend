@@ -4,11 +4,12 @@ import TabBar from '../../components/TabBar'
 import { Container } from '../Lists'
 import { useNavigate } from 'react-router-dom'
 import { genId, request } from '../../util'
-import { Reciept } from '../../util/types'
+import { Option, Reciept } from '../../util/types'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
 import { ButtonAdd } from '../../components/Button'
 import ListCard from './components/ListItem'
+import { FaDownload, FaUpload } from 'react-icons/fa6'
 
 const loadingReciepts = Array.from(
   { length: 5 },
@@ -28,6 +29,11 @@ export default function Reciepts() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  const options: Option[] = [
+    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
+    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
+  ]
 
   const loadContent = async () => {
     setReciepts(loadingReciepts)
@@ -80,7 +86,7 @@ export default function Reciepts() {
   return (
     <>
       <Loading status={loading} label="Aguarde..." />
-      <TabBar label="Comprovantes" />
+      <TabBar label="Comprovantes" options={options} />
       <Container>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {reciepts.map((reciept, i) => (

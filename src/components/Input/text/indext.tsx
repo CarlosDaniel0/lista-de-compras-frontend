@@ -32,10 +32,7 @@ export default function Text(props: InputProps) {
     }))
   }
 
-  const onChange =
-    rest?.mask === 'currency'
-      ? undefined
-      : (evt: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
           const { value } = evt.target
           setValue(value.replace(/\./g, '').replace(/,/g, '.'))
         }

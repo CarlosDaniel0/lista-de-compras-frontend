@@ -6,10 +6,11 @@ import { genId, request } from '../../util'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import ListCard from './components/ListCard'
-import { List } from '../../util/types'
+import { List, Option } from '../../util/types'
 import CreateOrUpdatePanel, { FormList } from './components/CreateOrUpdatePanel'
 import { store } from '../../redux/store'
 import { ButtonAdd } from '../../components/Button'
+import { FaDownload, FaUpload } from 'react-icons/fa6'
 
 export const Container = styled.div`
   height: calc(100dvh - 46px);
@@ -26,6 +27,11 @@ export default function Lists() {
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<List[]>([])
   const { user } = store.getState()
+
+  const options: Option[] = [
+    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
+    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
+  ]
 
   const loadContent = async () => {
     setLists(loadingLists)
@@ -116,7 +122,7 @@ export default function Lists() {
   return (
     <>
       <Loading status={loading} label="Aguarde..." />
-      <TabBar label="Minhas Listas" />
+      <TabBar label="Minhas Listas" options={options} />
       <Container>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {lists.map((list, i) => (

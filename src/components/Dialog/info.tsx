@@ -33,7 +33,7 @@ const panel = css`
 
 export const Button = styled.button<{ $bg?: string }>`
   align-self: center;
-  padding: 0.4em 1.2em;
+  padding: 0.4em 2.5em;
   border-radius: 0.4em;
   border: none;
   outline: none;

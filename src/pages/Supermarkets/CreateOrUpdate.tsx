@@ -163,6 +163,7 @@ export default function CreateOrUpdate() {
             marginTop: 15,
             width: '100%',
             background: isUpdate ? '#0952d8' : '#168d55',
+            border: 'none',
             color: '#fff',
           }}
           onClick={isUpdate ? update : create}

@@ -56,7 +56,7 @@ export default function Panel(props: IPanel) {
             setShow,
           })
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-evenly' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 15 }}>
           <Button
             {...confirm}
             $bg={confirm?.color ?? "#03a73a"}

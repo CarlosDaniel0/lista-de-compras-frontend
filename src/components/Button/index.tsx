@@ -48,6 +48,15 @@ export function ButtonAdd(props: ButtonProps) {
   )
 }
 
+export const IconButton = styled.button`
+  color: #fff;
+  outline: none;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  padding: 2px;
+`
+
 export default function Button(props: ButtonProps) {
   const { children, $bg, ...rest } = props
   return (

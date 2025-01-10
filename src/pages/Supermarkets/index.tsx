@@ -2,13 +2,14 @@ import { useContext, useState } from 'react'
 import TabBar from '../../components/TabBar'
 import { genId, request } from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
-import { Supermarket } from '../../util/types'
+import { Option, Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { Container } from '../Lists'
 import ListCard from './components/ListCard'
 import { useNavigate } from 'react-router-dom'
 import { ButtonAdd } from '../../components/Button'
+import { FaDownload, FaUpload } from 'react-icons/fa6'
 
 const loadingSupermarkets: Supermarket[] = Array.from(
   { length: 5 },
@@ -21,6 +22,11 @@ export default function Supermarkets() {
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const navigate = useNavigate()
   // const { user } = store.getState()
+
+  const options: Option[] = [
+    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
+    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
+  ]
 
   const loadContent = async () => {
     setSupermarkets(loadingSupermarkets)
@@ -71,7 +77,7 @@ export default function Supermarkets() {
   return (
     <>
       <Loading status={loading} label="Aguarde..." />
-      <TabBar label="Supermercados" />
+      <TabBar label="Supermercados" options={options} />
       <Container>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {supermarkets.map((supermarket, i) => (
