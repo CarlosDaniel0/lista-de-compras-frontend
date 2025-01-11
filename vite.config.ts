@@ -82,20 +82,6 @@ if (reload) {
 
 if (selfDestroying) options.selfDestroying = selfDestroying
 
-if (isDEV) {
-  options.srcDir = 'src/util'
-  options.filename = 'request-sw.ts'
-  options.strategies = 'injectManifest'
-  options.injectManifest = {
-    minify: false,
-    enableWorkboxModulesLogs: true,
-  }
-}
-
-options.workbox = {
-  importScripts: ['service-worker.js']
-}
-
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), VitePWA(options), replace(replaceOptions) as PluginOption],
@@ -107,17 +93,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: {
-        // the default entry point
-        app: './index.html',
-        'service-worker': './src/util/request-sw.ts',
-      },
       output: {
-        entryFileNames: (assetInfo) => {
-          return ['service-worker'].includes(assetInfo.name)
-            ? '[name].js' // put service worker in root
-            : 'assets/[name]-[hash].js' // others in `assets/js/`
-        },
         manualChunks(id) {
           if (id.includes('node_modules')) {
             return id

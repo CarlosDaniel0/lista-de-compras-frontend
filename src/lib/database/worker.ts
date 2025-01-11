@@ -1,6 +1,16 @@
 import initSqlJs from '@jlongster/sql.js';
 import { SQLiteFS } from 'absurd-sql';
 import IndexedDBBackend from 'absurd-sql/dist/indexeddb-backend';
+const { API_URL } = import.meta.env
+declare let self: ServiceWorkerGlobalScope
+
+self.addEventListener('fetch', (evt) => {
+  console.log(evt.request.url)
+  if (evt.request.url.includes(API_URL)) {
+    return evt.respondWith(Promise.reject(new  Error('Teste para bloquear todas as requisições')))
+  }
+  evt.respondWith(fetch(evt.request))
+})
 
 async function init() {
   const SQL = await initSqlJs({ locateFile: (file: string) => '/assets/' + file });
@@ -22,6 +32,7 @@ async function init() {
   db.exec(`
     PRAGMA journal_mode=MEMORY;
   `);
+  console.log('DB Inited')
 }
 
 init()
