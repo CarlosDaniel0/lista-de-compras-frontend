@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DEBUG } from '../../util/constants'
+import { initSQLite } from '../../lib/database/sqlite'
 
 const Panel = styled.div`
   position: absolute;
@@ -76,6 +77,7 @@ export default function ServiceWorker() {
   }
 
   useEffectOnce(() => {
+    initSQLite()
     setTimeout(() => setOfflineReady(false), 15 * 1000)
   }, [])
 

@@ -10,9 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@jlongster/sql.js": "^1.6.7",
     "@react-oauth/google": "^0.12.1",
     "@reduxjs/toolkit": "^2.2.6",
     "@zxing/library": "^0.21.3",
+    "absurd-sql": "^0.0.54",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",

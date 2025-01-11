@@ -44,6 +44,19 @@ Faça suas listas de compras e acompanhe o valor gasto em um só lugar
 yarn
 ```
 
+4 - Faça a criação de um link simbólico para utilizar o arquivo ```sql-wasm.wasm```
+na pasta ```src/lib/database```
+
+Windows
+```pwsh
+New-Item -ItemType SymbolicLink -Path "src\lib\database\sql-wasm.wasm" -Target "public\assets\sql-wasm.wasm"
+```
+
+Linux
+```bash
+ln -s /public/assets/sql-wasm.wasm src/lib/database/sql-wasm.wasm
+```
+
 3 - Rode o projeto
 
 ```bash
