@@ -1,14 +1,14 @@
 import { format } from 'date-fns'
-import { API_URL, DEBUG, MAX_REQUEST_TIMEOUT } from './constants'
+import { API_URL, DEBUG, MAX_REQUEST_TIMEOUT, online } from './constants'
+import { HTTPMethods } from './types'
 
-type HTTPMethod = 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE'
 // const colors = {
 //   error: 'color: #fc5858;',
 //   warn: 'color: #fff373;',
 //   info: 'color: #82aaff;',
 //   log: 'color:rgb(235, 235, 235);'
 // }
-
+const channel = new BroadcastChannel('status')
 const hightlight = (
   value: string
   // type: 'error' | 'warn' | 'info' | 'log'
@@ -48,7 +48,8 @@ export const collapseJSON = (str: string) => {
       const hasClose = ['}', ']'].some((char) => formatted.includes(char))
       const [str, color] = hightlight(formatted)
       const value = [str, ...color]
-      if (hasOpen && !hasClose) return [[console?.[i ? 'group' : 'groupCollapsed'], value]]
+      if (hasOpen && !hasClose)
+        return [[console?.[i ? 'group' : 'groupCollapsed'], value]]
       if (hasClose && !hasOpen)
         return [[console.log, value], [console.groupEnd]]
       return [[console.log, value]]
@@ -65,7 +66,7 @@ const print =
     type: 'req' | 'res',
     message: string | Record<string, unknown>,
     url: string = '',
-    method: HTTPMethod = 'GET'
+    method: HTTPMethods = 'GET'
   ) => {
     if (!DEBUG) return
     const now = format(new Date(), 'dd/MM/yyyy, HH:mm:ss')
@@ -96,10 +97,15 @@ export const currency = Intl.NumberFormat('pt-BR', {
 export const genId = (prefix: string) =>
   prefix + Math.random().toString(16).slice(2)
 
+const sendMessageToWorker = (message: Record<string, boolean>) => {
+  if (navigator.serviceWorker)
+    channel.postMessage(message)
+}
+
 export const request = async <T = never, K = unknown>(
   params: string,
   body?: K,
-  method?: HTTPMethod
+  method?: HTTPMethods
 ): Promise<T> => {
   const controller = new AbortController()
   setTimeout(() => controller.abort(), MAX_REQUEST_TIMEOUT)
@@ -133,13 +139,35 @@ export const request = async <T = never, K = unknown>(
         log.error('res', e instanceof Error ? e.message : 'Error in JSON parse')
       }
       log.info('res', json)
+      if ('status' in json && !json.status) sendMessageToWorker({ verifyOnlineStatus: true })
       return json as T
     })
     .catch((err) => {
-      if (err.message.includes('Failed to fetch'))
+      sendMessageToWorker({ verifyOnlineStatus: true })
+      if (err.message.includes('Failed to fetch')) {
+        online.status = false
         throw new Error('API Indisponível')
+      }
       throw err
     })
+}
+
+export const verifyOnlineStatus = () => {
+  if ('serviceWorker' in navigator) {
+    channel.addEventListener('message', (evt) => {
+      const { data } = evt
+      if ('onlinestatus' in data) online.status = data.onlinestatus
+    })
+  }
+  window.addEventListener('online', () => {
+    sendMessageToWorker({ status: true })
+    online.status = true
+  })
+  window.addEventListener('offline', () => {
+    sendMessageToWorker({ status: false })
+    online.status = false
+  })
+  sendMessageToWorker({ verifyOnlineStatus: online.status })
 }
 
 export const setTheme = (theme: 'dark' | 'light') => {
@@ -152,3 +180,9 @@ export const parseCurrencyToNumber = (value: string) =>
   Number(value.replace(/\./g, '').replace(/,/g, '.'))
 export const parseNumberToCurrency = (value?: string | number) =>
   currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
+
+export const uuidv4 = () => {
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
+    (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
+  );
+}

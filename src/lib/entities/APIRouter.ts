@@ -1,6 +1,8 @@
+import { HTTPMethods } from "../../util/types"
 import { CallbackAPI, RouteParameters } from "../utils/types"
 
-export type APIRoutes = Record<string, CallbackAPI>
+type MethodRoute = { [method in HTTPMethods]: CallbackAPI  } 
+export type APIRoutes = { [key: string]: MethodRoute }
 
 export class APIRouter {
   routes: APIRoutes = {}
@@ -8,21 +10,22 @@ export class APIRouter {
 
   use(path: string, router: APIRouter) {
     router.base = path
-    this.routes = Object.assign(this.routes, router.base = path)
+    const routes = Object.fromEntries(Object.entries(router.routes).map(([k, r]) => [`${path}/${k.replace('/', '')}`.replace(/\/$/, ''), r]))
+    this.routes = Object.assign(this.routes, routes)
   }
   get<R extends string, P = RouteParameters<R>>(path: R, callback: CallbackAPI<P>) {
-    this.routes[this.base + path] = callback as CallbackAPI
+    this.routes[this.base + path] = Object.assign(this.routes[this.base + path] ?? {}, { GET: callback } as MethodRoute)
   }
   post<R extends string, P = RouteParameters<R>>(path: R, callback: CallbackAPI<P>) {
-    this.routes[this.base + path] = callback as CallbackAPI
+    this.routes[this.base + path] = Object.assign(this.routes[this.base + path] ?? {}, { POST: callback } as MethodRoute)
   }
   put<R extends string, P = RouteParameters<R>>(path: R, callback: CallbackAPI<P>) {
-    this.routes[this.base + path] = callback as CallbackAPI
+    this.routes[this.base + path] = Object.assign(this.routes[this.base + path] ?? {}, { PUT: callback } as MethodRoute)
   }
   patch<R extends string, P = RouteParameters<R>>(path: R, callback: CallbackAPI<P>) {
-    this.routes[this.base + path] = callback as CallbackAPI
+    this.routes[this.base + path] = Object.assign(this.routes[this.base + path] ?? {}, { PATCH: callback } as MethodRoute)
   }
   delete<R extends string, P = RouteParameters<R>>(path: R, callback: CallbackAPI<P>) {
-    this.routes[this.base + path] = callback as CallbackAPI
+    this.routes[this.base + path] = Object.assign(this.routes[this.base + path] ?? {}, { DELETE: callback } as MethodRoute)
   }
 }

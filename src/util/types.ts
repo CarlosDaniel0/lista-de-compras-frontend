@@ -58,7 +58,7 @@ export interface Supermarket {
   products?: ProductSupermarket[]
 }
 
-interface Wholesale {
+export interface Wholesale {
   id: string
   description: string
   min_quantity: number
@@ -67,7 +67,7 @@ interface Wholesale {
   product?: ProductSupermarket
 }
 
-interface ProductSupermarket {
+export interface ProductSupermarket {
   id: string
   description: string
   unity: string
@@ -80,8 +80,21 @@ interface ProductSupermarket {
   supermarket?: Supermarket
 }
 
+export interface Tables {
+  id: string
+  name: string
+  version: string
+  sync: boolean
+}
+
 export interface Option {
   key: string | number
   label: React.ReactNode
   onClick?: (evt: React.MouseEvent<HTMLButtonElement>, close: () => void) => void
 }
+
+export type ObjectFromList<T extends ReadonlyArray<string>, V = string> = {
+  [K in (T extends ReadonlyArray<infer U> ? U : never)]: V
+}
+
+export type HTTPMethods = 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD'

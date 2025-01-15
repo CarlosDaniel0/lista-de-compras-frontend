@@ -1,0 +1,132 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Supermarket {
+  id       String               @id @default(uuid())
+  name     String
+  address  String
+  removed  Boolean              @default(false)
+  sync     Boolean              @default(false)
+  coords   Coordinates?
+  reciepts Reciept[]
+  products ProductSupermarket[]
+}
+
+model Wholesale {
+  id           String             @id @default(uuid())
+  description  String
+  min_quantity Decimal
+  price        Decimal
+  removed      Boolean            @default(false)
+  sync         Boolean            @default(false)
+  product_id   String             @unique
+  product      ProductSupermarket @relation(fields: [product_id], references: [id])
+}
+
+model Coordinates {
+  id             String      @id @default(uuid())
+  lat            Float
+  long           Float
+  supermarket_id String      @unique
+  supermarket    Supermarket @relation(fields: [supermarket_id], references: [id])
+}
+
+model ProductSupermarket {
+  id               String           @id @default(uuid())
+  description      String
+  unity            String
+  category         String
+  barcode          String?
+  price            Decimal
+  last_update      DateTime?        @default(now())
+  removed          Boolean          @default(false)
+  sync             Boolean          @default(false)
+  supermarket_id   String
+  wholesale        Wholesale?
+  products_reciept ProductReciept[]
+  products_list    ProductList[]
+  supermarket      Supermarket      @relation(fields: [supermarket_id], references: [id])
+}
+
+//   Lista
+model List {
+  id       String        @id @default(uuid())
+  name     String
+  date     DateTime?     @default(now())
+  removed  Boolean       @default(false)
+  sync     Boolean       @default(false)
+  user_id  String
+  user     User          @relation(fields: [user_id], references: [id])
+  products ProductList[]
+}
+
+model ProductList {
+  id          String              @id @default(uuid())
+  description String
+  unity       String?
+  quantity    Float
+  removed     Boolean             @default(false)
+  sync        Boolean             @default(false)
+  list_id     String
+  product_id  String?
+  product     ProductSupermarket? @relation(fields: [product_id], references: [id])
+  list        List                @relation(fields: [list_id], references: [id])
+}
+
+//  Receita
+model Reciept {
+  id             String           @id @default(uuid())
+  name           String
+  date           DateTime         @default(now())
+  total          Decimal
+  discount       Decimal
+  supermarket_id String
+  user_id        String
+  removed        Boolean          @default(false)
+  sync           Boolean          @default(false)
+  products       ProductReciept[]
+  supermarket    Supermarket      @relation(fields: [supermarket_id], references: [id])
+  user           User             @relation(fields: [user_id], references: [id])
+}
+
+model ProductReciept {
+  id         String             @id @default(uuid())
+  index      Int
+  quantity   Float
+  price      Decimal
+  total      Decimal
+  removed    Boolean            @default(false)
+  sync       Boolean            @default(false)
+  receipt_id String
+  product_id String
+  receipt    Reciept            @relation(fields: [receipt_id], references: [id])
+  product    ProductSupermarket @relation(fields: [product_id], references: [id])
+}
+
+// User
+
+model User {
+  id       String    @id @default(uuid())
+  name     String
+  email    String    @unique
+  picture  String?
+  reciepts Reciept[]
+  lists    List[]
+}
+
+
+// Tables
+
+model Tables {
+  id        String    @id @default(uuid())
+  name      String
+  version   String
+  sync      Boolean   @default(true)
+}

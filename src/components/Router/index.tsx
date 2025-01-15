@@ -23,7 +23,7 @@ function Router() {
       </Route>
       <Route element={<ProtectedRouters />}>
         <Route path="/list" element={<Lists />} />
-        <Route path="/list/:id" element={<Products />} />
+        <Route path="/lists/:id" element={<Products />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
         <Route path="/supermarkets/:id" element={<Products />} />
         <Route path="/supermarkets/create" element={<CreateOrUpdateSupermarket />} />

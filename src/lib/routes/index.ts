@@ -6,10 +6,6 @@ import supermarket from './supermarket'
 
 const router = new APIRouter()
 
-// router.get('/', (_, res) => {
-//   res.send({ response: true, message: 'API Local Lista de Compras'})
-// })
-
 router.use('/auth', auth)
 router.use('/lists', list)
 router.use('/reciepts', reciept)

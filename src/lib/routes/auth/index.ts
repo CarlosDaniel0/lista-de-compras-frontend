@@ -1,33 +1,43 @@
-import { APIRouter } from "../../entities/APIRouter";
-const router = new APIRouter();
+import { CredentialResponse } from '@react-oauth/google'
+import { APIRouter } from '../../entities/APIRouter'
+import { databaseErrorResponse } from '../../utils'
+import { SQLite } from '../../entities/SQLite'
+import { UserData } from '../../entities/UserData'
+const router = new APIRouter()
 
-router.post("/", async () => {
-  // const prisma = new PrismaClient({ adapter });
+router.post('/', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const credential: CredentialResponse = req.body
+    let user = await sqlite.user.findFirst({})
 
-  // try {
-  //   const credential = CredentialResponse.parse(req.body);
+    const data = UserData.parse(req.body)
+    if (!user?.id) {
+      user = await sqlite.user.create({
+        data: data.toEntity()
+      })
+    }
+    else {
+      await sqlite.user.delete({})
+      user = await sqlite.user.create({
+        data: user
+      })
+    }
 
-  //   let user = await prisma.user.findFirst({
-  //     where: {
-  //       email: credential.user?.email,
-  //       name: credential.user?.name,
-  //     },
-  //   });
-  //   if (!user && credential.user) {
-  //     user = await prisma.user.create({
-  //       data: credential.user.toEntity(),
-  //     });
-  //   }
+    res.send({
+      status: !!user,
+      data: {
+        user: user
+          ? Object.assign(
+              user,
+              { token: credential.credential }
+            )
+          : null,
+      },
+    })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
+})
 
-  //   res.send({
-  //     status: true,
-  //     data: {
-  //       user: Object.assign(user ?? {}, { token: credential.credential }),
-  //     },
-  //   });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
-});
-
-export default router;
+export default router

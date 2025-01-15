@@ -1,6 +1,7 @@
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
 import { clientsClaim } from 'workbox-core'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
+import '../lib/database/worker'
 
 declare let self: ServiceWorkerGlobalScope
 

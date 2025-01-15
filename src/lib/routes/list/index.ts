@@ -1,141 +1,186 @@
-import { APIRouter } from "../../entities/APIRouter";
-const router = new APIRouter();
+import { List } from '../../../util/types'
+import { APIRouter } from '../../entities/APIRouter'
+import { ListData } from '../../entities/ListData'
+import { ProductListData } from '../../entities/ProductListData'
+import { SQLite } from '../../entities/SQLite'
+import { databaseErrorResponse } from '../../utils'
+const router = new APIRouter()
 
-router.get("/", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const lists = await prisma.list.findMany({});
-  //   res.send({ status: true, data: { lists } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
-});
-
-router.post("/", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const data = List.parse(req.body).toEntity()
-  //   const list = await prisma.list.create({ data });
-  //   res.send({ status: true, message: 'Lista Criada com sucesso!', data: { list } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.get('/', async (_, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const lists = await sqlite.list.findMany({
+      select: { id: true, name: true, date: true, user_id: true },
+      where: { removed: false },
+    })
+    res.send({ status: true, data: { lists } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.put("/:id", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id } = req.params;
-  //   const data = List.parse(req.body).toEntity()
-  //   const list = await prisma.list.update({ data, where: { id }});
-  //   res.send({ status: true, message: 'Lista alterada com sucesso!', data: { list } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.post('/', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    if (hasLocalHeader) await sqlite.list.delete({})
+    const data: List[] = (Array.isArray(req.body) ? req.body : [req.body]).map(
+      (item) => ListData.parse({ ...item, sync: hasLocalHeader }).toEntity()
+    )
+    const list = await sqlite.list.createMany({ data })
+    res.send({
+      status: true,
+      message: 'Lista Criada com sucesso!',
+      data: { list },
+    })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.delete("/:id", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id } = req.params;
-  //   const list = await prisma.list.delete({ where: { id }});
-  //   res.send({ status: true, message: 'Lista removida com sucesso!', data: { list } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.put('/:id', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id } = req.params
+    const data = ListData.parse({
+      ...req.body,
+      sync: hasLocalHeader,
+    }).toEntity()
+    const list = await sqlite.list.update({ data, where: { id } })
+    res.send({
+      status: true,
+      message: 'Lista alterada com sucesso!',
+      data: { list },
+    })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.get("/:id", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id } = req.params
-  //   const list = await prisma.list.findUnique({ where: { id }, include: { products: true }});
-  //   res.send({ status: true, data: { list } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
-});
-
-router.get("/:id/product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id } = req.params;
-  //   const products = await prisma.productList.findMany({ where: { list_id } });
-  //   res.send({ status: true, data: { products } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.delete('/:id', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id } = req.params
+    let list = null
+    if (hasLocalHeader) list = await sqlite.list.delete({ where: { id } })
+    else
+      list = await sqlite.list.update({
+        data: { removed: true },
+        where: { id },
+      })
+    res.send({
+      status: true,
+      message: 'Lista removida com sucesso!',
+      data: { list },
+    })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.post("/:id/product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id } = req.params;
-  //   const content = (Array.isArray(req.body) ? req.body : [req.body]).map((e) =>
-  //     Object.assign(e, { list_id })
-  //   );
-  //   const data = content.map(ProductList.parse).map((e) => e.toEntity());
-  //   const product = await prisma.productList.createMany({ data });
-  //   res.send({ status: true, data: { product } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.get('/:id', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const { id } = req.params
+    const list = await sqlite.list.findUnique({
+      where: { id },
+      include: { products: true },
+    })
+    res.send({ status: true, data: { list } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.get("/:id/product/:id_product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id, id_product: id } = req.params;
-  //   const product = await prisma.productList.findFirst({ where: { id, list_id }})
-  //   res.send({ status: true, data: { product } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.get('/:id/product', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const { id: list_id } = req.params
+    const products = await sqlite.productList.findMany({
+      select: {
+        id: true,
+        description: true,
+        quantity: true,
+        unity: true,
+        product_id: true,
+        list_id: true,
+      },
+      where: { list_id, removed: false },
+    })
+    res.send({ status: true, data: { products } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.put("/:id/product/:id_product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id, id_product: id } = req.params;
-  //   const product = await prisma.productList.findFirst({ where: { id, list_id }})
-  //   res.send({ status: true, data: { product } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.post('/:id/product', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id: list_id } = req.params
+    const content = (Array.isArray(req.body) ? req.body : [req.body]).map((e) =>
+      Object.assign(e, { list_id, sync: hasLocalHeader })
+    )
+    const data = content.map(ProductListData.parse).map((e) => e.toEntity())
+    if (hasLocalHeader) await sqlite.productList.delete({})
+    const product = await sqlite.productList.createMany({ data })
+    res.send({ status: true, data: { product } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.put("/:id/product/:id_product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id, id_product: id } = req.params;
-  //   const data = ProductList.parse(req.body).toEntity()
-  //   const product = await prisma.productList.update({ data, where: { id, list_id }})
-  //   res.send({ status: true, data: { product } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.get('/:id/product/:id_product', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const { id: list_id, id_product: id } = req.params
+    const product = await sqlite.productList.findFirst({
+      where: { id, list_id },
+    })
+    res.send({ status: true, data: { product } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-router.delete("/:id/product/:id_product", async () => {
-  // const prisma = new PrismaClient({ adapter });
-
-  // try {
-  //   const { id: list_id, id_product: id } = req.params;
-  //   const product = await prisma.productList.delete({ where: { id, list_id }})
-  //   res.send({ status: true, data: { product } });
-  // } catch (e) {
-  //   res.send(databaseErrorResponse(e instanceof Error ? e?.message : ""));
-  // }
+router.put('/:id/product/:id_product', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id: list_id, id_product: id } = req.params
+    const data = ProductListData.parse({
+      ...req.body,
+      sync: hasLocalHeader,
+    }).toEntity()
+    const product = await sqlite.productList.update({
+      data,
+      where: { id, list_id },
+    })
+    res.send({ status: true, data: { product } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
 })
 
-export default router;
+router.delete('/:id/product/:id_product', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id: list_id, id_product: id } = req.params
+    let product = null
+    if (hasLocalHeader)
+      product = await sqlite.productList.delete({ where: { id, list_id } })
+    else
+      product = await sqlite.productList.update({
+        data: { removed: true },
+        where: { id, list_id },
+      })
+    res.send({ status: true, data: { product } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
+})
+
+export default router

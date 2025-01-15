@@ -92,17 +92,19 @@ export default function Home() {
   }
 
   const handleError = () => {
-    Dialog.info.show({ message: 'Falha ao efetuar o login'})
+    Dialog.info.show({ message: 'Falha ao efetuar o login' })
   }
 
   useEffectOnce(() => {
-    const { token, user } = store.getState()
-    if (token && !user?.id)
-      handleSuccess({
-        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        select_by: 'btn',
-        credential: token,
-      })
+    setTimeout(() => {
+      const { token, user } = store.getState()
+      if (token && !user?.id)
+        handleSuccess({
+          clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          select_by: 'btn',
+          credential: token,
+        })
+    }, 350)
   }, [])
 
   return (

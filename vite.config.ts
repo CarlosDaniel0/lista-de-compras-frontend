@@ -64,7 +64,8 @@ const claims = process.env.CLAIMS === 'true'
 const reload = process.env.RELOAD_SW === 'true'
 const selfDestroying = process.env.SW_DESTROY === 'true'
 
-if (process.env.SW === 'true') {
+if (isDEV) {
+  options.injectRegister = 'script'
   options.srcDir = 'src/util'
   options.filename = claims ? 'claims-sw.ts' : 'prompt-sw.ts'
   options.strategies = 'injectManifest'
@@ -72,6 +73,8 @@ if (process.env.SW === 'true') {
     minify: false,
     enableWorkboxModulesLogs: true,
   }
+} else {
+  options.workbox= { importScripts: ['/service-worker.js'] }
 }
 
 if (claims) options.registerType = 'autoUpdate'
@@ -91,9 +94,21 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
+  optimizeDeps: {
+    exclude: ['@jlongster_sql', 'absurd-sql'],
+  },
   build: {
     rollupOptions: {
+      input: {
+        app: './index.html',
+        'service-worker': './src/lib/database/worker.ts',
+      },
       output: {
+        entryFileNames: assetInfo => {
+          return assetInfo.name === 'service-worker'
+             ? '[name].js'
+             : 'assets/js/[name]-[hash].js'
+        },
         manualChunks(id) {
           if (id.includes('node_modules')) {
             return id

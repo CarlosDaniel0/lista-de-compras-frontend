@@ -5,6 +5,8 @@
 <img src="https://img.shields.io/badge/leaflet-%23199900.svg?&style=for-the-badge&logo=leaflet&logoColor=white" />
 <img src="https://img.shields.io/badge/redux-%23764ABC.svg?&style=for-the-badge&logo=redux&logoColor=white" />
 <img src="https://img.shields.io/badge/mapbox-%23000000.svg?&style=for-the-badge&logo=mapbox&logoColor=white" />
+<img src="https://img.shields.io/badge/prisma-%232D3748.svg?&style=for-the-badge&logo=prisma&logoColor=white" />
+<img src="https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white"/>
 </div>
 
 # Lista de Compras
@@ -15,8 +17,10 @@ Faça suas listas de compras e acompanhe o valor gasto em um só lugar
 
 - [x] [date-fns](https://date-fns.org/)
 - [x] [Leaflet](https://leafletjs.com/)
+- [x] [Prisma](https://www.prisma.io/)
 - [x] [React.js](https://react.dev/)
 - [x] [Redux](https://redux.js.org/)
+- [x] [SQLite](https://www.sqlite.org/)
 - [x] [Styled Components](https://styled-components.com/)
 - [x] [Tesseract.js](https://tesseract.projectnaptha.com/)
 - [x] [Vite](https://vite.dev/)
@@ -44,17 +48,28 @@ Faça suas listas de compras e acompanhe o valor gasto em um só lugar
 yarn
 ```
 
-4 - Faça a criação de um link simbólico para utilizar o arquivo ```sql-wasm.wasm```
-na pasta ```src/lib/database```
+4 - Para configurar o funcionamento da PWA offile é necessário configurar
+a estrutura do Banco de Dados embutido (SQLite) utilizando o prisma
 
-Windows
-```pwsh
-New-Item -ItemType SymbolicLink -Path "src\lib\database\sql-wasm.wasm" -Target "public\assets\sql-wasm.wasm"
-```
+Tipos de dados aceitos:
 
-Linux
+|  Prisma  | Tipo SQLite   |
+|----------|---------------|
+|  String  |     TEXT      |
+|  Boolean |    BOOLEAN    |
+|    Int   |    INTEGER    |
+|   BigInt |    INTEGER    |
+|   Float  |      REAL     |
+|  Decimal |     DECIMAL   |
+| DateTime |    NUMERIC    |
+|    Json  |	 JSONB     |
+|   Bytes  |  	 BLOB      |
+|    Enum  | 	 TEXT      |
+
+No terminal rode o comando para criar a estrutura das tabelas
+em SQL para utiliza-las posteriormente durante a criação do banco
 ```bash
-ln -s /public/assets/sql-wasm.wasm src/lib/database/sql-wasm.wasm
+npx prisma migrate dev --create-only init
 ```
 
 3 - Rode o projeto

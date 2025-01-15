@@ -1,15 +1,17 @@
 import { FaX } from 'react-icons/fa6'
 import styled from 'styled-components'
+import { initBackend } from 'absurd-sql/dist/indexeddb-main-thread'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DEBUG } from '../../util/constants'
-import { initSQLite } from '../../lib/database/sqlite'
+import { verifyOnlineStatus } from '../../util'
 
 const Panel = styled.div`
   position: absolute;
   bottom: 10px;
   right: 10px;
-  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
   border-radius: 0.4em;
   padding: 0.4em 0.5em;
   background: var(--bg-card-1);
@@ -65,7 +67,7 @@ export default function ServiceWorker() {
       if (DEBUG) console.log('SW registration error', error)
     },
   })
-  
+
   const close = () => {
     setOfflineReady(false)
     setNeedRefresh(false)
@@ -77,7 +79,14 @@ export default function ServiceWorker() {
   }
 
   useEffectOnce(() => {
-    initSQLite()
+    const worker = new Worker(
+      new URL('../../lib/database/sqlite.ts', import.meta.url),
+      {
+        type: 'module',
+      }
+    )
+    initBackend(worker)
+    verifyOnlineStatus()
     setTimeout(() => setOfflineReady(false), 15 * 1000)
   }, [])
 
@@ -86,13 +95,16 @@ export default function ServiceWorker() {
     return (
       <Panel>
         App disponível Offline
-        <Button onClick={close}><FaX /></Button>
+        <Button onClick={close}>
+          <FaX />
+        </Button>
       </Panel>
     )
   if (needRefresh)
     return (
       <Panel>
-        Nova atualização: <ButtonRefresh onClick={refresh}>Atualizar Agora?</ButtonRefresh>
+        Nova atualização:{' '}
+        <ButtonRefresh onClick={refresh}>Atualizar Agora?</ButtonRefresh>
         <Button onClick={close}>
           <FaX />
         </Button>

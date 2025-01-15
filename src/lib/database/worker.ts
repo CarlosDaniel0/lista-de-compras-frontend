@@ -1,38 +1,45 @@
-import initSqlJs from '@jlongster/sql.js';
-import { SQLiteFS } from 'absurd-sql';
-import IndexedDBBackend from 'absurd-sql/dist/indexeddb-backend';
-const { API_URL } = import.meta.env
+// import { precacheAndRoute } from 'workbox-precaching'
+import localAPI from '..'
 declare let self: ServiceWorkerGlobalScope
+const { VITE_API_URL } = import.meta.env
 
-self.addEventListener('fetch', (evt) => {
-  console.log(evt.request.url)
-  if (evt.request.url.includes(API_URL)) {
-    return evt.respondWith(Promise.reject(new  Error('Teste para bloquear todas as requisições')))
+// precacheAndRoute(self.__WB_MANIFEST)
+const online = { status: false }
+const channelSQL = new BroadcastChannel('sqlite')
+const channelStatus = new BroadcastChannel('status')
+
+channelStatus.addEventListener('message', (evt) => {
+  const { data } = evt
+  if ('verifyOnlineStatus' in data) {
+    const img = '/icon/android-chrome-192x192.png'
+    const req = new Request(img, {
+      method: 'HEAD',
+    })
+
+    fetch(req)
+      .then(() => {
+        online.status = true
+        sendMessage({ statusonline: true })
+      })
+      .catch(() => {
+        online.status = false
+        sendMessage({ statusonline: false })
+      })
   }
-  evt.respondWith(fetch(evt.request))
+  if ('status' in data) online.status = data.status
 })
 
-async function init() {
-  const SQL = await initSqlJs({ locateFile: (file: string) => '/assets/' + file });
-  const sqlFS = new SQLiteFS(SQL.FS, new IndexedDBBackend());
-  SQL.register_for_idb(sqlFS);
+self.addEventListener('fetch', (evt) => {
+  const { url } = evt.request
 
-  SQL.FS.mkdir('/sql');
-  SQL.FS.mount(sqlFS, {}, '/sql');
+  evt.respondWith(
+    url.includes(VITE_API_URL)
+      ? localAPI(evt, channelSQL, online.status)
+      : fetch(evt.request)
+        .catch((err) => err)
+  )
+})
 
-  const path = '/sql/db.sqlite';
-  if (typeof SharedArrayBuffer === 'undefined') {
-    const stream = SQL.FS.open(path, 'a+');
-    await stream.node.contents.readIfFallback();
-    SQL.FS.close(stream);
-  }
-
-  const db = new SQL.Database(path, { filename: true });
-  // You might want to try `PRAGMA page_size=8192;` too!
-  db.exec(`
-    PRAGMA journal_mode=MEMORY;
-  `);
-  console.log('DB Inited')
+const sendMessage = async (msg: { statusonline: boolean }) => {
+  channelStatus.postMessage(msg)
 }
-
-init()
