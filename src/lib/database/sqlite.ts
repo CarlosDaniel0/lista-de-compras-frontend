@@ -45,7 +45,7 @@ const seedDB = (db: any, version: string) => {
 
 const createDB = (db: any) => {
   try {
-    const a = db.exec(`-- CreateTable
+    db.exec(`-- CreateTable
 CREATE TABLE "Supermarket" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -170,8 +170,6 @@ CREATE UNIQUE INDEX "Coordinates_supermarket_id_key" ON "Coordinates"("supermark
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 `)
-
-    console.log(a)
     console.log('tentou alimentar o DB')
     seedDB(db, version)
   } catch (e) {
