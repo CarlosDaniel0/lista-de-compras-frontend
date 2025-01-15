@@ -3,9 +3,9 @@ import { VitePWA, VitePWAOptions } from 'vite-plugin-pwa'
 import react from '@vitejs/plugin-react'
 import replace, { RollupReplaceOptions } from '@rollup/plugin-replace'
 
-// const isDEV = process.env.NODE_ENV === 'development'
+const isDEV = process.env.NODE_ENV === 'development'
 const options: Partial<VitePWAOptions> = {
-  mode: 'development', //mode: isDEV ? 'development' : 'production',
+  mode: isDEV ? 'development' : 'production',
   base: '/',
   includeAssets: [
     '/icon/*',
@@ -73,9 +73,9 @@ if (process.env.SW === 'true') {
     minify: false,
     enableWorkboxModulesLogs: true,
   }
-} else {
-  options.workbox= { importScripts: ['/service-worker.js'] }
 }
+
+if (!isDEV) options.workbox = { importScripts: ['/service-worker.js'] }
 
 if (claims) options.registerType = 'autoUpdate'
 
