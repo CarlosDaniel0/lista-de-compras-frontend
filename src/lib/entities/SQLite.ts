@@ -6,7 +6,7 @@ import {
   ProductSupermarket,
   Reciept,
   Supermarket,
-  Table,
+  Tables,
   User,
 } from '../../util/types'
 import { formatSQLResult } from '../utils'
@@ -131,8 +131,8 @@ export class SQLite {
       coodinatesFields,
       []
     )
-    this.table = this.#ORM<Table, typeof tableFields, []>(
-      'Table',
+    this.table = this.#ORM<Tables, typeof tableFields, []>(
+      'Tables',
       tableFields,
       []
     )
