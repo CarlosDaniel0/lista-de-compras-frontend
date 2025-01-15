@@ -3,9 +3,9 @@ import { VitePWA, VitePWAOptions } from 'vite-plugin-pwa'
 import react from '@vitejs/plugin-react'
 import replace, { RollupReplaceOptions } from '@rollup/plugin-replace'
 
-const isDEV = process.env.NODE_ENV === 'development'
+// const isDEV = process.env.NODE_ENV === 'development'
 const options: Partial<VitePWAOptions> = {
-  mode: isDEV ? 'development' : 'production',
+  mode: 'development', //mode: isDEV ? 'development' : 'production',
   base: '/',
   includeAssets: [
     '/icon/*',
@@ -64,7 +64,7 @@ const claims = process.env.CLAIMS === 'true'
 const reload = process.env.RELOAD_SW === 'true'
 const selfDestroying = process.env.SW_DESTROY === 'true'
 
-if (isDEV) {
+if (process.env.SW === 'true') {
   options.injectRegister = 'script'
   options.srcDir = 'src/util'
   options.filename = claims ? 'claims-sw.ts' : 'prompt-sw.ts'
