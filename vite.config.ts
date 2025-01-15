@@ -64,7 +64,7 @@ const claims = process.env.CLAIMS === 'true'
 const reload = process.env.RELOAD_SW === 'true'
 const selfDestroying = process.env.SW_DESTROY === 'true'
 
-if (process.env.SW === 'true') {
+if (isDEV) {
   options.injectRegister = 'script'
   options.srcDir = 'src/util'
   options.filename = claims ? 'claims-sw.ts' : 'prompt-sw.ts'
@@ -73,9 +73,9 @@ if (process.env.SW === 'true') {
     minify: false,
     enableWorkboxModulesLogs: true,
   }
+} else {
+  options.workbox = { importScripts: ['/service-worker.js'] } 
 }
-
-if (!isDEV) options.workbox = { importScripts: ['/service-worker.js'] }
 
 if (claims) options.registerType = 'autoUpdate'
 
@@ -91,7 +91,7 @@ export default defineConfig({
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Embedder-Policy': 'require-corp'
     },
   },
   optimizeDeps: {

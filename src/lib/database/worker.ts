@@ -32,12 +32,8 @@ channelStatus.addEventListener('message', (evt) => {
 self.addEventListener('fetch', (evt) => {
   const { url } = evt.request
 
-  evt.respondWith(
-    url.includes(VITE_API_URL)
-      ? localAPI(evt, channelSQL, online.status)
-      : fetch(evt.request)
-        .catch((err) => err)
-  )
+  if (url.includes(VITE_API_URL))
+  evt.respondWith(localAPI(evt, channelSQL, online.status))
 })
 
 const sendMessage = async (msg: { statusonline: boolean }) => {
