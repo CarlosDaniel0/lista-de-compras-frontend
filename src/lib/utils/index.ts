@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export const databaseErrorResponse = (message: string) => ({
   status: false,
   message: message ?? 'Database connection failed',
@@ -24,11 +25,25 @@ export const uuidv4 = () => {
   );
 }
 
-export const formatParams = (params: string) => {
+export const formatParams = (pathname: string, matches: string[]) => {
+  const [path, paths] = [pathname.split('/'), matches.map(item => item.split('/'))] as [string[], string[][]]
+  const i = paths.findIndex((item) => 
+    item.filter(el => el.includes(':')).length === path.filter(p => !item.includes(p)).length
+    && item.length === path.length)
+  
+  const keys = path.filter(p => !paths[i].includes(p))
+  const name = paths[i].join('/')
+  const params = Object.fromEntries(paths[i]
+    .filter(p => p.includes(':'))
+    .map((key, i) => [key.replace(':', ''), keys[i]]))
+  return [name, params] as [string, any]
+}
+
+export const formatQueryParams = (params: string) => {
   return !params ? {} : Object.fromEntries(
     params
       .substring(1)
       .split('&')
       .map((item) => item.split('='))
   )
-}
+} 

@@ -47,6 +47,7 @@ const PanelOptions = styled.div<{ $top: number; $right: number }>`
   border-radius: 0.4em;
   padding: 0.4em 0.6em;
   transition: all 0.35s cubic-bezier(0.075, 0.82, 0.165, 1);
+  z-index: 10;
 
   & ul {
     list-style: none;

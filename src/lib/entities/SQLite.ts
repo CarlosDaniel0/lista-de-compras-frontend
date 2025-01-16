@@ -9,7 +9,6 @@ import {
   Tables,
   User,
 } from '../../util/types'
-import { formatSQLResult } from '../utils'
 import { ArrayParamsORM, ParamsORM } from '../utils/types'
 import { Coordinates } from './Coordinates'
 
@@ -136,21 +135,7 @@ export class SQLite {
       tableFields,
       []
     )
-    // this.#verifyDBStatus()
   }
-
-  // #verifyDBStatus() {
-  //   this.channel.addEventListener('message', evt => {
-  //     const { data } = evt
-  //     let json
-  //     try {
-  //       json = JSON.parse(data)
-  //       if ('status' in json) this.ready = json.status
-  //     } catch(e) {
-  //       console.log(e instanceof Error ? e.message : '')
-  //      }
-  //   })
-  // }
 
   #exec = <T>(sql: string) =>
     new Promise<T>((resolve, reject) => {
@@ -165,7 +150,6 @@ export class SQLite {
         resolve(json as T)
       })
 
-      console.log(sql)
       this.channel.postMessage(sql)
     })
 
@@ -239,9 +223,7 @@ export class SQLite {
     const sql = `SELECT ${items} FROM ${table} WHERE 1 = 1${
       conditions ? ` AND  ${conditions}` : ''
     };`
-    return this.#exec<E[]>(sql).then(async (res) => {
-      const result = formatSQLResult(res)
-
+    return this.#exec<E[]>(sql).then(async (result) => {
       if (Object.entries(include ?? {}).length) {
         //** TODO: Mapeamento fraco entre tabelas com multiplos elementos filhos com a tabela pai */
         const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
@@ -303,17 +285,12 @@ export class SQLite {
     params: K
   ) => {
     const { data } = params
-    const arr = Array.isArray(data)
-      ? data.map((item) => this.#formatData(item ?? {}))
-      : [this.#formatData(data ?? {})]
-    const [items, values] = arr[0]
+    const arr = (Array.isArray(data) ? data : [data]).map((item) => this.#formatData(item ?? {}))
+    const [items] = arr[0]
     const rest = arr
-      .slice(1)
       .map((e) => ` (${e[1]})`)
-      .join(', ')
-    const sql = `INSERT OR IGNORE INTO ${table} (${items}) VALUES (${values})${
-      Array.isArray(data) ? `${rest}` : ''
-    };`
+      .join(', ').replace(' ', '')
+    const sql = `INSERT OR IGNORE INTO ${table} (${items}) VALUES ${rest};`
     await this.#exec<E>(sql)
     return data as E
   }

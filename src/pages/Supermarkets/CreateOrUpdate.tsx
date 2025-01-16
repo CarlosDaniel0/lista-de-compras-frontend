@@ -13,6 +13,7 @@ import { request } from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
 import Form, { FormContextProps } from '../../contexts/Form'
 import Loading from '../../components/Loading'
+import { handleCreateSupermarket } from './functions'
 
 const TileHelp = styled.div`
   background: rgb(0, 0, 0, 0.35);
@@ -71,11 +72,7 @@ export default function CreateOrUpdate() {
 
   const create = () => {
     setLoading(true)
-    request<{
-      status: boolean
-      message: string
-      data: { supermerket: Supermarket }
-    }>(`/supermarkets/`, data, 'POST')
+    handleCreateSupermarket(data)
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         Dialog.info.show({

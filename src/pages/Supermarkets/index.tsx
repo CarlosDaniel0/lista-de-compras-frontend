@@ -1,6 +1,7 @@
-import { useContext, useState } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { forwardRef, useContext, useState } from 'react'
 import TabBar from '../../components/TabBar'
-import { genId, request } from '../../util'
+import { genId, getFiles, JSONToFile, request } from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
 import { Option, Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
@@ -10,6 +11,9 @@ import ListCard from './components/ListCard'
 import { useNavigate } from 'react-router-dom'
 import { ButtonAdd } from '../../components/Button'
 import { FaDownload, FaUpload } from 'react-icons/fa6'
+import { Virtuoso } from 'react-virtuoso'
+import { ListContainer } from '../../components/Containers'
+import { handleCreateSupermarket } from './functions'
 
 const loadingSupermarkets: Supermarket[] = Array.from(
   { length: 5 },
@@ -23,16 +27,13 @@ export default function Supermarkets() {
   const navigate = useNavigate()
   // const { user } = store.getState()
 
-  const options: Option[] = [
-    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
-    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
-  ]
-
   const loadContent = async () => {
     setSupermarkets(loadingSupermarkets)
-    request<{ status: boolean; message: string; data: { supermarkets: Supermarket[] } }>(
-      '/supermarkets'
-    )
+    request<{
+      status: boolean
+      message: string
+      data: { supermarkets: Supermarket[] }
+    }>('/supermarkets')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         setSupermarkets(res.data.supermarkets)
@@ -44,11 +45,11 @@ export default function Supermarkets() {
   const handleRemove = (id: string) => {
     const onYes = () => {
       setLoading(true)
-      request<{ status: boolean; message: string; data: { supermarket: Supermarket } }>(
-        `/supermarkets/${id}`,
-        {},
-        'DELETE'
-      )
+      request<{
+        status: boolean
+        message: string
+        data: { supermarket: Supermarket }
+      }>(`/supermarkets/${id}`, {}, 'DELETE')
         .then((res) => {
           if (!res.status) throw new Error(res?.message)
           setSupermarkets((prev) => prev.filter((list) => list.id !== id))
@@ -72,6 +73,50 @@ export default function Supermarkets() {
     })
   }
 
+  const handleImport = () => {
+    getFiles({
+      accept: 'application/json',
+    }).then(async (data) => {
+      if (!data) return
+      const file = await data.item(0)?.text()
+      try {
+        const json = JSON.parse(file!)
+        setLoading(true)
+        handleCreateSupermarket(json)
+          .then((res) => {
+              setSupermarkets((prev) => [...prev, ...res.data.supermarket])
+            Dialog.info.show({ message: res.message })
+          })
+          .finally(() => setLoading(false))
+      } catch (e) {
+        Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+      }
+    })
+  }
+
+  const handleExport = () => JSONToFile(supermarkets, 'Supermercados')
+
+  const options: Option[] = [
+    {
+      key: 'import',
+      label: (
+        <>
+          <FaDownload /> Importar
+        </>
+      ),
+      onClick: handleImport,
+    },
+    {
+      key: 'export',
+      label: (
+        <>
+          <FaUpload /> Exportar
+        </>
+      ),
+      onClick: handleExport,
+    },
+  ]
+
   useEffectOnce(loadContent, [])
 
   return (
@@ -79,8 +124,17 @@ export default function Supermarkets() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Supermercados" options={options} />
       <Container>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {supermarkets.map((supermarket, i) => (
+        <Virtuoso
+          style={{ height: '100%' }}
+          data={supermarkets}
+          components={{
+            List: forwardRef(({ children, context, ...props }, ref) => (
+              <ListContainer ref={ref} {...props}>
+                {children}
+              </ListContainer>
+            )),
+          }}
+          itemContent={(i, supermarket) => (
             <ListCard
               key={genId(`supermarket-${i}`)}
               {...{
@@ -89,8 +143,8 @@ export default function Supermarkets() {
                 loading: !supermarket.id,
               }}
             />
-          ))}
-        </div>
+          )}
+        />
         <ButtonAdd
           onClick={async () => {
             navigate('/supermarkets/create')

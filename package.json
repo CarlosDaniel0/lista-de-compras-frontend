@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "rimraf dev-dist && cross-env SW_DEV=true vite --force",
     "build": "tsc -b && vite build",
+    "migrate": "npx prisma migrate dev --create-only",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },

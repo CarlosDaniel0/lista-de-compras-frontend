@@ -1,9 +1,6 @@
-// import { precacheAndRoute } from 'workbox-precaching'
 import localAPI from '..'
 declare let self: ServiceWorkerGlobalScope
 const { VITE_API_URL } = import.meta.env
-
-// precacheAndRoute(self.__WB_MANIFEST)
 const online = { status: false }
 const channelSQL = new BroadcastChannel('sqlite')
 const channelStatus = new BroadcastChannel('status')

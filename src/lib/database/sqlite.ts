@@ -8,9 +8,15 @@ import { Tables } from '../../util/types'
 let db: any
 const version = '0.1'
 const channel = new BroadcastChannel('sqlite')
+
+const exec = <T,>(db: any, sql: string) => {
+  if (import.meta.env) console.log(sql)
+  return formatSQLResult<T>(db.exec(sql))
+}
+
 const resetSQLiteDB = (db: any) => {
   try {
-    db.exec(`PRAGMA writable_schema = 1;
+    exec(db, `PRAGMA writable_schema = 1;
       DELETE FROM sqlite_master;
       PRAGMA writable_schema = 0;
       VACUUM;
@@ -36,8 +42,7 @@ const seedDB = (db: any, version: string) => {
       .map((table) => `('${uuidv4()}', '${table}', '${version}', true)`)
       .join(', ')
     const sql = `INSERT INTO Tables (id, name, version, sync) VALUES ${values}`
-    console.log(sql)
-    db.exec(sql)
+    exec(db, sql)
   } catch (e) {
     console.log(`Falha ao alimentar tabelas do DB\n${console.log(e instanceof Error ? e.message : '')}`)
   }
@@ -45,7 +50,7 @@ const seedDB = (db: any, version: string) => {
 
 const createDB = (db: any) => {
   try {
-    db.exec(`-- CreateTable
+    exec(db, `-- CreateTable
 CREATE TABLE "Supermarket" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -173,8 +178,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
     console.log('tentou alimentar o DB')
     seedDB(db, version)
   } catch (e) {
-    const res = db.exec(`SELECT * FROM Tables ORDER BY ROWID ASC LIMIT 1`)
-    const data = formatSQLResult<Tables>(res)
+    const data = exec<Tables>(db, `SELECT * FROM Tables ORDER BY ROWID ASC LIMIT 1`)
     if (data && data[0] && data[0].version !== version) {
       console.log(`entrou no reset: ${version}`)
       resetSQLiteDB(db)
@@ -184,7 +188,7 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
   }
 }
 
-async function init() {
+const init = async () => {
   const SQL = await initSqlJs({
     locateFile: (file: string) => '/assets/' + file,
   })
@@ -203,13 +207,11 @@ async function init() {
 
   db = new SQL.Database(path, { filename: true })
   // You might want to try `PRAGMA page_size=8192;` too!
-  db.exec(`
-    PRAGMA journal_mode=MEMORY;
-  `)
+  exec(db, `PRAGMA journal_mode=MEMORY;`)
 
-  channel.addEventListener('message', async (evt) => {
+  channel.addEventListener('message', (evt) => {
     const { data } = evt
-    const res = await db.exec(data)
+    const res = exec(db, data)
     channel.postMessage(JSON.stringify(res))
   })
 

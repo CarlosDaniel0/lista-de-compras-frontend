@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import styled from 'styled-components'
 import TabBar from '../../components/TabBar'
-import { useContext, useState } from 'react'
+import { forwardRef, useContext, useState } from 'react'
 import { DialogContext } from '../../contexts/Dialog'
-import { genId, request } from '../../util'
+import { genId, getFiles, JSONToFile, request } from '../../util'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import ListCard from './components/ListCard'
@@ -11,6 +12,8 @@ import CreateOrUpdatePanel, { FormList } from './components/CreateOrUpdatePanel'
 import { store } from '../../redux/store'
 import { ButtonAdd } from '../../components/Button'
 import { FaDownload, FaUpload } from 'react-icons/fa6'
+import { Virtuoso } from 'react-virtuoso'
+import { ListContainer } from '../../components/Containers'
 
 export const Container = styled.div`
   height: calc(100dvh - 46px);
@@ -27,11 +30,6 @@ export default function Lists() {
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<List[]>([])
   const { user } = store.getState()
-
-  const options: Option[] = [
-    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
-    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
-  ]
 
   const loadContent = async () => {
     setLists(loadingLists)
@@ -97,25 +95,66 @@ export default function Lists() {
       .finally(() => setLoading(false))
   }
 
-  const handleCreate = (list: List) => {
+  const handleCreate = (list: List | List[]) => {
     setLoading(true)
-    request<{ status: boolean; message: string; data: { list: List } }>(
+    request<{ status: boolean; message: string; data: { list: List[] } }>(
       '/lists',
-      {
-        date: new Date().toISOString(),
-        user_id: user.id,
-        name: list.name,
-      },
+      !Array.isArray(list)
+        ? {
+            date: new Date().toISOString(),
+            user_id: user.id,
+            name: list.name,
+          }
+        : list,
       'POST'
     )
       .then((res) => {
         if (!res.status) throw new Error(res?.message)
-        setLists((prev) => [...prev, res.data.list])
+        setLists((prev) => [...prev, ...res.data.list])
         return Dialog.info.show({ message: res.message })
       })
       .catch((err) => Dialog.info.show({ message: err.message }))
       .finally(() => setLoading(false))
   }
+
+  const handleImport = () => {
+    getFiles({
+      accept: 'application/json',
+    }).then(async (data) => {
+      if (!data) return
+      const file = await data.item(0)?.text()
+      try {
+        const json = JSON.parse(file!)
+        setLoading(true)
+        handleCreate(json)
+      } catch (e) {
+        Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+      }
+    })
+  }
+
+  const handleExport = () => JSONToFile(lists, 'Listas')
+
+  const options: Option[] = [
+    {
+      key: 'import',
+      label: (
+        <>
+          <FaDownload /> Importar
+        </>
+      ),
+      onClick: handleImport,
+    },
+    {
+      key: 'export',
+      label: (
+        <>
+          <FaUpload /> Exportar
+        </>
+      ),
+      onClick: handleExport,
+    },
+  ]
 
   useEffectOnce(loadContent, [])
 
@@ -124,8 +163,17 @@ export default function Lists() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Minhas Listas" options={options} />
       <Container>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {lists.map((list, i) => (
+        <Virtuoso
+          style={{ height: '100%' }}
+          data={lists}
+          components={{
+            List: forwardRef(({ children, context, ...props }, ref) => (
+              <ListContainer ref={ref} {...props}>
+                {children}
+              </ListContainer>
+            )),
+          }}
+          itemContent={(i, list) => (
             <ListCard
               key={genId(`list-${i}`)}
               {...{
@@ -136,8 +184,8 @@ export default function Lists() {
                 loading: !list.date,
               }}
             />
-          ))}
-        </div>
+          )}
+        />
         <ButtonAdd
           onClick={async () => {
             Dialog.info.show({

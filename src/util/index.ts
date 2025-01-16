@@ -186,3 +186,33 @@ export const uuidv4 = () => {
     (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
   );
 }
+
+export const getFiles = async (props?: React.ComponentPropsWithoutRef<'input'>) => new Promise<FileList | null>((resolve) => {
+  const input: HTMLInputElement = document.createElement('input')
+      input.type = 'file'
+      input.style.opacity = '0'
+      input.style.width = '0'
+      input.style.height = '0'
+      input.style.visibility = 'hidden'
+      Object.assign(input, props)
+      document.body.append(input)
+      input.click()
+      input.addEventListener('cancel', () => resolve(null))
+      input.addEventListener('change', e => {
+        const { files } = e.currentTarget as HTMLInputElement
+        input.remove()
+        resolve(files)
+      })
+})
+
+export const JSONToFile = <T,>(obj: T, filename: string) => {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {
+    type: 'application/json',
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}

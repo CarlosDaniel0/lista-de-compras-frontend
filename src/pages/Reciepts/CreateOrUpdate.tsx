@@ -16,8 +16,10 @@ import Loading from '../../components/Loading'
 import Search from '../../components/Input/search'
 import { store } from '../../redux/store'
 import { format } from 'date-fns'
+import { handleCreateReciept } from './functions'
 
 const today = format(new Date(), 'yyyy-MM-dd')
+
 export default function CreateOrUpdate() {
   const { id } = useParams()
   const { user } = store.getState()
@@ -66,23 +68,18 @@ export default function CreateOrUpdate() {
 
   const create = () => {
     setLoading(true)
-    request<{
-      status: boolean
-      message: string
-      data: { reciept: Reciept }
-    }>(`/reciepts/`, formatForm(data), 'POST')
-      .then((res) => {
-        if (!res.status) throw new Error(res.message)
-        Dialog.info.show({
-          message: res.message,
-          onConfirm: (setShow) => {
-            navigate(-1)
-            setShow(false)
-          },
-        })
+    handleCreateReciept(formatForm(data)).then((res) => {
+      if (!res.status) throw new Error(res.message)
+      Dialog.info.show({
+        message: res.message,
+        onConfirm: (setShow) => {
+          navigate(-1)
+          setShow(false)
+        },
       })
-      .catch((err) => Dialog.info.show({ message: err.message }))
-      .finally(() => setLoading(false))
+    })
+    .catch((err) => Dialog.info.show({ message: err.message }))
+    .finally(() => setLoading(false))
   }
 
   const update = () => {

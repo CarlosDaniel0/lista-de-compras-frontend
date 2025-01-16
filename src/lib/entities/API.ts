@@ -1,5 +1,5 @@
 import { HTTPMethods } from '../../util/types'
-import { formatParams } from '../utils'
+import { formatParams, formatQueryParams } from '../utils'
 import { APIResponse } from './APIResponse'
 import { APIRouter, APIRoutes } from './APIRouter'
 
@@ -28,6 +28,7 @@ export class API {
     const method = request.method as HTTPMethods
     const res = new APIResponse()
     const body = !['GET', 'HEAD'].includes(method) ? await request.json() : null
+    const [path, params] = formatParams(pathname, Object.keys(this.routes))
     const req = {
       ...request,
       bodyUsed: request.bodyUsed,
@@ -45,10 +46,10 @@ export class API {
       cache: request.cache,
       headers: request.headers,
       body,
-      params: formatParams(search),
+      params,
+      query: formatQueryParams(search)
     }
-
-    await this.routes[pathname][method](req, res, this.channel)
+    await this.routes[path][method](req, res, this.channel)
     if (res.response) return res.response
     return Promise.reject(new Error('No response for method'))
   }

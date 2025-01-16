@@ -1,15 +1,19 @@
-import { useContext, useState } from 'react'
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { forwardRef, useContext, useState } from 'react'
 import Loading from '../../components/Loading'
 import TabBar from '../../components/TabBar'
 import { Container } from '../Lists'
 import { useNavigate } from 'react-router-dom'
-import { genId, request } from '../../util'
+import { genId, getFiles, JSONToFile, request } from '../../util'
 import { Option, Reciept } from '../../util/types'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
 import { ButtonAdd } from '../../components/Button'
 import ListCard from './components/ListItem'
 import { FaDownload, FaUpload } from 'react-icons/fa6'
+import { ListContainer } from '../../components/Containers'
+import { Virtuoso } from 'react-virtuoso'
+import { handleCreateReciept } from './functions'
 
 const loadingReciepts = Array.from(
   { length: 5 },
@@ -24,16 +28,12 @@ const loadingReciepts = Array.from(
       user_id: '',
     } as Reciept)
 )
+
 export default function Reciepts() {
   const [reciepts, setReciepts] = useState<Reciept[]>([])
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-
-  const options: Option[] = [
-    { key: 'import', label: <><FaDownload /> Importar</>, onClick: () => {} },
-    { key: 'export', label: <><FaUpload /> Exportar</>, onClick: () => {} },
-  ]
 
   const loadContent = async () => {
     setReciepts(loadingReciepts)
@@ -81,6 +81,51 @@ export default function Reciepts() {
     })
   }
 
+  const handleImport = () => {
+    getFiles({
+      accept: 'application/json',
+    }).then(async (data) => {
+      if (!data) return
+      const file = await data.item(0)?.text()
+      try {
+        const json = JSON.parse(file!)
+        setLoading(true)
+        handleCreateReciept(json)
+          .then((res) => {
+            if (res.status)
+              setReciepts((prev) => [...prev, ...res.data.reciept])
+            Dialog.info.show({ message: res.message })
+          })
+          .finally(() => setLoading(false))
+      } catch (e) {
+        Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+      }
+    })
+  }
+
+  const handleExport = () => JSONToFile(reciepts, 'Comprovantes')
+
+  const options: Option[] = [
+    {
+      key: 'import',
+      label: (
+        <>
+          <FaDownload /> Importar
+        </>
+      ),
+      onClick: handleImport,
+    },
+    {
+      key: 'export',
+      label: (
+        <>
+          <FaUpload /> Exportar
+        </>
+      ),
+      onClick: handleExport,
+    },
+  ]
+
   useEffectOnce(loadContent, [])
 
   return (
@@ -88,8 +133,17 @@ export default function Reciepts() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Comprovantes" options={options} />
       <Container>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {reciepts.map((reciept, i) => (
+        <Virtuoso
+          style={{ height: '100%' }}
+          data={reciepts}
+          components={{
+            List: forwardRef(({ children, context, ...props }, ref) => (
+              <ListContainer ref={ref} {...props}>
+                {children}
+              </ListContainer>
+            )),
+          }}
+          itemContent={(i, reciept) => (
             <ListCard
               key={genId(`reciept-${i}`)}
               {...{
@@ -98,8 +152,8 @@ export default function Reciepts() {
                 loading: !reciept.id,
               }}
             />
-          ))}
-        </div>
+          )}
+        />
         <ButtonAdd
           onClick={async () => {
             navigate('/reciepts/create')
