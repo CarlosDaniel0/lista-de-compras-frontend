@@ -1,17 +1,73 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useContext, useEffect, useRef, useState } from 'react'
+// import Tile from '../../Tile'
+import useWindowDimensions from '../../../hooks/useWindowDimensions'
+import styled from 'styled-components'
+import useEffectOnce from '../../../hooks/useEffectOnce'
+import Card from '../../Card'
+import {
+  ButtonBack,
+  ContainerReader,
+  ContentReader,
+  RefreshButton,
+} from '../styles'
+import { useNavigate } from 'react-router-dom'
+import { ParamsContext } from '../../../contexts/Params'
+import { Loader } from '../../Loading'
 import { RxChevronLeft, RxReload } from 'react-icons/rx'
 import { CameraStates } from '../../../util/types'
-import { ButtonBack, ContainerReader, RefreshButton } from '../styles'
-import Loading from '../../Loading'
-import useEffectOnce from '../../../hooks/useEffectOnce'
-import { useEffect, useRef, useState } from 'react'
-import useWindowDimensions from '../../../hooks/useWindowDimensions'
-import { useNavigate } from 'react-router-dom'
-// import { ParamsContext } from "../../../contexts/Params"
-import RequestPermission from '../../Permission'
-import Tile from '../../Tile'
 import { addPermission } from '../../../redux/slices/config'
 import { useDispatch } from 'react-redux'
 import { store } from '../../../redux/store'
+import Tesseract from 'tesseract.js'
+import { FaCircle } from 'react-icons/fa6'
+import RequestPermission from '../../Permission'
+
+const CaptureButton = styled.button`
+  z-index: 4;
+  outline: none;
+  border: none;
+  position: absolute;
+  bottom: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  left: 50%;
+  translate: transformX(-50%);
+
+  & svg {
+    color: #fff;
+  }
+
+  &:hover,
+  &:active {
+    transform: scale(0.85);
+  }
+`
+
+const Loading = () => {
+  return (
+    <ContentReader>
+      <Card
+        style={{
+          padding: '1.2em',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          flexDirection: 'column',
+        }}
+      >
+        <Loader />
+        <p style={{ marginTop: 12, fontSize: '1.2em' }}>
+          Verificando Permissão
+        </p>
+      </Card>
+    </ContentReader>
+  )
+}
 
 export default function Camera() {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -19,16 +75,44 @@ export default function Camera() {
   const stream = useRef<MediaStream | null>(null)
   // const timeout = useRef<NodeJS.Timeout | null>(null)
   const { width, height } = useWindowDimensions()
+  // const reader = useRef<BrowserMultiFormatReader | null>(null)
   const [state, setState] = useState(CameraStates.IDLE)
-  const { permissions } = store.getState()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  // const context = useContext(ParamsContext)
+  const { permissions } = store.getState()
+  const worker = useRef<Tesseract.Worker|null>(null)
+  const context = useContext(ParamsContext)
 
   const stopCamera = () => stream.current?.getTracks()[0].stop()
 
-  const startOCR = (stream: MediaStream) => {
-    // if (!reader.current) return
+  const generateWorker = async () => {
+    const worker = await Tesseract.createWorker("por", 1, {
+      logger: (m) => import.meta.env.DEV && console.log(m)
+    });
+    return worker
+  }
+
+  const getImage = async (canvas: HTMLCanvasElement, video: HTMLVideoElement) => new Promise<Blob | null>((resolve) => {
+    const ctx = canvas.getContext('2d')
+    ctx?.drawImage(video, 0, 0)
+    canvas.toBlob((blob) => {
+      resolve(blob)
+    }, 'image/png')
+    ctx?.reset()
+  })
+
+  const startOCR = async (stream: MediaStream) => {
+    // if (!worker.current) return
+
+    video.current!.srcObject = stream
+    worker.current = await generateWorker()
+    const image = await getImage(canvas.current!, video.current!)
+
+    const res = await worker.current.recognize(image!);
+    console.log(res)
+      // document.getElementById("imgOriginal").src = ret.data.imageColor;
+      // document.getElementById("imgGrey").src = ret.data.imageGrey;
+      // document.getElementById("imgBinary").src = ret.data.imageBinary;
     // reader.current.decodeFromStream(stream, video.current!, (result, err) => {
     //   if (result && canvas.current) {
     //     const ctx = canvas.current.getContext('2d')
@@ -38,12 +122,14 @@ export default function Camera() {
     //         y1 = points[0].getY(),
     //         x2 = points[1].getX(),
     //         y2 = points[1].getY()
+
     //       ctx.clearRect(0, 0, width, height)
     //       ctx.strokeStyle = 'red'
     //       ctx.beginPath()
     //       ctx.moveTo(x1 - 50, y1)
     //       ctx.lineTo(x2 - 50, y2)
     //       ctx.stroke()
+
     //       if (!timeout.current) {
     //         timeout.current = setTimeout(() => {
     //           ctx.clearRect(0, 0, width, height)
@@ -79,10 +165,10 @@ export default function Camera() {
         const capabilities = track.getCapabilities()
         const settings = track.getSettings()
 
-        dispatch(addPermission({ permission: 'camera' }))
+        dispatch(addPermission('camera'))
+        // const scheduler = Tesseract.createScheduler();
         // reader.current = new BrowserMultiFormatReader()
         stream.current = str
-
         setState(CameraStates.ALLOWED)
         return {
           stream: str,
@@ -99,9 +185,9 @@ export default function Camera() {
       })
   }
 
-  const restart = () => {
-    // if (!reader.current || !stream.current) return
-    // reader.current.reset()
+  const restart = async () => {
+    if (!worker.current || !stream.current) return
+    await worker.current.terminate()
     setTimeout(read, 50)
   }
 
@@ -132,7 +218,7 @@ export default function Camera() {
 
   useEffect(() => {
     if (stream.current && video.current) {
-      startOCR(stream.current)
+      video.current.srcObject = stream.current
     }
   }, [state])
   useEffectOnce(read, [])
@@ -142,36 +228,31 @@ export default function Camera() {
       {state === CameraStates.REQUESTING && <Loading />}
       {state === CameraStates.ALLOWED && (
         <>
-          <ButtonBack
-            onClick={() => {
-              stopCamera()
-              navigate(-1)
-            }}
-          >
+          <ButtonBack onClick={() => {
+            stopCamera()
+            navigate(-1)
+          }}>
             <RxChevronLeft size={30} color="#fff" />
           </ButtonBack>
           <RefreshButton onClick={restart}>
             <RxReload size={22} color="#fff" />
           </RefreshButton>
           <canvas ref={canvas} width={width} height={height} />
-          <Tile
+          {/* <Tile
             className="tile"
             width={width}
             height={height}
             cropWidth={'90%'}
             cropHeight={{ value: '22%', minHeight: 95 }}
-          />
+          /> */}
+          <CaptureButton onClick={() => startOCR(stream.current!)}>
+            <FaCircle size={38} />
+          </CaptureButton>
           <video ref={video} id="video" muted autoPlay playsInline></video>
         </>
       )}
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (
-        <RequestPermission
-          {...{
-            requestCameraPermission,
-            message:
-              'Por favor, permita o acesso a camera para utilizar o leitor OCR \n(Captura de Texto em Imagens)',
-          }}
-        />
+        <RequestPermission {...{ requestCameraPermission, message: 'Por favor, permita o acesso a camera para utilizar o leitor OCR \n(Reconhecimento Óptico de Caracteres)' }} />
       )}
     </ContainerReader>
   )
