@@ -1,10 +1,11 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { User } from "../../util/types";
+import { Config } from "../../util/types";
 
-const initialState: { user: Partial<User>, token: string, isLoggedIn: boolean, theme: 'dark' | 'light' } = {
+const initialState: Config = {
   user: {},
   token: '',
   theme: 'light',
+  permissions: [],
   isLoggedIn: false,
 };
 
@@ -14,6 +15,12 @@ const config = createSlice({
   reducers: {
     changeTheme: (state, action) => {
       state.theme = action.payload
+    },
+    addPermission: (state, action) => {
+      state.permissions.push(action.payload.permission)
+    },
+    removePermission: (state, action) => {
+      state.permissions.splice(state.permissions.indexOf(action.payload.permission), 1)
     },
     signIn: (state, action) => {
       state.user = { ...state.user, ...action.payload };
@@ -28,5 +35,5 @@ const config = createSlice({
   },
 });
 
-export const { signIn, signOut, changeTheme } = config.actions;
+export const { signIn, signOut, changeTheme, addPermission, removePermission } = config.actions;
 export default config.reducer;

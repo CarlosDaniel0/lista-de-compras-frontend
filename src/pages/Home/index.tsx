@@ -81,8 +81,8 @@ export default function Home() {
         setTimeout(() => {
           const theme = document.querySelector('meta[name="theme-color"]')
           if (theme) theme.setAttribute('content', '#272727')
-          navigate('/list')
-          history.replaceState({}, '', '/list')
+          navigate('/lists')
+          history.replaceState({}, '', '/lists')
         }, 50)
       })
       .catch((err) => {

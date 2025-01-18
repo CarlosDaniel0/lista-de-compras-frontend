@@ -15,8 +15,8 @@ import { FaDownload, FaUpload } from 'react-icons/fa6'
 import { Virtuoso } from 'react-virtuoso'
 import { ListContainer } from '../../components/Containers'
 
-export const Container = styled.div`
-  height: calc(100dvh - 46px);
+export const Container = styled.div<{ $height?: number }>`
+  height: ${attr => `calc(100dvh - ${attr?.$height ?? 46}px)`};
   overflow: auto;
 `
 

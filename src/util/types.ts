@@ -8,6 +8,7 @@ export interface List {
   products?: ProductList[]
 }
 
+export type ProductTypes = 'lists' | 'supermarkets' | 'reciepts'
 export interface ProductList {
   id: string
   description: string
@@ -87,6 +88,20 @@ export interface Tables {
   sync: boolean
 }
 
+interface ProductOption {
+  lists: ProductList
+  supermarkets: ProductSupermarket
+  reciepts: ProductReciept
+} 
+
+export type Product <T extends 'lists' | 'supermarkets' |'reciepts'> = ProductOption[T]
+
+export interface ResponseData <T,> {
+  status: boolean
+  message: string
+  data: T
+}
+
 export interface Option {
   key: string | number
   label: React.ReactNode
@@ -98,3 +113,18 @@ export type ObjectFromList<T extends ReadonlyArray<string>, V = string> = {
 }
 
 export type HTTPMethods = 'POST' | 'GET' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD'
+export type Permission = 'camera'
+export enum CameraStates {
+  IDLE,
+  REQUESTING,
+  NOT_ALLOWED,
+  ALLOWED,
+}
+
+export interface Config {
+  user: Partial<User>,
+  token: string,
+  isLoggedIn: boolean,
+  theme: 'dark' | 'light',
+  permissions: Permission[]
+}

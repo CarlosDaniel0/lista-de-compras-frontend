@@ -53,6 +53,10 @@ const PanelOptions = styled.div<{ $top: number; $right: number }>`
     list-style: none;
     padding-inline-start: 0px;
   }
+
+  & li {
+    font-size: 1.15em;
+  }
 `
 
 const ButtonOption = styled.button`

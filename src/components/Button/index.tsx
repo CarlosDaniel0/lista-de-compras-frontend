@@ -19,6 +19,7 @@ const ContainerAdd = styled.button<{ $bg?: string }>`
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 0.25s ease-in;
   background: ${(attr) => attr?.$bg ?? 'var(--bg-button-add)'};
   color: #fff;
   cursor: pointer;

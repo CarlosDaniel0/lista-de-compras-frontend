@@ -6,7 +6,7 @@ import { FormContext } from '../../../contexts/Form'
 import useEffectOnce from '../../../hooks/useEffectOnce'
 
 export default function Text(props: InputProps) {
-  const { label, container, field, ...rest } = props
+  const { label, container, field, nextElement, ...rest } = props
   const { form, setForm } = useContext(FormContext)
   const input = useRef<HTMLInputElement>(null)
   const labelProps = typeof label === 'string' ? { value: label } : label
@@ -33,9 +33,14 @@ export default function Text(props: InputProps) {
   }
 
   const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-          const { value } = evt.target
-          setValue(value.replace(/\./g, '').replace(/,/g, '.'))
-        }
+    const { value } = evt.target
+    setValue(value.replace(/\./g, '').replace(/,/g, '.'))
+  }
+
+  const onKeyDown = (evt: React.KeyboardEvent<HTMLInputElement>) => {
+    if (props?.onKeyDown || !props?.mask || !nextElement || !['Tab'].includes(evt.key)) return 
+    document.getElementById(nextElement)?.focus()
+  }
 
   const handleValue = () => {
     if (!input.current) return
@@ -57,6 +62,7 @@ export default function Text(props: InputProps) {
         ref={input}
         value={value}
         onChange={onChange}
+        onKeyDown={onKeyDown}
         {...rest}
         id={id}
         onClick={onClick}

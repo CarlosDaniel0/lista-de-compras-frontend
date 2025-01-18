@@ -9,18 +9,21 @@ let db: any
 const version = '0.1'
 const channel = new BroadcastChannel('sqlite')
 
-const exec = <T,>(db: any, sql: string) => {
-  if (import.meta.env) console.log(sql)
+const exec = <T>(db: any, sql: string) => {
+  if (import.meta.env.DEV) console.log(sql)
   return formatSQLResult<T>(db.exec(sql))
 }
 
 const resetSQLiteDB = (db: any) => {
   try {
-    exec(db, `PRAGMA writable_schema = 1;
+    exec(
+      db,
+      `PRAGMA writable_schema = 1;
       DELETE FROM sqlite_master;
       PRAGMA writable_schema = 0;
       VACUUM;
-      PRAGMA integrity_check;`)
+      PRAGMA integrity_check;`
+    )
   } catch (e) {
     console.log(e instanceof Error ? e.message : '')
   }
@@ -44,13 +47,19 @@ const seedDB = (db: any, version: string) => {
     const sql = `INSERT INTO Tables (id, name, version, sync) VALUES ${values}`
     exec(db, sql)
   } catch (e) {
-    console.log(`Falha ao alimentar tabelas do DB\n${console.log(e instanceof Error ? e.message : '')}`)
+    console.log(
+      `Falha ao alimentar tabelas do DB\n${console.log(
+        e instanceof Error ? e.message : ''
+      )}`
+    )
   }
 }
 
 const createDB = (db: any) => {
   try {
-    exec(db, `-- CreateTable
+    exec(
+      db,
+      `-- CreateTable
 CREATE TABLE "Supermarket" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
@@ -174,13 +183,17 @@ CREATE UNIQUE INDEX "Coordinates_supermarket_id_key" ON "Coordinates"("supermark
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
-`)
-    console.log('tentou alimentar o DB')
+`
+    )
+    if (import.meta.env.DEV) console.log('tentou alimentar o DB')
     seedDB(db, version)
   } catch (e) {
-    const data = exec<Tables>(db, `SELECT * FROM Tables ORDER BY ROWID ASC LIMIT 1`)
+    const data = exec<Tables>(
+      db,
+      `SELECT * FROM Tables ORDER BY ROWID ASC LIMIT 1`
+    )
     if (data && data[0] && data[0].version !== version) {
-      console.log(`entrou no reset: ${version}`)
+      if (import.meta.env.DEV) console.log(`entrou no reset: ${version}`)
       resetSQLiteDB(db)
       createDB(db)
       seedDB(db, version)

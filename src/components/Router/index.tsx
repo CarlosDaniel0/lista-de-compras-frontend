@@ -4,16 +4,17 @@ import Error from '../../pages/Error'
 import Barcode from '../Reader/Barcode'
 import Register from '../../pages/Register'
 import Supermarkets from '../../pages/Supermarkets'
-// import Map from '../Map'
 import Reciepts from '../../pages/Reciepts'
 import Home from '../../pages/Home'
 import PrivacyPolicy from '../../pages/PrivacyPolicy'
 import TermsOfUse from '../../pages/TermsOfUse'
 import ProtectedRouters from './ProtectedRouters'
 import RedirectRouters from './RedirectRouters'
-import Products from '../../pages/Products/list'
+import Products from '../../pages/Products'
 import CreateOrUpdateSupermarket from '../../pages/Supermarkets/CreateOrUpdate'
 import CreateOrUpdateReciept from '../../pages/Reciepts/CreateOrUpdate'
+import CreateOrUpdateProducts from '../../pages/Products/CreateOrUpdate'
+import Camera from '../Reader/Camera'
 
 function Router() {
   return (
@@ -22,16 +23,24 @@ function Router() {
         <Route path="/" element={<Home />} />
       </Route>
       <Route element={<ProtectedRouters />}>
-        <Route path="/list" element={<Lists />} />
-        <Route path="/lists/:id" element={<Products />} />
+        <Route path="/lists" element={<Lists />} />
+        <Route path="/lists/:id" element={<Products path='lists' />} />
+        <Route path="/lists/:id/create" element={<CreateOrUpdateProducts path='lists' />} />
+        <Route path="/lists/:id/update/:product_id" element={<CreateOrUpdateProducts path='lists' />} />
         <Route path="/supermarkets" element={<Supermarkets />} />
-        <Route path="/supermarkets/:id" element={<Products />} />
+        <Route path="/supermarkets/:id" element={<Products path='supermarkets' />} />
         <Route path="/supermarkets/create" element={<CreateOrUpdateSupermarket />} />
         <Route path="/supermarkets/update/:id" element={<CreateOrUpdateSupermarket />} />
+        <Route path="/supermarkets/:id/create" element={<CreateOrUpdateProducts path='supermarkets' />} />
+        <Route path="/supermarkets/:id/update/:product_id" element={<CreateOrUpdateProducts path='supermarkets' />} />
         <Route path="/reciepts" element={<Reciepts />} />
+        <Route path="/reciepts/:id" element={<Products path='reciepts' />} />
         <Route path="/reciepts/create" element={<CreateOrUpdateReciept />} />
         <Route path="/reciepts/update/:id" element={<CreateOrUpdateReciept />} />
+        <Route path="/reciepts/:id/create" element={<CreateOrUpdateProducts path='reciepts' />} />
+        <Route path="/reciepts/:id/update/:product_id" element={<CreateOrUpdateProducts path='reciepts' />} />
         <Route path="/barcode" element={<Barcode />} />
+        <Route path="/camera" element={<Camera />} />
         <Route path="/edit" element={<Register />} />
         {/* <Route path="/map" element={<Map />} /> */}
       </Route>

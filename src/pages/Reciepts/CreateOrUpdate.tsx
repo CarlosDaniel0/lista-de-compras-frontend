@@ -6,7 +6,7 @@ import { Reciept, Supermarket } from '../../util/types'
 import { useNavigate, useParams } from 'react-router-dom'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import {
-  parseCurrencyToNumber,
+  formatFormNumbers,
   parseNumberToCurrency,
   request,
 } from '../../util'
@@ -35,15 +35,6 @@ export default function CreateOrUpdate() {
 
   const form = { form: data, setForm: setData } as FormContextProps
 
-  const formatForm = <T,>(obj: T): T =>
-    Object.fromEntries(
-      Object.entries(obj as Record<string, never>).map(([k, v]) =>
-        ['discount', 'total'].includes(k)
-          ? [k, parseCurrencyToNumber(v)]
-          : [k, v]
-      )
-    ) as T
-
   const getReciept = (id: string) => {
     setLoading(true)
     request<{
@@ -68,7 +59,7 @@ export default function CreateOrUpdate() {
 
   const create = () => {
     setLoading(true)
-    handleCreateReciept(formatForm(data)).then((res) => {
+    handleCreateReciept(formatFormNumbers(data, ['discount', 'total'])).then((res) => {
       if (!res.status) throw new Error(res.message)
       Dialog.info.show({
         message: res.message,
@@ -88,7 +79,7 @@ export default function CreateOrUpdate() {
       status: boolean
       message: string
       data: { reciept: Reciept }
-    }>(`/reciepts/${id}`, formatForm(data), 'PUT')
+    }>(`/reciepts/${id}`, formatFormNumbers(data, ['discount', 'total']), 'PUT')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         Dialog.info.show({

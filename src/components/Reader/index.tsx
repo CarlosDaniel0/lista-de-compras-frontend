@@ -1,5 +1,5 @@
 import Barcode from './Barcode'
-import OCR from './OCR'
+import OCR from './Camera'
 
 export default {
   OCR,

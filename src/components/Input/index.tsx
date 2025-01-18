@@ -6,6 +6,7 @@ import { forwardRef } from "react";
 export type IconProps = React.ComponentPropsWithoutRef<'span' | 'button'> & { value?: React.ReactNode, type?: 'span' | 'button' }
 
 export interface InputProps extends React.ComponentPropsWithoutRef<'input'> {
+  nextElement?: string,
   field?: string,
   label?: string | LabelProps,
   container?: React.ComponentPropsWithoutRef<'div'>,

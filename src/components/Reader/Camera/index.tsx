@@ -1,104 +1,69 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useRef, useState } from 'react'
-import Tile from '../../Tile'
-import useWindowDimensions from '../../../hooks/useWindowDimensions'
-import { BrowserMultiFormatReader, NotFoundException } from '@zxing/library'
-import useEffectOnce from '../../../hooks/useEffectOnce'
-import Card from '../../Card'
-import {
-  ButtonBack,
-  ContainerReader,
-  ContentReader,
-  RefreshButton,
-} from '../styles'
-import beep from '../../../assets/beep.mp3'
-import { useNavigate } from 'react-router-dom'
-import { ParamsContext } from '../../../contexts/Params'
-import { Loader } from '../../Loading'
 import { RxChevronLeft, RxReload } from 'react-icons/rx'
-import RequestPermission from '../../Permission'
 import { CameraStates } from '../../../util/types'
-import { useDispatch } from 'react-redux'
+import { ButtonBack, ContainerReader, RefreshButton } from '../styles'
+import Loading from '../../Loading'
+import useEffectOnce from '../../../hooks/useEffectOnce'
+import { useEffect, useRef, useState } from 'react'
+import useWindowDimensions from '../../../hooks/useWindowDimensions'
+import { useNavigate } from 'react-router-dom'
+// import { ParamsContext } from "../../../contexts/Params"
+import RequestPermission from '../../Permission'
+import Tile from '../../Tile'
 import { addPermission } from '../../../redux/slices/config'
+import { useDispatch } from 'react-redux'
 import { store } from '../../../redux/store'
 
-const Loading = () => {
-  return (
-    <ContentReader>
-      <Card
-        style={{
-          padding: '1.2em',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-        }}
-      >
-        <Loader />
-        <p style={{ marginTop: 12, fontSize: '1.2em' }}>
-          Verificando Permissão
-        </p>
-      </Card>
-    </ContentReader>
-  )
-}
-
-
-export default function Barcode() {
+export default function Camera() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const video = useRef<HTMLVideoElement | null>(null)
   const stream = useRef<MediaStream | null>(null)
-  const timeout = useRef<NodeJS.Timeout | null>(null)
+  // const timeout = useRef<NodeJS.Timeout | null>(null)
   const { width, height } = useWindowDimensions()
-  const reader = useRef<BrowserMultiFormatReader | null>(null)
   const [state, setState] = useState(CameraStates.IDLE)
+  const { permissions } = store.getState()
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const { permissions } = store.getState()
-  const context = useContext(ParamsContext)
+  // const context = useContext(ParamsContext)
 
   const stopCamera = () => stream.current?.getTracks()[0].stop()
 
-  const startDecoding = (stream: MediaStream) => {
-    if (!reader.current) return
-
-    reader.current.decodeFromStream(stream, video.current!, (result, err) => {
-      if (result && canvas.current) {
-        const ctx = canvas.current.getContext('2d')
-        if (ctx) {
-          const points = result.getResultPoints()
-          const x1 = points[0].getX(),
-            y1 = points[0].getY(),
-            x2 = points[1].getX(),
-            y2 = points[1].getY()
-
-          ctx.clearRect(0, 0, width, height)
-          ctx.strokeStyle = 'red'
-          ctx.beginPath()
-          ctx.moveTo(x1 - 50, y1)
-          ctx.lineTo(x2 - 50, y2)
-          ctx.stroke()
-
-          if (!timeout.current) {
-            timeout.current = setTimeout(() => {
-              ctx.clearRect(0, 0, width, height)
-              if (timeout.current) clearTimeout(timeout.current)
-              timeout.current = null
-            }, 1000)
-          }
-        }
-        new Audio(beep).play()
-        const barcode = result.getText()
-        context?.setState?.({ ...(context?.state ?? {}), barcode })
-        setTimeout(() => {
-          stopCamera()
-          navigate(-1)
-        }, 50)
-      }
-      if (err && !(err instanceof NotFoundException)) {
-        console.error(err)
-      }
-    })
+  const startOCR = (stream: MediaStream) => {
+    // if (!reader.current) return
+    // reader.current.decodeFromStream(stream, video.current!, (result, err) => {
+    //   if (result && canvas.current) {
+    //     const ctx = canvas.current.getContext('2d')
+    //     if (ctx) {
+    //       const points = result.getResultPoints()
+    //       const x1 = points[0].getX(),
+    //         y1 = points[0].getY(),
+    //         x2 = points[1].getX(),
+    //         y2 = points[1].getY()
+    //       ctx.clearRect(0, 0, width, height)
+    //       ctx.strokeStyle = 'red'
+    //       ctx.beginPath()
+    //       ctx.moveTo(x1 - 50, y1)
+    //       ctx.lineTo(x2 - 50, y2)
+    //       ctx.stroke()
+    //       if (!timeout.current) {
+    //         timeout.current = setTimeout(() => {
+    //           ctx.clearRect(0, 0, width, height)
+    //           if (timeout.current) clearTimeout(timeout.current)
+    //           timeout.current = null
+    //         }, 1000)
+    //       }
+    //     }
+    //     new Audio(beep).play()
+    //     const barcode = result.getText()
+    //     context?.setState?.({ barcode })
+    //     setTimeout(() => {
+    //       stopCamera()
+    //       navigate(-1)
+    //     }, 50)
+    //   }
+    //   if (err && !(err instanceof NotFoundException)) {
+    //     console.error(err)
+    //   }
+    // })
   }
 
   const getCamera = async () => {
@@ -114,9 +79,8 @@ export default function Barcode() {
         const capabilities = track.getCapabilities()
         const settings = track.getSettings()
 
-
         dispatch(addPermission({ permission: 'camera' }))
-        reader.current = new BrowserMultiFormatReader()
+        // reader.current = new BrowserMultiFormatReader()
         stream.current = str
 
         setState(CameraStates.ALLOWED)
@@ -136,8 +100,8 @@ export default function Barcode() {
   }
 
   const restart = () => {
-    if (!reader.current || !stream.current) return
-    reader.current.reset()
+    // if (!reader.current || !stream.current) return
+    // reader.current.reset()
     setTimeout(read, 50)
   }
 
@@ -167,8 +131,8 @@ export default function Barcode() {
   }
 
   useEffect(() => {
-    if (stream.current && video.current && reader.current) {
-      startDecoding(stream.current)
+    if (stream.current && video.current) {
+      startOCR(stream.current)
     }
   }, [state])
   useEffectOnce(read, [])
@@ -178,10 +142,12 @@ export default function Barcode() {
       {state === CameraStates.REQUESTING && <Loading />}
       {state === CameraStates.ALLOWED && (
         <>
-          <ButtonBack onClick={() => {
-            stopCamera()
-            navigate(-1)
-          }}>
+          <ButtonBack
+            onClick={() => {
+              stopCamera()
+              navigate(-1)
+            }}
+          >
             <RxChevronLeft size={30} color="#fff" />
           </ButtonBack>
           <RefreshButton onClick={restart}>
@@ -199,7 +165,13 @@ export default function Barcode() {
         </>
       )}
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (
-        <RequestPermission {...{ requestCameraPermission }} />
+        <RequestPermission
+          {...{
+            requestCameraPermission,
+            message:
+              'Por favor, permita o acesso a camera para utilizar o leitor OCR \n(Captura de Texto em Imagens)',
+          }}
+        />
       )}
     </ContainerReader>
   )

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Tesseract, { createScheduler, createWorker } from "tesseract.js"
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 
-export default function OCR() {
+export default function Camera() {
   const video = useRef<HTMLVideoElement>(null);
   const track = useRef<MediaStreamTrack | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)

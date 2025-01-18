@@ -30,11 +30,12 @@ export const formatParams = (pathname: string, matches: string[]) => {
   const i = paths.findIndex((item) => 
     item.filter(el => el.includes(':')).length === path.filter(p => !item.includes(p)).length
     && item.length === path.length)
-  
+
+  if (i === -1) throw new Error('Route Not Founded!')
   const keys = path.filter(p => !paths[i].includes(p))
   const name = paths[i].join('/')
   const params = Object.fromEntries(paths[i]
-    .filter(p => p.includes(':'))
+    .filter(p => String(p ?? '').includes(':'))
     .map((key, i) => [key.replace(':', ''), keys[i]]))
   return [name, params] as [string, any]
 }

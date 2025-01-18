@@ -116,7 +116,7 @@ router.get('/:id', async (req, res, channel) => {
   }
 })
 
-router.get('/:id/product', async (req, res, channel) => {
+router.get('/:id/products', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const { id: supermarket_id } = req.params
@@ -130,7 +130,7 @@ router.get('/:id/product', async (req, res, channel) => {
   }
 })
 
-router.post('/:id/product', async (req, res, channel) => {
+router.post('/:id/products', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const hasLocalHeader = req.headers.has('x-chached-by-api')
@@ -149,7 +149,7 @@ router.post('/:id/product', async (req, res, channel) => {
   }
 })
 
-router.put('/:id/product/:id_product', async (req, res, channel) => {
+router.put('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const hasLocalHeader = req.headers.has('x-chached-by-api')
@@ -168,7 +168,7 @@ router.put('/:id/product/:id_product', async (req, res, channel) => {
   }
 })
 
-router.delete('/:id/product/:id_product', async (req, res, channel) => {
+router.delete('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const hasLocalHeader = req.headers.has('x-chached-by-api')
@@ -189,7 +189,7 @@ router.delete('/:id/product/:id_product', async (req, res, channel) => {
   }
 })
 
-router.get('/:id/product/:barcode', async (req, res, channel) => {
+router.get('/:id/products/:barcode', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const { barcode } = req.params

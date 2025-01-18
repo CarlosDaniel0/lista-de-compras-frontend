@@ -205,6 +205,17 @@ export const getFiles = async (props?: React.ComponentPropsWithoutRef<'input'>) 
       })
 })
 
+export const formatFormNumbers = <T,>(obj: T, keys: (keyof T)[]): T =>
+    Object.fromEntries(
+      Object.entries(obj as Record<string, never>).map(([k, v]) =>
+        keys.includes(k as keyof T)
+          ? [k, parseCurrencyToNumber(v)]
+          : [k, v]
+      )
+    ) as T
+
+export const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)) 
+
 export const JSONToFile = <T,>(obj: T, filename: string) => {
   const blob = new Blob([JSON.stringify(obj, null, 2)], {
     type: 'application/json',
