@@ -33,7 +33,7 @@ const ContainerAdd = styled.button<{ $bg?: string }>`
 export const RoundedButton = styled.button<{ $bg?: string }>`
   padding: 0.3em 0.8em;
   border: 1px solid var(--border-button);
-  background: var(--bg-button);
+  background: ${attr => attr?.$bg ?? 'var(--bg-button)'};
   color: var(--color-button);
   border-radius: 1em;
   font-size: 1.05em;

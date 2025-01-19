@@ -9,7 +9,7 @@ import {
   ButtonBack,
   ContainerReader,
   ContentReader,
-  RefreshButton,
+  ButtonRight,
 } from '../styles'
 import beep from '../../../assets/beep.mp3'
 import { useNavigate } from 'react-router-dom'
@@ -19,8 +19,10 @@ import { RxChevronLeft, RxReload } from 'react-icons/rx'
 import RequestPermission from '../../Permission'
 import { CameraStates } from '../../../util/types'
 import { useDispatch } from 'react-redux'
-import { addPermission } from '../../../redux/slices/config'
+import { addPermission, removePermission } from '../../../redux/slices/config'
 import { store } from '../../../redux/store'
+import { MdOutlineAddPhotoAlternate } from 'react-icons/md'
+import { getFiles, readFile } from '../../../util'
 
 const Loading = () => {
   return (
@@ -43,7 +45,6 @@ const Loading = () => {
   )
 }
 
-
 export default function Barcode() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const video = useRef<HTMLVideoElement | null>(null)
@@ -56,6 +57,8 @@ export default function Barcode() {
   const dispatch = useDispatch()
   const { permissions } = store.getState()
   const context = useContext(ParamsContext)
+  const [image, setImage] = useState('')
+  const img = useRef<HTMLImageElement>(null)
 
   const stopCamera = () => stream.current?.getTracks()[0].stop()
 
@@ -101,6 +104,49 @@ export default function Barcode() {
     })
   }
 
+  const readImg = async () => {
+    if (!reader.current || !img.current) return
+
+    const result = await reader.current.decodeFromImage(img.current.cloneNode(true) as HTMLImageElement).catch((err) => {
+      if (err && !(err instanceof NotFoundException)) {
+        console.error(err)
+      }
+    })
+
+    if (result && canvas.current) {
+      const ctx = canvas.current.getContext('2d')
+      if (ctx) {
+        const points = result.getResultPoints()
+        const x1 = points[0].getX(),
+          y1 = points[0].getY(),
+          x2 = points[1].getX(),
+          y2 = points[1].getY()
+
+        ctx.clearRect(0, 0, width, height)
+        ctx.strokeStyle = 'red'
+        ctx.beginPath()
+        ctx.moveTo(x1 - 50, y1)
+        ctx.lineTo(x2 - 50, y2)
+        ctx.stroke()
+
+        if (!timeout.current) {
+          timeout.current = setTimeout(() => {
+            ctx.clearRect(0, 0, width, height)
+            if (timeout.current) clearTimeout(timeout.current)
+            timeout.current = null
+          }, 1000)
+        }
+      }
+      new Audio(beep).play()
+      const barcode = result.getText()
+      context?.setState?.({ ...(context?.state ?? {}), barcode })
+      setTimeout(() => {
+        stopCamera()
+        navigate(-1)
+      }, 50)
+    }
+  }
+
   const getCamera = async () => {
     setState(CameraStates.REQUESTING)
     return navigator.mediaDevices
@@ -114,8 +160,7 @@ export default function Barcode() {
         const capabilities = track.getCapabilities()
         const settings = track.getSettings()
 
-
-        dispatch(addPermission({ permission: 'camera' }))
+        dispatch(addPermission('camera'))
         reader.current = new BrowserMultiFormatReader()
         stream.current = str
 
@@ -155,10 +200,22 @@ export default function Barcode() {
     permission.addEventListener('change', () => {
       const allowed = permission.state === 'granted'
       if (!allowed) {
-        window.localStorage.removeItem('barcode')
+        dispatch(removePermission('camera'))
         setState(CameraStates.NOT_ALLOWED)
       }
     })
+  }
+
+  const handleImage = async () => {
+    const file = await getFiles({ accept: 'image/png, image/gif, image/jpeg' })
+    const image = file?.item(0)
+    if (image && reader.current) {
+      reader.current.reset()
+      const img = await readFile(image)
+      console.log(img)
+      stopCamera()
+      setTimeout(() => setImage(img), 50)
+    }
   }
 
   const read = () => {
@@ -166,36 +223,52 @@ export default function Barcode() {
     requestCameraPermission(true).catch(() => console.log('teste'))
   }
 
+  const handleBack = () => stopCamera()
+    
   useEffect(() => {
     if (stream.current && video.current && reader.current) {
       startDecoding(stream.current)
     }
   }, [state])
-  useEffectOnce(read, [])
+  useEffectOnce(() => {
+    read()
+    window.addEventListener('popstate', handleBack)
+    return () => window.removeEventListener('popstate', handleBack)
+  }, [])
+  useEffectOnce(readImg, [image])
 
   return (
     <ContainerReader>
       {state === CameraStates.REQUESTING && <Loading />}
       {state === CameraStates.ALLOWED && (
         <>
-          <ButtonBack onClick={() => {
-            stopCamera()
-            navigate(-1)
-          }}>
+          <ButtonBack
+            onClick={() => {
+              stopCamera()
+              navigate(-1)
+            }}
+          >
             <RxChevronLeft size={30} color="#fff" />
           </ButtonBack>
-          <RefreshButton onClick={restart}>
+          <ButtonRight style={{ right: 50 }} onClick={handleImage}>
+            <MdOutlineAddPhotoAlternate size={24} color="#fff" />
+          </ButtonRight>
+          <ButtonRight onClick={restart}>
             <RxReload size={22} color="#fff" />
-          </RefreshButton>
+          </ButtonRight>
           <canvas ref={canvas} width={width} height={height} />
-          <Tile
+          {!image && <Tile
             className="tile"
             width={width}
             height={height}
             cropWidth={'90%'}
             cropHeight={{ value: '22%', minHeight: 95 }}
-          />
-          <video ref={video} id="video" muted autoPlay playsInline></video>
+          />}
+          {image ? (
+            <img ref={img} src={image} alt="" />
+          ) : (
+            <video ref={video} id="video" muted autoPlay playsInline></video>
+          )}
         </>
       )}
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (

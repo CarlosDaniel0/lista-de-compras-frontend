@@ -17,10 +17,10 @@ const config = createSlice({
       state.theme = action.payload
     },
     addPermission: (state, action) => {
-      state.permissions.push(action.payload.permission)
+      state.permissions.push(action.payload)
     },
     removePermission: (state, action) => {
-      state.permissions.splice(state.permissions.indexOf(action.payload.permission), 1)
+      state.permissions.splice(state.permissions.indexOf(action.payload), 1)
     },
     signIn: (state, action) => {
       state.user = { ...state.user, ...action.payload };

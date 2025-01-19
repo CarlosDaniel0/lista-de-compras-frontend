@@ -98,8 +98,7 @@ export const genId = (prefix: string) =>
   prefix + Math.random().toString(16).slice(2)
 
 const sendMessageToWorker = (message: Record<string, boolean>) => {
-  if (navigator.serviceWorker)
-    channel.postMessage(message)
+  if (navigator.serviceWorker) channel.postMessage(message)
 }
 
 export const request = async <T = never, K = unknown>(
@@ -139,7 +138,8 @@ export const request = async <T = never, K = unknown>(
         log.error('res', e instanceof Error ? e.message : 'Error in JSON parse')
       }
       log.info('res', json)
-      if ('status' in json && !json.status) sendMessageToWorker({ verifyOnlineStatus: true })
+      if ('status' in json && !json.status)
+        sendMessageToWorker({ verifyOnlineStatus: true })
       return json as T
     })
     .catch((err) => {
@@ -182,48 +182,62 @@ export const parseNumberToCurrency = (value?: string | number) =>
   currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
 
 export const uuidv4 = () => {
-  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c =>
-    (+c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> +c / 4).toString(16)
-  );
+  return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) =>
+    (
+      +c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
+    ).toString(16)
+  )
 }
 
-export const getFiles = async (props?: React.ComponentPropsWithoutRef<'input'>) => new Promise<FileList | null>((resolve) => {
-  const input: HTMLInputElement = document.createElement('input')
-      input.type = 'file'
-      input.style.opacity = '0'
-      input.style.width = '0'
-      input.style.height = '0'
-      input.style.visibility = 'hidden'
-      Object.assign(input, props)
-      document.body.append(input)
-      input.click()
-      input.addEventListener('cancel', () => resolve(null))
-      input.addEventListener('change', e => {
-        const { files } = e.currentTarget as HTMLInputElement
-        input.remove()
-        resolve(files)
-      })
-})
+export const getFiles = async (
+  props?: React.ComponentPropsWithoutRef<'input'>
+) =>
+  new Promise<FileList | null>((resolve) => {
+    const input: HTMLInputElement = document.createElement('input')
+    input.type = 'file'
+    input.style.position = 'absolute'
+    input.style.opacity = '0'
+    input.style.width = '0'
+    input.style.height = '0'
+    input.style.visibility = 'hidden'
+    Object.assign(input, props)
+    document.body.append(input)
+    input.click()
+    input.addEventListener('cancel', () => resolve(null))
+    input.addEventListener('change', (e) => {
+      const { files } = e.currentTarget as HTMLInputElement
+      input.remove()
+      resolve(files)
+    })
+  })
 
-export const formatFormNumbers = <T,>(obj: T, keys: (keyof T)[]): T =>
-    Object.fromEntries(
-      Object.entries(obj as Record<string, never>).map(([k, v]) =>
-        keys.includes(k as keyof T)
-          ? [k, parseCurrencyToNumber(v)]
-          : [k, v]
-      )
-    ) as T
+export const formatFormNumbers = <T>(obj: T, keys: (keyof T)[]): T =>
+  Object.fromEntries(
+    Object.entries(obj as Record<string, never>).map(([k, v]) =>
+      keys.includes(k as keyof T) ? [k, parseCurrencyToNumber(v)] : [k, v]
+    )
+  ) as T
 
-export const sleep = (time: number) => new Promise((resolve) => setTimeout(resolve, time)) 
+export const sleep = (time: number) =>
+  new Promise((resolve) => setTimeout(resolve, time))
 
-export const JSONToFile = <T,>(obj: T, filename: string) => {
+export const readFile = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result + '')
+    reader.onerror = () => reject(reader.error)
+    reader.readAsDataURL(file)
+  })
+
+export const JSONToFile = <T>(obj: T, filename: string) => {
   const blob = new Blob([JSON.stringify(obj, null, 2)], {
     type: 'application/json',
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${filename}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+  })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${filename}.json`
+  a.click()
+  URL.revokeObjectURL(url)
 }

@@ -199,8 +199,8 @@ export class SQLite {
       case 'number':
       case 'object':
         if (typeof value === 'object' && 'getDay' in value)
-          return value.toJSON()
-        return value.toString()
+          return `'${value.toJSON()}'`
+        return `'${value.toString()}'`
       default:
         return value
     }

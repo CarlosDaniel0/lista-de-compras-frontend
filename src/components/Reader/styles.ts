@@ -13,6 +13,7 @@ export const ContainerReader = styled.div`
   width: 100%;
   height: 100dvh;
   overflow: hidden;
+  background:rgb(46, 46, 46);
 
   & canvas,
   & .tile {
@@ -23,7 +24,7 @@ export const ContainerReader = styled.div`
     z-index: 1;
   }
 
-  & video {
+  & video, & img {
     z-index: 2;
     width: 100%;
     height: 100%;
@@ -51,7 +52,7 @@ export const ButtonBack = styled.button`
  
 `
 
-export const RefreshButton = styled.button`
+export const ButtonRight = styled.button`
   ${button}
   top: 4px;
   right: 6px;

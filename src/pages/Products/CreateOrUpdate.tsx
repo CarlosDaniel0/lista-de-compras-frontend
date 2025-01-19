@@ -116,9 +116,10 @@ export default function CreateOrUpdate(
   }
 
   useEffectOnce(() => {
-    const { barcode, ...rest } = state ?? {}
-    if (!barcode) return
-    setData({ ...rest, barcode: String(barcode) })
+    const { barcode, text, ...rest } = state ?? {}
+    if (!barcode && !text) return
+    const obj = text ? { description: String(text ?? '') } : barcode ? { barcode } : {}
+    setData({ ...rest, ...obj })
     setState?.({})
   },[state])
 
