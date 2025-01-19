@@ -265,10 +265,10 @@ export default function Camera() {
         vh = video.videoHeight,
         cw = canvas.width,
         ch = canvas.height
-      const sx = (vw / 2) - (cw / 2),
+      const sx = ((vw / 2) - (cw / 2)),
         sy = 0,
-        sw = (vh * cw) / ch,
-        sh = ch - (vw / 2) - (cw / 2)
+        sw = (vh * cw) / (ch - ((vw / 2) - (cw / 2))),
+        sh = ch - ((vw / 2) - (cw / 2))
       const dx = 0,
         dy = 0,
         dw = cw,
