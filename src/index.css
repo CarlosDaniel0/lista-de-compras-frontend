@@ -39,6 +39,9 @@
   --input-border-color: rgb(217, 217, 217);
   --input-switch-bg: #d9d9d9;
   --input-switch-ball-unchecked: #feffff;
+
+  --bg-button-trasparent: #fff;
+  --color-button-transparent: #010101;
 }
 
 html[theme='dark'] {
@@ -72,11 +75,14 @@ html[theme='dark'] {
   --input-border: #3f3f3f;
   --input-color: var(--white);
   --input-color-disabled: #939393;
-  --input-item-bg: #505050;
+  --input-item-bg: #616161;
   --input-item-color: #cdcdcd;
   --input-border-color: #505050;
   --input-switch-bg: #505050;
   --input-switch-ball-unchecked: #f1f1f1;
+
+  --color-button-transparent: #efefef;
+  --bg-button-trasparent: #474747; 
 }
 
 html[theme='dark'] input[type='date'] {

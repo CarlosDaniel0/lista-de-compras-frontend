@@ -87,10 +87,10 @@ const TextBoxes = ({
   data,
   setText,
   width,
-  height
+  height,
 }: {
-  width: number,
-  height: number,
+  width: number
+  height: number
   data: Tesseract.Page
   setText: SetState<string>
 }) => {
@@ -143,7 +143,10 @@ const TextBoxes = ({
 
   return (
     <>
-      <div ref={container} style={{ width, height, position: 'absolute' }}>
+      <div
+        ref={container}
+        style={{ width, height, position: 'absolute', zIndex: 3 }}
+      >
         {lines
           .filter((item) => item.confidence > 45)
           .map((item, i) => (
@@ -193,7 +196,9 @@ const TextSelector = (props: TextSelectorProps) => {
       >
         <RxChevronLeft size={30} color="#fff" />
       </ButtonBack>
-      {result.data && <TextBoxes { ...{ width, height, setText }} data={result.data} />}
+      {result.data && (
+        <TextBoxes {...{ width, height, setText }} data={result.data} />
+      )}
       {result.data.imageColor && (
         <img
           ref={image}
@@ -237,7 +242,8 @@ export default function Camera() {
 
   const stopCamera = () => stream.current?.getTracks()[0].stop()
   const handleBack = () => {
-    if (result) {
+    const { pathname } = new URL(window.location.href)
+    if (pathname.includes('camera')) {
       setResult(null)
       setTimeout(read, 50)
     } else {
@@ -261,8 +267,8 @@ export default function Camera() {
         ch = canvas.height
       const sx = (vw / 2 - cw / 2) * 1.2,
         sy = 0,
-        sw = (vh * cw) / (ch - 40),
-        sh = ch - 60
+        sw = (vh * cw) / ch,
+        sh = ch
       const dx = 0,
         dy = 0,
         dw = cw,
@@ -372,7 +378,11 @@ export default function Camera() {
           {...{ result, setResult, read, navigate, context: context as any }}
         />
       )}
-      {loading && <ContentReader><Loader /></ContentReader>}
+      {loading && (
+        <ContentReader>
+          <Loader />
+        </ContentReader>
+      )}
       {state === CameraStates.REQUESTING && <Loading />}
       {state === CameraStates.ALLOWED && !result && (
         <>
@@ -393,7 +403,7 @@ export default function Camera() {
           </CaptureButton>
           <video
             ref={video}
-            onClick={captureImage}
+            onDoubleClick={captureImage}
             id="video"
             muted
             autoPlay

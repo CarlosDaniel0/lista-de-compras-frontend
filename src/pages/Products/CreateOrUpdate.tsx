@@ -16,6 +16,7 @@ import { DialogContext } from '../../contexts/Dialog'
 import { formatFormNumbers, request, sleep } from '../../util'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
+import styled from 'styled-components'
 
 interface CreateOrUpdateCreateOrUpdateProps {
   path: ProductTypes
@@ -36,6 +37,17 @@ interface CreateOrUpdateCreateOrUpdateProps {
 //   margin-top: 10px;
 //   color: #0525b3;
 // `
+
+const ButtonWholesale = styled(Button)`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  background: var(--bg-button-trasparent);
+  color: var(--color-button-transparent);
+`
 
 export default function CreateOrUpdate(
   props: CreateOrUpdateCreateOrUpdateProps
@@ -118,8 +130,7 @@ export default function CreateOrUpdate(
   useEffectOnce(() => {
     const { barcode, text, ...rest } = state ?? {}
     if (!barcode && !text) return
-    const obj = text ? { description: String(text ?? '') } : barcode ? { barcode } : {}
-    setData({ ...rest, ...obj })
+    setData({ ...rest, description: String(text ?? ''), barcode: String(barcode ?? '') })
     setState?.({})
   },[state])
 
@@ -166,24 +177,16 @@ export default function CreateOrUpdate(
             field="barcode"
           />
         </div>
-        <Button
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            marginTop: 10,
-          }}
-        >
+        <ButtonWholesale>
           <BsBoxes />
           Preços Atacado
-        </Button>
+        </ButtonWholesale>
 
         <div style={{ marginTop: 10 }}>
           <Button
             onClick={product_id ? update : create}
             style={{
+              border: 'none',
               marginTop: 10,
               width: '100%',
               background: product_id ? '#0952d8' : '#168d55',
