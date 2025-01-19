@@ -268,7 +268,7 @@ export default function Camera() {
       const sx = (vw / 2 - cw / 2) * 1.2,
         sy = 0,
         sw = (vh * cw) / ch,
-        sh = ch
+        sh = ch - ((vw / 2 - cw / 2) * 1.2)
       const dx = 0,
         dy = 0,
         dw = cw,
