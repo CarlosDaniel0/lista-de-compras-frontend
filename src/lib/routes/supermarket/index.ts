@@ -20,7 +20,7 @@ router.get('/', async (_, res, channel) => {
       select: { address: true, id: true, name: true },
       where: { removed: false },
       include: { coords: true }
-    })
+    }).then(res => res.map(SupermarketData.parse))
     res.send({ status: true, data: { supermarkets } })
   } catch (e) {
     res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
@@ -102,14 +102,42 @@ router.delete('/:id', async (req, res, channel) => {
   }
 })
 
+router.post('/:id', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    const { id } = req.params
+    if (hasLocalHeader)
+      await sqlite.supermarket.delete({ where: { id } })
+    const content = Array.isArray(req.body) ? req.body : [req.body]
+    const data = content.map((item) =>
+      SupermarketData.parse({ ...item, sync: hasLocalHeader }).toEntity()
+    )
+    const dataCoords = data.map((item) =>
+      Coordinates.parse({
+        lat: item.coords[0],
+        long: item.coords[1],
+        supermarket_id: item.id,
+      }).toEntity()
+    )
+    const coords = await sqlite.coords.createMany({ data: dataCoords })
+    const supermarket = await sqlite.supermarket
+      .createMany({ data: data.map(({ coords, ...rest }) => ({ ...rest })) })
+      .then((res) => (Array.isArray(res) ? res : []).map(s => format(s, coords)))
+    res.send({ status: true, data: { supermarket } })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
+})
+
 router.get('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const { id } = req.params
     const supermarket = await sqlite.supermarket.findUnique({
       where: { id },
-      include: { products: true },
-    })
+      include: { coords: true, products: true },
+    }).then(res => SupermarketData.parse(res))
     res.send({ status: true, data: { supermarket } })
   } catch (e) {
     res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))

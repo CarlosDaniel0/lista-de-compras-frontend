@@ -261,20 +261,23 @@ export class SQLite {
     const items = this.#formatItems(select ?? {})
     const conditions = this.#formatConditions(where ?? {})
     const sql = `SELECT ${items} FROM ${table} WHERE 1 = 1${
-      conditions ? ` AND  ${conditions}` : ''
+      conditions ? ` AND ${conditions}` : ''
     };`
     return this.#exec<E[]>(sql).then(async (result) => {
       if (Object.entries(include ?? {}).length) {
         //** TODO: Mapeamento fraco entre tabelas com multiplos elementos filhos com a tabela pai */
         const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
-        const items = optionals.filter((k) => k && Object.keys(include ?? {}).includes(k))
-        const data = (await Promise.all(
-          items.map(async (k) => {
+        const items = optionals.filter(
+          (k) => k && Object.keys(include ?? {}).includes(k)
+        )
+        console.log('antes de data')
+        const data: [string, unknown[]][] = []
+        await (async () => {
+          for await (const k of items) {
             const t =
               assossiations[table as keyof typeof assossiations][k as never]
-            return [
-              k,
-              await this.#select(
+            const res =
+              (await this.#select(
                 captalize(t),
                 {
                   where: {
@@ -283,15 +286,16 @@ export class SQLite {
                 },
                 [],
                 []
-              ),
-            ]
-          })
-        )) as never
+              )) ?? []
+            data.push([k, res])
+          }
+        })() as never
 
         const format = <T>(item: T, data: any) => ({
           ...item,
           ...Object.fromEntries(data),
         })
+
         return Array.isArray(result)
           ? result.map((item) => format(item, data))
           : format(result, data)

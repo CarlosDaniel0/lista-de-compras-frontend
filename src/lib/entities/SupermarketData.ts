@@ -27,7 +27,7 @@ export class SupermarketData implements SupermarketData {
     this.id = id ?? uuidv4();
     this.name = name;
     this.address = address;
-    this.coords = typeof coords?.[0] == 'number' ? coords : Coordinates.parse(coords).toBase();
+    this.coords = typeof coords?.[0] === 'number' ? coords : Coordinates.parse(coords?.[0] ?? {}).toBase();
     if (typeof removed === 'boolean') this.removed = removed;
     if (typeof sync === 'boolean') this.sync = sync;
     if (reciepts) this.reciepts = reciepts?.map(RecieptData.parse);
