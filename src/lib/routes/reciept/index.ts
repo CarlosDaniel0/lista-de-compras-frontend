@@ -115,7 +115,7 @@ router.get('/:id/products', async (req, res, channel) => {
   try {
     const { id: receipt_id } = req.params
     const products = await sqlite.productReciept.findMany({
-      select: { id: true, index: true, quantity: true, price: true, total: true, receipt_id: true, product_id: true },
+      select: { id: true, position: true, quantity: true, price: true, total: true, receipt_id: true, product_id: true },
       where: { receipt_id, removed: false },
       include: { product: true }
     })

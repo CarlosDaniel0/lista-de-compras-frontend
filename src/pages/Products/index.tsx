@@ -7,7 +7,7 @@ import { forwardRef, useContext, useMemo, useState } from 'react'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
-import Text from '../../components/Input/text/indext'
+import Text from '../../components/Input/text'
 import {
   Option,
   Product,
@@ -79,7 +79,7 @@ const productLoading: ProductGeneral = {
   category: '',
   description: '',
   id: '',
-  index: 0,
+  position: 0,
   last_update: new Date(),
   list_id: '',
   price: 0,
@@ -124,7 +124,7 @@ export default function Products(props: ProductsProps) {
 
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
-      setShow(products.some((item) => item?.product?.price))
+      Array.isArray(products) && setShow(products.some((item) => item?.product?.price))
       return products.map((item) => ({
         ...item,
         total: (
@@ -132,7 +132,7 @@ export default function Products(props: ProductsProps) {
         ).toFixed(2),
       }))
     }
-    setShow(products.some((item) => item?.price))
+    Array.isArray(products) && setShow(products.some((item) => item?.price))
     return products
   }
 
@@ -142,7 +142,7 @@ export default function Products(props: ProductsProps) {
       `/${path}/${id}/products`
     )
       .then(
-        (res) => res.status && setProducts(formatProducts(res.data.products))
+        (res) => res.status && setProducts(Array.isArray(res.data.products) ? formatProducts(res.data.products) : [])
       )
       .catch((err) => {
         setProducts([])

@@ -1,5 +1,5 @@
 import { DialogServiceContent } from "../../../contexts/Dialog"
-import Text from "../../../components/Input/text/indext"
+import Text from "../../../components/Input/text"
 import { List } from "../../../util/types"
 
 export interface FormList {

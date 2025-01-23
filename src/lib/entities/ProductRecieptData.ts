@@ -6,7 +6,7 @@ import { RecieptData } from "./RecieptData";
 
 export class ProductRecieptData implements ProductReciept {
   id: string;
-  index: number;
+  position: number;
   quantity: number;
   price: number;
   total: number;
@@ -19,7 +19,7 @@ export class ProductRecieptData implements ProductReciept {
 
   constructor(
     id: string,
-    index: number,
+    position: number,
     quantity: number,
     price: number,
     total: number,
@@ -31,7 +31,7 @@ export class ProductRecieptData implements ProductReciept {
     product?: Record<string, any>
   ) {
     this.id = id ?? uuidv4();
-    this.index = index;
+    this.position = position;
     this.quantity = quantity;
     this.price = price;
     this.total = total;
@@ -46,7 +46,7 @@ export class ProductRecieptData implements ProductReciept {
   static parse(json: Record<string, any>) {
     const {
       id,
-      index,
+      position,
       quantity,
       price,
       total,
@@ -59,7 +59,7 @@ export class ProductRecieptData implements ProductReciept {
     } = json;
     return new ProductRecieptData(
       id,
-      index,
+      position,
       quantity,
       price,
       total,
@@ -75,7 +75,7 @@ export class ProductRecieptData implements ProductReciept {
   toEntity() {
     const json = {
       id: this.id,
-      index: this.index,
+      position: this.position,
       quantity: this.quantity,
       price: this.price,
       total: this.total,

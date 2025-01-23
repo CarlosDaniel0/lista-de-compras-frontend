@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 import Button from '../../components/Button'
-import Text from '../../components/Input/text/indext'
+import Text from '../../components/Input/text'
 import TabBar from '../../components/TabBar'
 import { Reciept, Supermarket } from '../../util/types'
 import { useNavigate, useParams } from 'react-router-dom'

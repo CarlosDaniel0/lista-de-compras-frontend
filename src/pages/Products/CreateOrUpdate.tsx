@@ -1,5 +1,5 @@
 import TabBar from '../../components/TabBar'
-import Text from '../../components/Input/text/indext'
+import Text from '../../components/Input/text/index'
 import { IoCameraSharp } from 'react-icons/io5'
 import { BiBarcodeReader } from 'react-icons/bi'
 import Button from '../../components/Button'
@@ -200,7 +200,7 @@ export default function CreateOrUpdate(
         if (!res.status || !res.data.reciept) throw new Error(res.message)
         setData((prev) => ({
           ...prev,
-          index: (res.data.reciept.products?.length ?? 0) + 1,
+          position: (res.data.reciept.products?.length ?? 0) + 1,
         }))
         return res.data.reciept
       })

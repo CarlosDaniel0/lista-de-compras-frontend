@@ -1,6 +1,6 @@
 import { BsBoxes } from 'react-icons/bs'
 import Button from '../../components/Button'
-import Text from '../../components/Input/text/indext'
+import Text from '../../components/Input/text'
 import { IoCameraSharp } from 'react-icons/io5'
 import { BiBarcodeReader, BiChevronDown, BiChevronUp } from 'react-icons/bi'
 import { useState } from 'react'

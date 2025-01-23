@@ -149,7 +149,7 @@ CREATE TABLE "Reciept" (
 -- CreateTable
 CREATE TABLE "ProductReciept" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "index" INTEGER NOT NULL,
+    "position" INTEGER NOT NULL,
     "quantity" REAL NOT NULL,
     "price" DECIMAL NOT NULL,
     "total" DECIMAL NOT NULL,

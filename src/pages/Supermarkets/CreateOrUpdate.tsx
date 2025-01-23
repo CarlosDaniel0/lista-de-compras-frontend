@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from 'react'
 import Button from '../../components/Button'
-import Text from '../../components/Input/text/indext'
+import Text from '../../components/Input/text'
 import Map from '../../components/Map'
 import TabBar from '../../components/TabBar'
 import Textarea from '../../components/Textarea'

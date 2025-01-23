@@ -213,7 +213,7 @@ export default function Lists() {
 
 // import styled, { css } from "styled-components"
 // import Button from "../../components/Button"
-// import Text from "../../components/Input/text/indext"
+// import Text from "../../components/Input/text/index"
 // import { PiPlus } from "react-icons/pi"
 // import { useState } from "react"
 // import Modal from "../../components/Modal"

@@ -101,7 +101,7 @@ model Reciept {
 
 model ProductReciept {
   id         String             @id @default(uuid())
-  index      Int
+  position      Int
   quantity   Float
   price      Decimal
   total      Decimal

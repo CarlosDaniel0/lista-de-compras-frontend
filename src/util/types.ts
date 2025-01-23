@@ -31,7 +31,7 @@ export interface User {
 
 export interface ProductReciept {
   id: string
-  index: number
+  position: number
   quantity: number
   price: number
   total: number | string

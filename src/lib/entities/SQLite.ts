@@ -30,7 +30,7 @@ const productListOptionalFields = ['list', 'product', 'supermarket'] as const
 
 const productRecieptFields = [
   'id',
-  'index',
+  'position',
   'quantity',
   'price',
   'total',
@@ -103,10 +103,10 @@ const assossiations = {
     products: 'ProductList',
   },
   Supermarket: {
-    wholesale: 'Wholesale',
-    products_reciept: 'ProductReciept',
-    products_list: 'ProductList',
-    supermarket: 'Supermarket',
+    coords: 'Coordinates',
+    reciepts: 'Reciept',
+    products: 'ProductSupermarket',
+    ProductList: 'ProductList',
   },
 }
 
@@ -267,15 +267,15 @@ export class SQLite {
       if (Object.entries(include ?? {}).length) {
         //** TODO: Mapeamento fraco entre tabelas com multiplos elementos filhos com a tabela pai */
         const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
-        const items = Object.entries(optionals).filter(([, v]) => v)
+        const items = optionals.filter((k) => k && Object.keys(include ?? {}).includes(k))
         const data = (await Promise.all(
-          items.map(([k]) => {
+          items.map(async (k) => {
             const t =
               assossiations[table as keyof typeof assossiations][k as never]
             return [
-              t,
-              this.#select(
-                captalize(k),
+              k,
+              await this.#select(
+                captalize(t),
                 {
                   where: {
                     [fieldItem]: (result?.[0] as any)?.[fields[0]],
@@ -290,7 +290,7 @@ export class SQLite {
 
         const format = <T>(item: T, data: any) => ({
           ...item,
-          ...Object.fromEntries(items.map((key) => [key, data])),
+          ...Object.fromEntries(data),
         })
         return Array.isArray(result)
           ? result.map((item) => format(item, data))
@@ -363,9 +363,7 @@ export class SQLite {
       .map((e) => ` (${e[1]})`)
       .join(', ')
       .replace(' ', '')
-    const sql = `INSERT OR IGNORE INTO ${table}${
-      items.includes('index') ? ' VALUES ' : ` (${items}) VALUES `
-    }${rest};`
+    const sql = `INSERT OR IGNORE INTO ${table} (${items}) VALUES ${rest};`
     await this.#exec<E>(sql)
     return data as E
   }

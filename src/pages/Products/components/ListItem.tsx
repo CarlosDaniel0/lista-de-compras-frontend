@@ -27,7 +27,7 @@ interface ListCardProps<T extends ProductTypes>
 }
 
 const loadingSkeleton = css`
-  .index,
+  .position,
   .label,
   .category,
   .update,
@@ -37,7 +37,7 @@ const loadingSkeleton = css`
     ${skeleton}
   }
 
-  .index {
+  .position {
     height: 20px;
     width: 15px;
   }
@@ -102,7 +102,7 @@ export default function ListCard<T extends ProductTypes>(
       >
         {path === 'reciepts' && (
           <span
-            className="index"
+            className="position"
             style={{
               fontSize: '1.2em',
               alignSelf: 'center',
@@ -110,7 +110,7 @@ export default function ListCard<T extends ProductTypes>(
               textAlign: 'center',
             }}
           >
-            {product?.index}
+            {product?.position}
           </span>
         )}
         <div
