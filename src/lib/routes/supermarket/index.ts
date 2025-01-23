@@ -149,6 +149,27 @@ router.post('/:id/products', async (req, res, channel) => {
   }
 })
 
+router.get("/:id/products/:id_product", async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+
+  try {
+    const { id: supermarket_id, id_product: id } = req.params;
+    const product = await sqlite.productSupermarket.findFirst({
+      where: { supermarket_id, id },
+    });
+    const rest = product ? { data: { product } } : {}; 
+    res.send({
+      status: true,
+      message: product
+        ? "Produto encontrado na base de dados"
+        : "Produto não encontrado na base de dados",
+      ...rest,
+    });
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''));
+  }
+})
+
 router.put('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {

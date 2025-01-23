@@ -20,6 +20,10 @@ export const Container = styled.div`
   }
 
   & input {
+    &:disabled {
+      background: var(--input-color-disabled);
+    }
+    
     flex: 1 1 0;
     padding: 0.4em 0.4em;
     color: inherit;
@@ -43,6 +47,10 @@ export const Container = styled.div`
     display: flex;
     align-items: center;
     padding: 0 0.4em;
+  }
+
+  & input:disabled ~ span {
+    background: var(--input-item-bg-disabled);
   }
 `
 

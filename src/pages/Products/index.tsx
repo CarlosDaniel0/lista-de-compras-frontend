@@ -8,7 +8,14 @@ import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
 import Text from '../../components/Input/text/indext'
-import { Product, ProductSupermarket, ResponseData } from '../../util/types'
+import {
+  Option,
+  Product,
+  ProductList,
+  ProductReciept,
+  ProductSupermarket,
+  ResponseData,
+} from '../../util/types'
 import { format } from 'date-fns'
 import { ButtonAdd } from '../../components/Button'
 import { Container } from '../Lists'
@@ -16,6 +23,8 @@ import styled from 'styled-components'
 import { Virtuoso } from 'react-virtuoso'
 import ListCard from './components/ListItem'
 import { ListContainer } from '../../components/Containers'
+import ContextMenu from '../../components/ContextMenu'
+import { FaPen, FaTrash } from 'react-icons/fa6'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -32,7 +41,7 @@ const BottomBar = styled.div`
   right: 0px;
 `
 
-const ProductPanel = (props: { product: ProductSupermarket }) => {
+const ProductResultPanel = (props: { product: ProductSupermarket }) => {
   const { product } = props
   return (
     <>
@@ -64,6 +73,7 @@ const ProductPanel = (props: { product: ProductSupermarket }) => {
   )
 }
 
+type ProductGeneral = ProductSupermarket & ProductList & ProductReciept
 const productLoading = {
   category: '',
   description: '',
@@ -79,12 +89,15 @@ const productLoading = {
   total: 0,
   unity: '',
 }
+
 export default function Products(props: ProductsProps) {
   const { state, setState } = useContext(ParamsContext)
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const [show] = useState(false)
+  const [menu, setMenu] = useState({ show: false, top: 0, left: 0 })
   const [products, setProducts] = useState<Product<typeof path>[]>([])
+  const [product, setProduct] = useState<Partial<Product<typeof path>>>({})
   const navigate = useNavigate()
   const { id } = useParams()
   const { path } = props
@@ -94,12 +107,17 @@ export default function Products(props: ProductsProps) {
     () => productLoading
   )
 
+  const formatProducts = (products: ProductGeneral[]) => {
+    if (path === 'lists') return products.map(item => ({ ...item, total: ((item?.quantity ?? 0) * Number(item?.product?.price ?? 0)).toFixed(2) }))
+    return products
+  }
+
   const loadProducts = () => {
     setProducts(loadingProducts)
-    request<ResponseData<{ products: Product<typeof path>[] }>>(
-      `/${path}/${id}/products`
+    request<ResponseData<{ products: ProductGeneral[] }>>(
+      `/${path}/${id}/products`,
     )
-      .then((res) => res.status && setProducts(res.data.products))
+      .then((res) => res.status && setProducts(formatProducts(res.data.products)))
       .catch((err) => {
         setProducts([])
         console.log(err.message)
@@ -107,14 +125,43 @@ export default function Products(props: ProductsProps) {
       .finally(() => {})
   }
 
-  const handleRemove = () => {}
+  const handleRemove = (product_id: string) => {
+    const onYes = () => {
+      setLoading(true)
+      request<{
+        status: boolean
+        message: string
+        data: { product: Product<typeof path> }
+      }>(`/${path}/${id}/products/${product_id}`, {}, 'DELETE')
+        .then((res) => {
+          if (!res.status) throw new Error(res?.message)
+          setProducts((prev) => prev.filter((product) => product.id !== product_id))
+          return Dialog.info.show({ message: res.message })
+        })
+        .catch((err) => Dialog.info.show({ message: err.message }))
+        .finally(() => setLoading(false))
+    }
+    Dialog.option.show({
+      message: 'Deseja remover esse Produto?',
+      onConfirm: {
+        label: 'Sim',
+        onClick: (setShow) => {
+          setShow(false)
+          onYes()
+        },
+      },
+      onCancel: {
+        label: 'Não',
+      },
+    })
+  }
 
   const getProductByBarcode = () => {
     const { barcode } = state ?? {}
     if (!barcode) return
     setLoading(true)
     request<ResponseData<{ product: ProductSupermarket }>>(
-      `/supermarkets/1/products/${barcode}`
+      `/supermarkets/${id}/products/${barcode}`
     )
       .then((res) => {
         if (!res.status) return
@@ -136,7 +183,7 @@ export default function Products(props: ProductsProps) {
         Dialog.option.show({
           onConfirm: () => {},
           onCancel: () => {},
-          content: <ProductPanel product={product} />,
+          content: <ProductResultPanel product={product} />,
         })
       })
       .catch((err) => console.log(err.message))
@@ -146,44 +193,49 @@ export default function Products(props: ProductsProps) {
       })
   }
 
+  const onContextMenu = (evt: React.MouseEvent<HTMLDivElement>, product: Product<typeof path>) => {
+    evt.preventDefault()
+    evt.stopPropagation()
+    const { left, top } = { left: evt.pageX, top: evt.pageY }
+    setProduct(product)
+    setMenu({ show: true, left, top })
+  }
+
   useEffectOnce(loadProducts, [])
   useEffectOnce(getProductByBarcode, [state])
+  const options: Option[] = [
+    {
+      onClick: () => {
+        product.id && navigate(`/${path}/${id}/update/${product.id}`)
+        setProduct({})
+      },
+      label: (
+        <>
+          <FaPen size={16} /> <span>Editar</span>
+        </>
+      ),
+      key: 'edit',
+    },
+    {
+      onClick: () => {
+        product.id && handleRemove(product.id)
+        setProduct({})
+      },
+      label: (
+        <>
+          <FaTrash size={16} /> <span>Remover</span>
+        </>
+      ),
+      key: 'remove',
+    },
+  ]
 
   return (
     <>
+      {menu.show && <ContextMenu {...{ setMenu, menu, options }} />}
       <Loading status={loading} label="Aguarde..." />
       <TabBar label={'Produtos'} back />
       <Container $height={show ? 83 : 46}>
-        {/* {[
-          {
-            label: 'Arroz',
-            quantity: 2,
-            value: currency.format(28.9),
-          },
-          {
-            label: 'Feijão',
-            quantity: 1,
-            value: currency.format(28.9),
-          },
-          {
-            label: 'Leite',
-            quantity: 12,
-            value: currency.format(28.9),
-          },
-        ].map((item, i) => (
-          <Card key={`item-${i}}`}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <RxDragHandleDots2 size={18} color="#4d4d4d" />
-                <Checkbox label={item.label} />
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <span>{item.quantity}</span>
-                <b>{item.value}</b>
-              </div>
-            </div>
-          </Card>
-        ))} */}
         <Virtuoso
           style={{ height: '100%' }}
           data={products}
@@ -198,10 +250,10 @@ export default function Products(props: ProductsProps) {
             <ListCard
               key={genId(`product-${path}-${i}`)}
               {...{
+                onContextMenu,
                 product,
                 id,
                 path,
-                handleRemove,
                 loading: !product.id,
               }}
             />

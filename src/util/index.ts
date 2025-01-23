@@ -94,6 +94,11 @@ export const currency = Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 })
 
+export const decimal = Intl.NumberFormat('pt-BR', {
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 4,
+})
+
 export const genId = (prefix: string) =>
   prefix + Math.random().toString(16).slice(2)
 
@@ -190,6 +195,35 @@ export const uuidv4 = () => {
   )
 }
 
+/**
+ * Somar valores decimais sem erro na precisão decimal
+ *
+ * Ex: (regular) 1.03 + 1.33 => 2.3600000000000003
+ *
+ * Ex: (função) decimalSum(1.03, 1.33) => 2.36
+ * @param numbers (n1, n2, nk...)
+ * @returns  sum
+ */
+export const decimalSum = (...numbers: number[]): number =>
+  numbers.reduce((sum, curr, i, arr) => {
+    if (i === arr.length) return sum
+    const n1: number = !Number.isNaN(Number(sum ?? 0)) ? Number(sum ?? 0) : 0
+    const n2: number = !Number.isNaN(Number(curr ?? 0)) ? Number(curr ?? 0) : 0
+
+    const [intA, decA] =
+      n1 % 1 === 0 ? [String(n1), '0'] : String(n1).split('.')
+    const [intB, decB] =
+      n2 % 1 === 0 ? [String(n2), '0'] : String(n2).split('.')
+
+    if (decA === '0' && decB === '0') return n1 + n2
+    const decimals = decA.length > decB.length ? decA.length : decB.length
+    return (
+      (parseInt(intA + decA.padEnd(decimals, '0')) +
+        parseInt(intB + decB.padEnd(decimals, '0'))) /
+      Math.pow(10, decimals)
+    )
+  }, 0)
+
 export const getFiles = async (
   props?: React.ComponentPropsWithoutRef<'input'>
 ) =>
@@ -240,4 +274,11 @@ export const JSONToFile = <T>(obj: T, filename: string) => {
   a.download = `${filename}.json`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+export const decimalFormatter = (text: string, fixed?: number) => {
+  if (text === '') return text
+  const num = text.replace(/[^0-9.,]/g, '')
+  const [int, dec] = num.includes(',') ? num.split(',').map((n, i) => i === 1 ? n.substring(0, fixed) : n) : [num, '']
+  return dec.length ? `${int},${dec}` : int
 }

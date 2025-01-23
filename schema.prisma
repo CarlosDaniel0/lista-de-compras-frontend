@@ -9,14 +9,15 @@ datasource db {
 }
 
 model Supermarket {
-  id       String               @id @default(uuid())
-  name     String
-  address  String
-  removed  Boolean              @default(false)
-  sync     Boolean              @default(false)
-  coords   Coordinates?
-  reciepts Reciept[]
-  products ProductSupermarket[]
+  id          String               @id @default(uuid())
+  name        String
+  address     String
+  removed     Boolean              @default(false)
+  sync        Boolean              @default(false)
+  coords      Coordinates?
+  reciepts    Reciept[]
+  products    ProductSupermarket[]
+  ProductList ProductList[]
 }
 
 model Wholesale {
@@ -68,16 +69,18 @@ model List {
 }
 
 model ProductList {
-  id          String              @id @default(uuid())
-  description String
-  unity       String?
-  quantity    Float
-  removed     Boolean             @default(false)
-  sync        Boolean             @default(false)
-  list_id     String
-  product_id  String?
-  product     ProductSupermarket? @relation(fields: [product_id], references: [id])
-  list        List                @relation(fields: [list_id], references: [id])
+  id             String              @id @default(uuid())
+  description    String
+  unity          String?
+  quantity       Float
+  removed        Boolean             @default(false)
+  sync           Boolean             @default(false)
+  list_id        String
+  product_id     String?
+  supermarket_id String?
+  product        ProductSupermarket? @relation(fields: [product_id], references: [id])
+  supermarket    Supermarket?        @relation(fields: [supermarket_id], references: [id])
+  list           List                @relation(fields: [list_id], references: [id])
 }
 
 //  Receita
@@ -121,12 +124,11 @@ model User {
   lists    List[]
 }
 
-
 // Tables
 
 model Tables {
-  id        String    @id @default(uuid())
-  name      String
-  version   String
-  sync      Boolean   @default(true)
+  id      String  @id @default(uuid())
+  name    String
+  version String
+  sync    Boolean @default(true)
 }

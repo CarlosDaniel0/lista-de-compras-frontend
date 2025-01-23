@@ -30,7 +30,7 @@ export interface ProductReciept {
   index: number
   quantity: number
   price: number
-  total: number
+  total: number | string
   receipt_id: string
   product_id: string
   receipt?: Reciept
@@ -74,7 +74,7 @@ export interface ProductSupermarket {
   unity: string
   category: string
   barcode?: string
-  price: number
+  price: number | string
   last_update: Date
   supermarket_id: string
   wholesale?: Wholesale

@@ -44,7 +44,7 @@ const ButtonRemove = styled.button`
 
 const loadingSkeleton = css`
   .label,
-  .date,
+  .subtitle,
   .button {
     ${skeleton}
   }
@@ -54,9 +54,10 @@ const loadingSkeleton = css`
     width: 150px;
   }
 
-  .date {
+  .subtitle {
     height: 20px;
-    width: 80px;
+    width: 300px;
+    max-width: 100%;
   }
 `
 
@@ -75,9 +76,9 @@ export default function ListCard(props: ListCardProps) {
           margin: '2px 5px',
         }}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, width: '75%' }}>
           <span className="label" style={{ color: 'var(--color-title-card)' }}>{supermarket.name}</span> 
-          <span className="date" style={{ color: 'var(--color-subtitle-card)' }}>
+          <span className="subtitle" style={{ color: 'var(--color-subtitle-card)' }}>
             {supermarket.address}
           </span>
         </div>

@@ -64,7 +64,9 @@ CREATE TABLE "ProductList" (
     "sync" BOOLEAN NOT NULL DEFAULT false,
     "list_id" TEXT NOT NULL,
     "product_id" TEXT,
+    "supermarket_id" TEXT,
     CONSTRAINT "ProductList_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "ProductSupermarket" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "ProductList_supermarket_id_fkey" FOREIGN KEY ("supermarket_id") REFERENCES "Supermarket" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "ProductList_list_id_fkey" FOREIGN KEY ("list_id") REFERENCES "List" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

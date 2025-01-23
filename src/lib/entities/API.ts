@@ -49,9 +49,9 @@ export class API {
       params,
       query: formatQueryParams(search)
     }
-    await this.routes[path][method](req, res, this.channel)
+    await this.routes[path]?.[method]?.(req, res, this.channel)
     if (res.response) return res.response
-    return Promise.reject(new Error('No response for method'))
+    return Promise.reject(new Error(`No response for method for ${method}:${path}`))
   }
 
   async handle(evt: FetchEvent) {

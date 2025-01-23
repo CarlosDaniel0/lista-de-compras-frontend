@@ -43,7 +43,7 @@ export default function Loading(props: { label?: string; status?: boolean }) {
         <Backgdrop>
           <Card
             style={{
-              background: '#f9f9f9',
+              background: 'var(--bg-card-1)',
               borderRadius: '0.4em',
               display: 'flex',
               flexDirection: 'column',

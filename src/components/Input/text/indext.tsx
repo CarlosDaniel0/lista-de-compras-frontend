@@ -5,14 +5,15 @@ import Label from '../label'
 import { FormContext } from '../../../contexts/Form'
 import useEffectOnce from '../../../hooks/useEffectOnce'
 
+const maskOptions = ['currency', 'decimal']
 export default function Text(props: InputProps) {
-  const { label, container, field, nextElement, ...rest } = props
+  const { label, container, field, nextElement, format: formatter, ...rest } = props
   const { form, setForm } = useContext(FormContext)
   const input = useRef<HTMLInputElement>(null)
   const labelProps = typeof label === 'string' ? { value: label } : label
   const onClick = (evt: React.MouseEvent<HTMLInputElement>) => {
     const { value } = evt.currentTarget
-    if (rest?.mask === 'currency')
+    if (maskOptions.includes(rest?.mask ?? ''))
       return evt.currentTarget.setSelectionRange(value.length, value.length)
     return rest?.onClick?.(evt)
   }
@@ -28,7 +29,7 @@ export default function Text(props: InputProps) {
   const setValue = (value: string) => {
     setForm?.((prev: Record<string, never>) => ({
       ...prev,
-      [field ?? '']: value,
+      [field ?? '']: formatter ? formatter(value) : value,
     }))
   }
 

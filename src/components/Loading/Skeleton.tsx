@@ -6,6 +6,7 @@ export const skeleton = css`
   border-radius: 5px;
   background-size: 200% 100%;
   animation: 1.5s shine linear infinite;
+  color: transparent;
 
   @keyframes shine {
     to {

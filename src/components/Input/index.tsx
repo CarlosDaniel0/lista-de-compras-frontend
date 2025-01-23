@@ -1,16 +1,17 @@
 import { LabelProps } from "./label";
 import { Container } from "./styles";
-import { useMask } from "../../hooks/useMask";
+import { MaskType, useMask } from "../../hooks/useMask";
 import { forwardRef } from "react";
 
 export type IconProps = React.ComponentPropsWithoutRef<'span' | 'button'> & { value?: React.ReactNode, type?: 'span' | 'button' }
 
 export interface InputProps extends React.ComponentPropsWithoutRef<'input'> {
   nextElement?: string,
+  format?: (value: string) => string,
   field?: string,
   label?: string | LabelProps,
   container?: React.ComponentPropsWithoutRef<'div'>,
-  mask?: 'currency',
+  mask?: MaskType,
   icon?: {
     left?: IconProps,
     right?: IconProps

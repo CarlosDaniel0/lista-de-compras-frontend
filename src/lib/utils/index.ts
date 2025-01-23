@@ -48,3 +48,5 @@ export const formatQueryParams = (params: string) => {
       .map((item) => item.split('='))
   )
 } 
+
+export const captalize = (text: string) => text.substring(0, 1).toUpperCase() + text.slice(1)

@@ -124,10 +124,23 @@ export default function CreateOrUpdate() {
         <Text autoFocus label="Nome" field="name" />
         <Text type="date" field="date" label="Data" />
         <div style={{ display: 'flex', gap: 8 }}>
-          <Text mask="currency" container={{ style: { width: '100%' }}} field="discount" label="Desconto" />
-          <Text mask="currency" container={{ style: { width: '100%' }}} field="total" label="Total" />
+          <Text 
+            container={{ style: { width: '100%' }}} 
+            id="inpTxtDiscount"
+            mask="currency" 
+            field="discount" 
+            label="Desconto"
+            nextElement='inpTxtTotal' />
+          <Text 
+            container={{ style: { width: '100%' }}}
+            id="inpTxtTotal"
+            mask="currency" 
+            field="total"
+            label="Total"
+            nextElement='inpTxtSupermarket' />
         </div>
         <Search
+          id="inpTxtSupermarket"
           field="supermarket_id"
           label="Supermercado"
           options={supermarkets.map((item) => ({

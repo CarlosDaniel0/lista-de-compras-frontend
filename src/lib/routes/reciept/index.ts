@@ -36,6 +36,23 @@ router.post('/', async (req, res, channel) => {
   }
 })
 
+router.post('/:id', async (req, res, channel) => {
+  const sqlite = new SQLite(channel)
+  try {
+    const hasLocalHeader = req.headers.has('x-chached-by-api')
+    if (hasLocalHeader) await sqlite.reciept.delete({})
+    const data = RecieptData.parse(req.body).toEntity()
+    const reciept = await sqlite.reciept.create({ data })
+    res.send({
+      status: true,
+      message: 'Comprovante cadastrado com sucesso!',
+      data: { reciept },
+    })
+  } catch (e) {
+    res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
+  }
+})
+
 router.put('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
@@ -100,6 +117,7 @@ router.get('/:id/products', async (req, res, channel) => {
     const products = await sqlite.productReciept.findMany({
       select: { id: true, index: true, quantity: true, price: true, total: true, receipt_id: true, product_id: true },
       where: { receipt_id, removed: false },
+      include: { product: true }
     })
     res.send({ status: true, data: { products } })
   } catch (e) {

@@ -25,7 +25,6 @@ export default function Supermarkets() {
   const [loading, setLoading] = useState(false)
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const navigate = useNavigate()
-  // const { user } = store.getState()
 
   const loadContent = async () => {
     setSupermarkets(loadingSupermarkets)

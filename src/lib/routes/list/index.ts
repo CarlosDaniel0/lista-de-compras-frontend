@@ -138,6 +138,7 @@ router.get('/:id/products/:id_product', async (req, res, channel) => {
     const { id: list_id, id_product: id } = req.params
     const product = await sqlite.productList.findFirst({
       where: { id, list_id },
+      include: { product: true } 
     })
     res.send({ status: true, data: { product } })
   } catch (e) {

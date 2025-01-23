@@ -9,6 +9,7 @@ import {
   Tables,
   User,
 } from '../../util/types'
+import { captalize } from '../utils'
 import { ArrayParamsORM, ParamsORM } from '../utils/types'
 import { Coordinates } from './Coordinates'
 
@@ -23,8 +24,9 @@ const productListFields = [
   'sync',
   'list_id',
   'product_id',
+  'supermarket_id',
 ] as const
-const productListOptionalFields = ['list', 'product'] as const
+const productListOptionalFields = ['list', 'product', 'supermarket'] as const
 
 const productRecieptFields = [
   'id',
@@ -71,6 +73,42 @@ const supermarketOptionalFields = ['reciepts', 'products', 'coords'] as const
 const userFields = ['id', 'name', 'email', 'picture'] as const
 const tableFields = ['id', 'name', 'version', 'sync'] as const
 const coodinatesFields = ['id', 'lat', 'long', 'supermarket_id'] as const
+
+const tablesFields = {
+  List: listFields,
+  Reciept: recieptFields,
+  Supermarket: supermarketFields,
+  ProductList: productListFields,
+  ProductSupermarket: productSupermarketFields,
+  ProductReciept: productRecieptFields,
+}
+
+const assossiations = {
+  Reciept: {
+    products: 'ProductReciept',
+    supermarket: 'Supermarket',
+    user: 'User',
+  },
+  ProductReciept: {
+    receipt: 'Receipt',
+    product: 'ProductSupermarket',
+  },
+  ProductList: {
+    list: 'List',
+    product: 'ProductSupermarket',
+    supermarket: 'Supermarket',
+  },
+  List: {
+    user: 'User',
+    products: 'ProductList',
+  },
+  Supermarket: {
+    wholesale: 'Wholesale',
+    products_reciept: 'ProductReciept',
+    products_list: 'ProductList',
+    supermarket: 'Supermarket',
+  },
+}
 
 const methods = {
   includes: 'LIKE',
@@ -193,6 +231,8 @@ export class SQLite {
   ) => {
     const percent = operation === 'LIKE' ? '%' : ''
     switch (typeof value) {
+      case 'undefined':
+        return 'NULL'
       case 'string':
         if (['true', 'false'].includes(value)) return value
         return `'${percent}${value.replace(/['`]/g, '')}${percent}'`
@@ -229,19 +269,23 @@ export class SQLite {
         const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
         const items = Object.entries(optionals).filter(([, v]) => v)
         const data = (await Promise.all(
-          items.map(([k]) => [
-            k,
-            this.#select(
-              k.substring(0, 1).toUpperCase() + k.slice(1),
-              {
-                where: {
-                  [fieldItem]: (result?.[0] as any)?.[fields[0]],
+          items.map(([k]) => {
+            const t =
+              assossiations[table as keyof typeof assossiations][k as never]
+            return [
+              t,
+              this.#select(
+                captalize(k),
+                {
+                  where: {
+                    [fieldItem]: (result?.[0] as any)?.[fields[0]],
+                  },
                 },
-              },
-              [],
-              []
-            ),
-          ])
+                [],
+                []
+              ),
+            ]
+          })
         )) as never
 
         const format = <T>(item: T, data: any) => ({
@@ -261,18 +305,21 @@ export class SQLite {
     O extends ReadonlyArray<string>,
     K extends ParamsORM<T, O>
   >(
-    params: K
+    params: K,
+    optionals: O
   ) => {
-    return Object.entries(params).reduce(
-      (acc, [key, value], i) => {
-        acc[0] += !i ? key : `, ${key}`
-        acc[1] += !i
-          ? this.#formatValue(value)
-          : `, ${this.#formatValue(value)}`
-        return acc
-      },
-      ['', ''] as [string, string]
-    )
+    return Object.entries(params)
+      .filter(([key]) => !optionals.includes(key))
+      .reduce(
+        (acc, [key, value], i) => {
+          acc[0] += !i ? key : `, ${key}`
+          acc[1] += !i
+            ? this.#formatValue(value)
+            : `, ${this.#formatValue(value)}`
+          return acc
+        },
+        ['', ''] as [string, string]
+      )
   }
 
   #create = async <
@@ -282,15 +329,43 @@ export class SQLite {
     K extends ParamsORM<T, O> | ArrayParamsORM<T>
   >(
     table: string,
-    params: K
+    params: K,
+    _fields: T,
+    optionals: O
   ) => {
     const { data } = params
-    const arr = (Array.isArray(data) ? data : [data]).map((item) => this.#formatData(item ?? {}))
+    if (optionals.some((key) => Object.keys(data ?? {}).includes(key))) {
+      const items = Object.keys(data ?? {})
+        .filter((key) => optionals.includes(key))
+        .map((key) => {
+          const content = (data as never)?.[key]
+          const t =
+            assossiations[table as keyof typeof assossiations][key as never]
+          return this.#create(
+            t,
+            { data: content },
+            tablesFields[
+              `${captalize(key)}${captalize(
+                table
+              )}` as keyof typeof tablesFields
+            ],
+            []
+          )
+        })
+      await Promise.all(items)
+    }
+
+    const arr = (Array.isArray(data) ? data : [data]).map((item) =>
+      this.#formatData(item ?? {}, optionals)
+    )
     const [items] = arr[0]
     const rest = arr
       .map((e) => ` (${e[1]})`)
-      .join(', ').replace(' ', '')
-    const sql = `INSERT OR IGNORE INTO ${table} (${items}) VALUES ${rest};`
+      .join(', ')
+      .replace(' ', '')
+    const sql = `INSERT OR IGNORE INTO ${table}${
+      items.includes('index') ? ' VALUES ' : ` (${items}) VALUES `
+    }${rest};`
     await this.#exec<E>(sql)
     return data as E
   }
@@ -373,14 +448,14 @@ export class SQLite {
           typeof fields,
           typeof optionals,
           ParamsORM<typeof fields, typeof optionals>
-        >(table, params),
+        >(table, params, fields, optionals),
       createMany: async (params: ArrayParamsORM<typeof fields>) =>
         this.#create<
           E,
           typeof fields,
           typeof optionals,
           ArrayParamsORM<typeof fields>
-        >(table, params) as unknown as E[],
+        >(table, params, fields, optionals) as unknown as E[],
       update: async (
         params: Omit<ParamsORM<typeof fields, typeof optionals>, 'include'>
       ) =>
