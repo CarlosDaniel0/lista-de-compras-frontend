@@ -123,7 +123,7 @@ export default function CreateOrUpdate(
       status: boolean
       message: string
       data: { product: Product<typeof path> }
-    }>(`/supermarkets/${id}/products/${product_id}`, '', 'GET')
+    }>(`/${path}/${id}/products/${product_id}`, '', 'GET')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         if (!res.data.product) return

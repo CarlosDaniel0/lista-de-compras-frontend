@@ -15,6 +15,10 @@ export interface ProductList {
   unity: string
   quantity: number
   list_id: string
+  product_id?: string,
+  supermarket_id?: string
+  product?: ProductSupermarket
+  supermarket?: Supermarket
 }
 
 export interface User {
