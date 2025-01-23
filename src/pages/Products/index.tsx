@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import TabBar from '../../components/TabBar'
-import { currency, genId, request } from '../../util'
+import { currency, decimalSum, genId, request } from '../../util'
 import { useNavigate, useParams } from 'react-router-dom'
 import Loading from '../../components/Loading'
-import { forwardRef, useContext, useState } from 'react'
+import { forwardRef, useContext, useMemo, useState } from 'react'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
@@ -25,6 +25,7 @@ import ListCard from './components/ListItem'
 import { ListContainer } from '../../components/Containers'
 import ContextMenu from '../../components/ContextMenu'
 import { FaPen, FaTrash } from 'react-icons/fa6'
+import { BsDot } from 'react-icons/bs'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -34,7 +35,7 @@ const BottomBar = styled.div`
   padding: 0.4em 0.2em;
   justify-content: space-between;
   display: flex;
-  background: #ededed;
+  background: var(--bg-bottom-bar);
   position: absolute;
   bottom: 0px;
   left: 0px;
@@ -74,14 +75,14 @@ const ProductResultPanel = (props: { product: ProductSupermarket }) => {
 }
 
 type ProductGeneral = ProductSupermarket & ProductList & ProductReciept
-const productLoading = {
+const productLoading: ProductGeneral = {
   category: '',
   description: '',
   id: '',
   index: 0,
   last_update: new Date(),
   list_id: '',
-  price: '',
+  price: 0,
   product_id: '',
   quantity: 0,
   receipt_id: '',
@@ -91,33 +92,58 @@ const productLoading = {
 }
 
 export default function Products(props: ProductsProps) {
+  const { path } = props
   const { state, setState } = useContext(ParamsContext)
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
-  const [show] = useState(false)
+  const [show, setShow] = useState(false)
   const [menu, setMenu] = useState({ show: false, top: 0, left: 0 })
-  const [products, setProducts] = useState<Product<typeof path>[]>([])
+  const [products, setProducts] = useState<ProductGeneral[]>([])
   const [product, setProduct] = useState<Partial<Product<typeof path>>>({})
   const navigate = useNavigate()
   const { id } = useParams()
-  const { path } = props
 
-  const loadingProducts: Product<typeof path>[] = Array.from(
+  const total = useMemo(
+    () =>
+      products.reduce(
+        (tot, item) =>
+          decimalSum(
+            tot,
+            Number(item?.quantity ?? 0) *
+              (item?.price ?? Number(item?.product?.price ?? 0))
+          ),
+        0
+      ),
+    [products]
+  )
+
+  const loadingProducts: ProductGeneral[] = Array.from(
     { length: 5 },
     () => productLoading
   )
 
   const formatProducts = (products: ProductGeneral[]) => {
-    if (path === 'lists') return products.map(item => ({ ...item, total: ((item?.quantity ?? 0) * Number(item?.product?.price ?? 0)).toFixed(2) }))
+    if (path === 'lists') {
+      setShow(products.some((item) => item?.product?.price))
+      return products.map((item) => ({
+        ...item,
+        total: (
+          (item?.quantity ?? 0) * Number(item?.product?.price ?? 0)
+        ).toFixed(2),
+      }))
+    }
+    setShow(products.some((item) => item?.price))
     return products
   }
 
   const loadProducts = () => {
     setProducts(loadingProducts)
     request<ResponseData<{ products: ProductGeneral[] }>>(
-      `/${path}/${id}/products`,
+      `/${path}/${id}/products`
     )
-      .then((res) => res.status && setProducts(formatProducts(res.data.products)))
+      .then(
+        (res) => res.status && setProducts(formatProducts(res.data.products))
+      )
       .catch((err) => {
         setProducts([])
         console.log(err.message)
@@ -135,7 +161,9 @@ export default function Products(props: ProductsProps) {
       }>(`/${path}/${id}/products/${product_id}`, {}, 'DELETE')
         .then((res) => {
           if (!res.status) throw new Error(res?.message)
-          setProducts((prev) => prev.filter((product) => product.id !== product_id))
+          setProducts((prev) =>
+            prev.filter((product) => product.id !== product_id)
+          )
           return Dialog.info.show({ message: res.message })
         })
         .catch((err) => Dialog.info.show({ message: err.message }))
@@ -193,7 +221,10 @@ export default function Products(props: ProductsProps) {
       })
   }
 
-  const onContextMenu = (evt: React.MouseEvent<HTMLDivElement>, product: Product<typeof path>) => {
+  const onContextMenu = (
+    evt: React.MouseEvent<HTMLDivElement>,
+    product: Product<typeof path>
+  ) => {
     evt.preventDefault()
     evt.stopPropagation()
     const { left, top } = { left: evt.pageX, top: evt.pageY }
@@ -260,10 +291,14 @@ export default function Products(props: ProductsProps) {
           )}
         />
       </Container>
-      {show && (
+      {show && !loading && (
         <BottomBar>
           <span style={{ fontSize: '1.1em' }}>Total</span>
-          <span style={{ fontSize: '1.1em' }}>{currency.format(552)}</span>
+          <div>
+            <span style={{ fontSize: '1.1em' }}>{products.length} Produto{products.length > 1 ? 's' : ''}</span>
+            <BsDot />
+            <span style={{ fontSize: '1.1em' }}>{currency.format(total)}</span>
+          </div>
         </BottomBar>
       )}
       <ButtonAdd

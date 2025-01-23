@@ -50,6 +50,7 @@
   --hover-context-item:rgb(14, 14, 14);
 
   --color-label: rgb(63, 63, 63);
+  --bg-bottom-bar: #ededed;
 }
 
 html[theme='dark'] {
@@ -99,6 +100,8 @@ html[theme='dark'] {
   --hover-context-item: #f9f9f9;
 
   --color-label: #4a4a4a;
+
+  --bg-bottom-bar: #383838;
 }
 
 html[theme='dark'] input[type='date'] {

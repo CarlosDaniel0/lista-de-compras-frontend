@@ -102,7 +102,7 @@ export default function ListCard<T extends ProductTypes>(
       >
         {path === 'reciepts' && (
           <span
-          className='index'
+            className="index"
             style={{
               fontSize: '1.2em',
               alignSelf: 'center',
@@ -152,11 +152,17 @@ export default function ListCard<T extends ProductTypes>(
                 ''
               ) : (
                 <>
-                  {decimal.format(Number(product?.quantity ?? 0))}
-                  {' '}
+                  {decimal.format(Number(product?.quantity ?? 0))}{' '}
                   {product?.unity ?? product?.product?.unity}
-                  <BsDot />
-                  {currency.format(Number(product?.product?.price ?? product?.price ?? 0))}
+                  {(!!Number(product?.product?.price ?? 0) ||
+                    !!Number(product?.price ?? 0)) && (
+                    <>
+                      <BsDot />
+                      {currency.format(
+                        Number(product?.product?.price ?? product?.price ?? 0)
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </span>
@@ -170,14 +176,18 @@ export default function ListCard<T extends ProductTypes>(
             alignItems: path === 'supermarkets' ? 'center' : 'end',
           }}
         >
-          <b
-            className="price"
-            style={{ color: 'var(--color-title-card)', fontSize: '1.25em' }}
-          >
-            {loading
-              ? ''
-              : currency.format(Number(product?.total ?? product?.price ?? 0))}
-          </b>
+          {(!!Number(product?.total ?? 0) || !!Number(product?.price ?? 0)) && (
+            <b
+              className="price"
+              style={{ color: 'var(--color-title-card)', fontSize: '1.25em' }}
+            >
+              {loading
+                ? ''
+                : currency.format(
+                    Number(product?.total ?? product?.price ?? 0)
+                  )}
+            </b>
+          )}
         </div>
       </div>
     </Card>
