@@ -1,6 +1,6 @@
 // from https://github.com/processing/p5.js/blob/main/src/image/filters.js
 export const thresholdFilter = (
-  pixels: Uint8ClampedArray<ArrayBufferLike>,
+  pixels: Uint8ClampedArray,
   level: number
 ) => {
   if (level === undefined) {
@@ -23,7 +23,7 @@ export const thresholdFilter = (
 }
 
 // from https://css-tricks.com/manipulating-pixels-using-canvas/
-export const invertColors = (pixels: Uint8ClampedArray<ArrayBufferLike>) => {
+export const invertColors = (pixels: Uint8ClampedArray) => {
   for (let i = 0; i < pixels.length; i += 4) {
     pixels[i] = pixels[i] ^ 255 // Invert Red
     pixels[i + 1] = pixels[i + 1] ^ 255 // Invert Green
@@ -33,8 +33,8 @@ export const invertColors = (pixels: Uint8ClampedArray<ArrayBufferLike>) => {
 
 let blurRadius: number
 let blurKernelSize: number
-let blurKernel: Int32Array<ArrayBuffer>
-let blurMult: Int32Array<ArrayBuffer>[]
+let blurKernel: Int32Array
+let blurMult: Int32Array[]
 
 // from https://github.com/processing/p5.js/blob/main/src/image/filters.js
 export const buildBlurKernel = (r: number) => {
@@ -72,7 +72,7 @@ export const buildBlurKernel = (r: number) => {
 
 // from https://github.com/processing/p5.js/blob/main/src/image/filters.js
 export const blurARGB = (
-  pixels: Uint8ClampedArray<ArrayBufferLike>,
+  pixels: Uint8ClampedArray,
   canvas: HTMLCanvasElement,
   radius: number
 ) => {
@@ -167,7 +167,7 @@ export const blurARGB = (
   setPixels(pixels, argb)
 }
 
-function getARGB(data: Uint8ClampedArray<ArrayBufferLike>, i: number) {
+function getARGB(data: Uint8ClampedArray, i: number) {
   const offset = i * 4
   return (
     ((data[offset + 3] << 24) & 0xff000000) |
@@ -178,7 +178,7 @@ function getARGB(data: Uint8ClampedArray<ArrayBufferLike>, i: number) {
 }
 
 function setPixels(
-  pixels: Uint8ClampedArray<ArrayBufferLike>,
+  pixels: Uint8ClampedArray,
   data: Int32Array
 ) {
   let offset = 0
@@ -193,7 +193,7 @@ function setPixels(
 
 // from https://github.com/processing/p5.js/blob/main/src/image/filters.js
 export const dilate = (
-  pixels: Uint8ClampedArray<ArrayBufferLike>,
+  pixels: Uint8ClampedArray,
   canvas: HTMLCanvasElement
 ) => {
   let currIdx = 0
@@ -277,7 +277,7 @@ export const dilate = (
 }
 
 
-export const grayScale = (pixels: Uint8ClampedArray<ArrayBufferLike>, level = 1) => {
+export const grayScale = (pixels: Uint8ClampedArray, level = 1) => {
   for (let i = 0; i < pixels.length; i += 4) {
     const lightness = ((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3) * level;
     pixels[i] = lightness;
@@ -286,7 +286,7 @@ export const grayScale = (pixels: Uint8ClampedArray<ArrayBufferLike>, level = 1)
   }
 }
 
-export const backAndWhite = (pixels: Uint8ClampedArray<ArrayBufferLike>) => {
+export const backAndWhite = (pixels: Uint8ClampedArray) => {
   for (let i = 0; i < pixels.length; i += 4) {
      
     pixels[i] = pixels[i] > 154 ? 255 : 0;
