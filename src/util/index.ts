@@ -279,6 +279,28 @@ export const JSONToFile = <T>(obj: T, filename: string) => {
 export const decimalFormatter = (text: string, fixed?: number) => {
   if (text === '') return text
   const num = text.replace(/[^0-9.,]/g, '')
-  const [int, dec] = num.includes(',') ? num.split(',').map((n, i) => i === 1 ? n.substring(0, fixed) : n) : [num, '']
+  const [int, dec] = num.includes(',')
+    ? num.split(',').map((n, i) => (i === 1 ? n.substring(0, fixed) : n))
+    : [num, '']
   return dec.length ? `${int},${dec}` : int
 }
+
+export const getImageFromBase64 = (base64: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = (err) => reject(err)
+    img.src = base64
+  })
+
+export const getImageFromFile = async (file: File) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      if (event.target)
+        getImageFromBase64(event.target.result + '')
+          .then(resolve)
+          .catch(reject)
+    }
+    reader.readAsDataURL(file)
+  })

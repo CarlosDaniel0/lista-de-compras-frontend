@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 // import Tile from '../../Tile'
 import useWindowDimensions from '../../../hooks/useWindowDimensions'
 import styled from 'styled-components'
@@ -23,23 +23,22 @@ import { store } from '../../../redux/store'
 import Tesseract from 'tesseract.js'
 import { FaCircle } from 'react-icons/fa6'
 import RequestPermission from '../../Permission'
-import { genId, getFiles } from '../../../util'
+import { getFiles, getImageFromBase64, getImageFromFile } from '../../../util'
 import { RoundedButton } from '../../Button'
 import { ParamsContext, StateParams } from '../../../contexts/Params'
 import { MdOutlineAddPhotoAlternate } from 'react-icons/md'
-import { useElementDimensions } from '../../../hooks/useElementDimensions'
+import { grayScale } from './tools'
+import { RiRefreshLine } from 'react-icons/ri'
+import { BiMinus, BiPlus } from 'react-icons/bi'
 
 interface TextSelectorProps {
+  width: number
+  height: number
   context: StateParams<{ text: string }>
   navigate: NavigateFunction
   setResult: SetState<Tesseract.RecognizeResult | null>
   result: Tesseract.RecognizeResult
   read: () => void
-}
-
-interface ResizeProps {
-  element: Element
-  parent: Element
 }
 
 const CaptureButton = styled.button`
@@ -59,6 +58,49 @@ const CaptureButton = styled.button`
 
   & svg {
     color: #fff;
+  }
+`
+
+const Snack = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  border-radius: 0.35em;
+  padding: 0.25em 0.65em;
+`
+
+const Controllers = styled.div`
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  bottom: 50px;
+  right: 10px;
+  border: 1px solid #fff;
+  border-radius: 0.95em;
+
+  & button {
+    background: rgba(0, 0, 0, 0.65);
+    border: none;
+    outline: none;
+    font-size: 1.4em;
+    color: #fff;
+    padding: 0.4em 0.3em;
+    transition: cubic-bezier(0.075, 0.82, 0.165, 1);
+
+    &:active {
+      transform: scale(0.87);
+    }
+  }
+
+  & button:first-child {
+    border-radius: 0.8em 0.8em 0 0;
+  }
+
+  & button:last-child {
+    border-radius: 0 0 0.8em 0.8em;
   }
 `
 
@@ -83,101 +125,15 @@ const Loading = () => {
   )
 }
 
-const TextBoxes = ({
-  data,
-  setText,
-  width,
-  height,
-}: {
-  width: number
-  height: number
-  data: Tesseract.Page
-  setText: SetState<string>
-}) => {
-  const [show, setShow] = useState(false)
-  const container = useRef<HTMLDivElement>(null)
-  const { lines } = data
-  const isOverflown = ({ clientHeight, scrollHeight }: Element) =>
-    scrollHeight > clientHeight
-  const resizeText = ({ element: el, parent }: ResizeProps) => {
-    const element = el as HTMLDivElement
-    let i = 10 // let's start with 12px
-    let overflow = false
-    const maxSize = 128 // very huge text size
-
-    while (!overflow && i < maxSize) {
-      element.style.fontSize = `${i}px`
-      overflow = isOverflown(parent)
-      if (!overflow) i++
-    }
-
-    // revert to last state where no overflow happened:
-    element.style.fontSize = `${i - 1}px`
-  }
-
-  const handleSelect = () => {
-    let value = ''
-    if (window.getSelection) {
-      value = window.getSelection()?.toString() ?? ''
-    }
-    setText(value)
-  }
-
-  useEffect(() => {
-    if (!container.current) return setShow(true)
-    Array.from(container.current.children).forEach((parent) =>
-      Array.from(parent.children ?? []).forEach((element) =>
-        resizeText({ element, parent })
-      )
-    )
-    setShow(true)
-    container.current.addEventListener('mouseup', handleSelect)
-    document.addEventListener('selectionchange', handleSelect)
-    return () => {
-      if (container.current) {
-        container.current.removeEventListener('mouseup', handleSelect)
-        document.removeEventListener('selectionchange', handleSelect)
-      }
-    }
-  }, [container, lines])
-
-  return (
-    <>
-      <div
-        ref={container}
-        style={{ width, height, position: 'absolute', zIndex: 3 }}
-      >
-        {lines
-          .filter((item) => item.confidence > 45)
-          .map((item, i) => (
-            <div
-              key={genId(`text-${i}-`)}
-              style={{
-                visibility: show ? 'visible' : 'hidden',
-                display: 'block',
-                // overflow: 'hidden',
-                background: '#3a78ff37',
-                position: 'fixed',
-                left: item.bbox.x0,
-                top: item.bbox.y0,
-                width: item.bbox.x1 - item.bbox.x0,
-                height: item.bbox.y1 - item.bbox.y0,
-              }}
-            >
-              <span style={{ color: 'transparent' }}>{item.text}</span>
-              {/* {item.words.map((word, idx) => <span style={{ position: 'fixed', left: word.bbox.x0, top: word.bbox.y0, color: 'transparent' }} key={genId(`word-${i}-${idx}-`)}>{word.text}</span>)} */}
-            </div>
-          ))}
-      </div>
-    </>
-  )
-}
-
 const TextSelector = (props: TextSelectorProps) => {
-  const { result, setResult, read, navigate, context } = props
+  const { result, width, height, setResult, read, navigate, context } = props
   const [text, setText] = useState('')
-  const image = useRef<HTMLImageElement>(null)
-  const { width, height } = useElementDimensions(image)
+  const canvas = useRef<HTMLCanvasElement>(null)
+  const [delta, setDelta] = useState({ h: 0, v: 0 })
+  const [touch, setTouch] = useState({ startX: 0, endX: 0, startY: 0, endY: 0 })
+  const [image, setImage] = useState<HTMLImageElement>()
+  const [show, setShow] = useState(false)
+  const [scale, setScale] = useState(1.0)
   const handleConfirm = () => {
     context?.setState?.({ ...(context?.state ?? {}), text })
     setTimeout(() => {
@@ -185,9 +141,117 @@ const TextSelector = (props: TextSelectorProps) => {
     }, 50)
   }
 
+  const getImage = async (
+    canvas: HTMLCanvasElement,
+    result: Tesseract.RecognizeResult
+  ) => {
+    const context = canvas.getContext('2d')
+    const { imageColor } = result.data
+    const img = !image ? await getImageFromBase64(imageColor!) : image
+    if (!image) setImage(img)
+    context?.clearRect(0, 0, width, height)
+    context?.save()
+    context?.scale(scale, scale)
+    context?.drawImage(img, delta.h, delta.v, img.width, img.height)
+
+    result.data.words.map((word) => {
+      context!.fillStyle = '#3a78ff37'
+      context?.fillRect(
+        word.bbox.x0 + delta.h,
+        word.bbox.y0 + delta.v,
+        word.bbox.x1 - word.bbox.x0,
+        word.bbox.y1 - word.bbox.y0
+      )
+    })
+    context?.restore()
+  }
+
+  const handleWheel = (evt: React.WheelEvent<HTMLCanvasElement>) => {
+    setDelta((prev) => ({
+      ...prev,
+      v: Math.max(
+        Math.min(50 * scale, (prev.v -= evt.deltaY)),
+        (-(image!.height - height) - 50) * scale
+      ),
+      // h: Math.max(
+      //   Math.min(50, (prev.h -= evt.deltaX)),
+      //   -(image!.width - width) - 50
+      // ),
+    }))
+  }
+
+  const handleClick = (evt: React.MouseEvent<HTMLCanvasElement>) => {
+    const [x, y] = [evt.pageX, evt.pageY]
+    result.data.words.forEach((word) => {
+      const { x0, x1, y0, y1 } = word.bbox
+      const { text } = word
+      if (
+        x >= (delta.h + x0) * scale &&
+        x <= (delta.h + x1) * scale &&
+        y >= (delta.v + y0) * scale &&
+        y <= (delta.v + y1) * scale
+      ) {
+        setText((prev) => (prev += ` ${text}`))
+        setShow(true)
+      }
+    })
+  }
+
+  const handleTouch =
+    (type: 'start' | 'move') => (evt: React.TouchEvent<HTMLCanvasElement>) => {
+      switch (type) {
+        case 'start':
+          return setTouch({
+            startX: evt.changedTouches[0].clientX,
+            endX: 0,
+            startY: evt.changedTouches[0].clientY,
+            endY: 0,
+          })
+        case 'move':
+        default:
+          setDelta((prev) => ({
+            v: Math.max(
+              Math.min(
+                50 * scale,
+                (prev.v += evt.changedTouches[0].clientY - touch.startY)
+              ),
+            (-(image!.height - height) - 50) * scale
+            ),
+            h: Math.max(
+              Math.min(
+                0,
+                (prev.h += evt.changedTouches[0].clientX - touch.startX)
+              ),
+              (-(image!.width - width) - 50) * scale
+            ),
+          }))
+          setTouch((prev) => ({
+            ...prev,
+            end: evt.changedTouches[0].clientY,
+          }))
+      }
+    }
+
+  const zoom = (type: '+' | '-') => {
+    switch (type) {
+      case '+':
+        setScale((prev) => Math.min((prev += 0.05), 2))
+        break
+      case '-':
+        setScale((prev) => Math.max((prev -= 0.05), 0.5))
+        break
+    }
+  }
+
+  useEffect(() => {
+    if (!canvas.current) return
+    getImage(canvas.current, result)
+  }, [width, height, delta, scale])
+
   return (
     <ContentReader>
       <ButtonBack
+        style={{ background: 'rgba(0,0,0,0.65)' }}
         onClick={() => {
           setResult(null)
           window.history.back()
@@ -196,17 +260,24 @@ const TextSelector = (props: TextSelectorProps) => {
       >
         <RxChevronLeft size={30} color="#fff" />
       </ButtonBack>
-      {result.data && (
-        <TextBoxes {...{ width, height, setText }} data={result.data} />
-      )}
-      {result.data.imageColor && (
-        <img
-          ref={image}
-          style={{ width: '100%' }}
-          src={result.data.imageColor}
-          alt="Resultado do reconhecimento OCR - Tesseract.js"
-        />
-      )}
+      <ButtonRight
+        onClick={() => {
+          setText('')
+          setShow(false)
+        }}
+        style={{ background: 'rgba(0,0,0,0.65)' }}
+      >
+        <RiRefreshLine size={22} color="#fff" />
+      </ButtonRight>
+      <canvas
+        ref={canvas}
+        width={width}
+        height={height}
+        onWheel={handleWheel}
+        onClick={handleClick}
+        onTouchStart={handleTouch('start')}
+        onTouchMove={handleTouch('move')}
+      />
       {!!text && (
         <RoundedButton
           onClick={handleConfirm}
@@ -214,7 +285,7 @@ const TextSelector = (props: TextSelectorProps) => {
           style={{
             zIndex: 5,
             position: 'absolute',
-            top: '7%',
+            top: '0.5%',
             color: '#fff',
             fontSize: '1.6em',
             border: 'none',
@@ -223,6 +294,15 @@ const TextSelector = (props: TextSelectorProps) => {
           Confirmar
         </RoundedButton>
       )}
+      {show && <Snack>{text}</Snack>}
+      <Controllers>
+        <button onClick={() => zoom('+')}>
+          <BiPlus />
+        </button>
+        <button onClick={() => zoom('-')}>
+          <BiMinus />
+        </button>
+      </Controllers>
     </ContentReader>
   )
 }
@@ -258,6 +338,33 @@ export default function Camera() {
     return worker
   }
 
+  const batchproccessImage = (canvas: HTMLCanvasElement) => {
+    const image = canvas
+      .getContext('2d')
+      ?.getImageData(0, 0, canvas.width, canvas.height)
+    // blurARGB(image!.data, canvas, 0.5)
+    // dilate(image!.data, canvas)
+    // invertColors(image!.data)
+    // thresholdFilter(image!.data, 0.4)
+    grayScale(image!.data)
+    // backAndWhite(image!.data)
+    return image
+  }
+
+  const preprocessImage = async (image: HTMLImageElement) =>
+    new Promise<string>((resolve) => {
+      const canvas = document.createElement('canvas')
+      canvas.width = image.width
+      canvas.height = image.height
+      const context = canvas.getContext('2d', { willReadFrequently: true })
+      context?.drawImage(image, 0, 0, image.width, image.height)
+      context?.putImageData(batchproccessImage(canvas)!, 0, 0)
+
+      const newImage = context?.getImageData(0, 0, canvas.width, canvas.height)
+      context?.putImageData(newImage!, 0, 0)
+      resolve(canvas.toDataURL('image/png'))
+    })
+
   const getImage = async (canvas: HTMLCanvasElement, video: HTMLVideoElement) =>
     new Promise<string>((resolve) => {
       const ctx = canvas.getContext('2d')
@@ -265,10 +372,10 @@ export default function Camera() {
         vh = video.videoHeight,
         cw = canvas.width,
         ch = canvas.height
-      const sx = ((vw / 2) - (cw / 2)),
+      const sx = vw / 2 - cw / 2,
         sy = 0,
-        sw = (vh * cw) / (ch - ((vw / 2) - (cw / 2))),
-        sh = ch - ((vw / 2) - (cw / 2))
+        sw = (vh * cw) / (ch - (vw / 2 - cw / 2)),
+        sh = ch - (vw / 2 - cw / 2)
       const dx = 0,
         dy = 0,
         dw = cw,
@@ -295,7 +402,9 @@ export default function Camera() {
   const captureImage = async () => {
     video.current?.pause()
     const image = await getImage(canvas.current!, video.current!)
-    startOCR(image)
+    const img = await getImageFromBase64(image)
+    const imgStr = await preprocessImage(img)
+    startOCR(imgStr)
   }
 
   const getCamera = async () => {
@@ -352,7 +461,11 @@ export default function Camera() {
   const handleImage = async () => {
     const file = await getFiles({ accept: 'image/png, image/gif, image/jpeg' })
     const image = file?.item(0)
-    if (image) startOCR(image)
+    if (image) {
+      const img = await getImageFromFile(image!)
+      const imgStr = await preprocessImage(img)
+      startOCR(imgStr)
+    }
   }
 
   const read = () => {
@@ -375,7 +488,15 @@ export default function Camera() {
     <ContainerReader>
       {result !== null && (
         <TextSelector
-          {...{ result, setResult, read, navigate, context: context as any }}
+          {...{
+            width,
+            height,
+            result,
+            setResult,
+            read,
+            navigate,
+            context: context as any,
+          }}
         />
       )}
       {loading && (
@@ -394,13 +515,15 @@ export default function Camera() {
           >
             <RxChevronLeft size={30} color="#fff" />
           </ButtonBack>
-          <ButtonRight onClick={handleImage}>
+          <ButtonRight disabled={loading} onClick={handleImage}>
             <MdOutlineAddPhotoAlternate size={24} color="#fff" />
           </ButtonRight>
           <canvas ref={canvas} width={width} height={height} />
-          <CaptureButton onClick={captureImage}>
-            <FaCircle size={38} />
-          </CaptureButton>
+          {!loading && (
+            <CaptureButton onClick={captureImage}>
+              <FaCircle size={38} />
+            </CaptureButton>
+          )}
           <video
             ref={video}
             onDoubleClick={captureImage}
