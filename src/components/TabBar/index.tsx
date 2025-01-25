@@ -74,7 +74,7 @@ const ButtonOption = styled.button`
 `
 
 export default function TabBar(props: ITabBarProps) {
-  const { label, back, options } = props
+  const { label, back, children, options } = props
   const navigate = useNavigate()
   const [show, setShow] = useState(false)
   const button = useRef<HTMLButtonElement>(null)
@@ -95,20 +95,28 @@ export default function TabBar(props: ITabBarProps) {
     <>
       <Menu {...{ show, setShow }} />
       <Container>
-        <IconButton onClick={() => (back ? navigate(-1) : setShow(true))}>
-          {back ? (
-            <RxChevronLeft color="#fff" size={30} />
-          ) : (
-            <RxHamburgerMenu color="#fff" size={30} />
-          )}
-        </IconButton>
-        <Title>{label}</Title>
-        {Array.isArray(options) && options.length ? (
-          <IconButton ref={button} onClick={showOptions} onBlur={closeOptions}>
-            <BsThreeDotsVertical size={24} />
-          </IconButton>
-        ) : (
-          <div style={{ width: 28 }} />
+        {children ?? (
+          <>
+            <IconButton onClick={() => (back ? navigate(-1) : setShow(true))}>
+              {back ? (
+                <RxChevronLeft color="#fff" size={30} />
+              ) : (
+                <RxHamburgerMenu color="#fff" size={30} />
+              )}
+            </IconButton>
+            <Title>{label}</Title>
+            {Array.isArray(options) && options.length ? (
+              <IconButton
+                ref={button}
+                onClick={showOptions}
+                onBlur={closeOptions}
+              >
+                <BsThreeDotsVertical size={24} />
+              </IconButton>
+            ) : (
+              <div style={{ width: 28 }} />
+            )}
+          </>
         )}
         {panel.show && (
           <PanelOptions $right={position.right} $top={position.top}>
@@ -116,10 +124,12 @@ export default function TabBar(props: ITabBarProps) {
               {Array.isArray(options) &&
                 options.map((option, i) => (
                   <li key={genId(`option-li-${i}-`)}>
-                    <ButtonOption onClick={evt => {
-                      option?.onClick?.(evt, closeOptions)
-                      closeOptions()
-                    }}>
+                    <ButtonOption
+                      onClick={(evt) => {
+                        option?.onClick?.(evt, closeOptions)
+                        closeOptions()
+                      }}
+                    >
                       {option.label}
                     </ButtonOption>
                   </li>

@@ -304,3 +304,10 @@ export const getImageFromFile = async (file: File) =>
     }
     reader.readAsDataURL(file)
   })
+
+export const formatToFilter = (text: string) =>
+  text
+    .toLocaleLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/[']/g, '')

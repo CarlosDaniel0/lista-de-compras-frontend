@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import TabBar from '../../components/TabBar'
 import { forwardRef, useContext, useState } from 'react'
 import { DialogContext } from '../../contexts/Dialog'
-import { genId, getFiles, JSONToFile, request } from '../../util'
+import { formatToFilter, genId, getFiles, JSONToFile, request } from '../../util'
 import Loading from '../../components/Loading'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import ListCard from './components/ListCard'
@@ -14,9 +14,11 @@ import { ButtonAdd } from '../../components/Button'
 import { FaDownload, FaUpload } from 'react-icons/fa6'
 import { Virtuoso } from 'react-virtuoso'
 import { ListContainer } from '../../components/Containers'
+import SearchBar from '../../components/SearchBar'
+import { format } from 'date-fns'
 
 export const Container = styled.div<{ $height?: number }>`
-  height: ${attr => `calc(100dvh - ${attr?.$height ?? 46}px)`};
+  height: ${(attr) => `calc(100dvh - ${attr?.$height ?? 46}px)`};
   overflow: auto;
 `
 
@@ -29,6 +31,7 @@ export default function Lists() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<List[]>([])
+  const [filter, setFilter] = useState({ show: false, search: '' })
   const { user } = store.getState()
 
   const loadContent = async () => {
@@ -135,6 +138,8 @@ export default function Lists() {
 
   const handleExport = () => JSONToFile(lists, 'Listas')
 
+  const formatString = (item: List) => formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
+
   const options: Option[] = [
     {
       key: 'import',
@@ -163,9 +168,10 @@ export default function Lists() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Minhas Listas" options={options} />
       <Container>
+        {!!lists.length && !!lists?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
         <Virtuoso
-          style={{ height: '100%' }}
-          data={lists}
+          style={{ height: 'calc(100% - 45px)' }}
+          data={lists.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>

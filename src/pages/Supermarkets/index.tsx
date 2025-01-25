@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { forwardRef, useContext, useState } from 'react'
 import TabBar from '../../components/TabBar'
-import { genId, getFiles, JSONToFile, request } from '../../util'
+import { formatToFilter, genId, getFiles, JSONToFile, request } from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
 import { Option, Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
@@ -14,6 +14,7 @@ import { FaDownload, FaUpload } from 'react-icons/fa6'
 import { Virtuoso } from 'react-virtuoso'
 import { ListContainer } from '../../components/Containers'
 import { handleCreateSupermarket } from './functions'
+import SearchBar from '../../components/SearchBar'
 
 const loadingSupermarkets: Supermarket[] = Array.from(
   { length: 5 },
@@ -24,6 +25,7 @@ export default function Supermarkets() {
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
+  const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
 
   const loadContent = async () => {
@@ -95,6 +97,8 @@ export default function Supermarkets() {
 
   const handleExport = () => JSONToFile(supermarkets, 'Supermercados')
 
+  const formatString = (item: Supermarket) => formatToFilter(`${item?.name} ${item?.address} ${item?.coords.join(', ')}`)
+
   const options: Option[] = [
     {
       key: 'import',
@@ -123,9 +127,10 @@ export default function Supermarkets() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Supermercados" options={options} />
       <Container>
+        {!!supermarkets.length && !!supermarkets?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
         <Virtuoso
-          style={{ height: '100%' }}
-          data={supermarkets}
+          style={{ height: 'calc(100% - 45px)' }}
+          data={supermarkets.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>

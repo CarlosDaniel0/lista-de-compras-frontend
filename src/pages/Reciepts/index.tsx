@@ -4,7 +4,7 @@ import Loading from '../../components/Loading'
 import TabBar from '../../components/TabBar'
 import { Container } from '../Lists'
 import { useNavigate } from 'react-router-dom'
-import { genId, getFiles, JSONToFile, request } from '../../util'
+import { formatToFilter, genId, getFiles, JSONToFile, request } from '../../util'
 import { Option, Reciept } from '../../util/types'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
@@ -14,6 +14,8 @@ import { FaDownload, FaUpload } from 'react-icons/fa6'
 import { ListContainer } from '../../components/Containers'
 import { Virtuoso } from 'react-virtuoso'
 import { handleCreateReciept } from './functions'
+import SearchBar from '../../components/SearchBar'
+import { format } from 'date-fns'
 
 const loadingReciepts = Array.from(
   { length: 5 },
@@ -33,6 +35,7 @@ export default function Reciepts() {
   const [reciepts, setReciepts] = useState<Reciept[]>([])
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
+  const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
 
   const loadContent = async () => {
@@ -105,6 +108,8 @@ export default function Reciepts() {
 
   const handleExport = () => JSONToFile(reciepts, 'Comprovantes')
 
+  const formatString = (item: Reciept) => formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
+
   const options: Option[] = [
     {
       key: 'import',
@@ -133,9 +138,10 @@ export default function Reciepts() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Comprovantes" options={options} />
       <Container>
+        {!!reciepts.length && !!reciepts?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
         <Virtuoso
-          style={{ height: '100%' }}
-          data={reciepts}
+          style={{ height: 'calc(100% - 45px)' }}
+          data={reciepts.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>

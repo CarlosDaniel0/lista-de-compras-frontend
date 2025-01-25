@@ -9,7 +9,7 @@ export const Container = styled.div`
   color: var(--input-color);
   display: flex;
 
-  & *:first-child() {
+  & *:first-child {
     border-top-left-radius: 0.28em;
     border-bottom-left-radius: 0.28em;
   }

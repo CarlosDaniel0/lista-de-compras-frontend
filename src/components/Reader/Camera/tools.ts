@@ -286,12 +286,31 @@ export const grayScale = (pixels: Uint8ClampedArray, level = 1) => {
   }
 }
 
-export const backAndWhite = (pixels: Uint8ClampedArray) => {
+const getMatrixAverage = (row: number, col: number, pixels: Uint8ClampedArray, chunk = 2) => {
+  const matrix: number[] = []
+  for (let i = 0; i < chunk; i++) {
+    for (let j = 0; j < chunk; j++) {
+      const idx = Math.max(Math.min(pixels.length - 1, i * row + col + j), 0)
+      matrix[i * j] = pixels[idx]
+    }
+  }
+  return Math.ceil(matrix.reduce((t, n) => t + n, 0) / Math.pow(chunk, 2))
+}
+
+
+export const thresholdSmooth = (image: ImageData) => {
+  const {  data: pixels, width } = image
+  const getColumn = (pl: number, row: number, v: number) => Math.floor((pl + v - (row * width * 4)) / 4)
+
   for (let i = 0; i < pixels.length; i += 4) {
-     
-    pixels[i] = pixels[i] > 154 ? 255 : 0;
-    pixels[i + 1] = pixels[i + 1] > 154 ? 255 : 0;
-    pixels[i + 2] = pixels[i + 2] > 154 ? 255 : 0;
+    const [r, g, b] = [i, i + 1, i + 2]
+    const row = Math.ceil(i / (width * 4))
+    const col = [getColumn(i, row, r), getColumn(i, row, g), getColumn(i, row, b)]
+    const avg = getMatrixAverage(row, col[0], pixels)
+    const threshold = Math.max(Math.min(avg, 197), 165)
+    pixels[r] = pixels[r] > threshold ? 255 : 0;
+    pixels[g] = pixels[g] > threshold ? 255 : 0;
+    pixels[b] = pixels[b] > threshold ? 255 : 0;
     // pixels[i + 3] = lightness;
   }
 }

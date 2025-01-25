@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import TabBar from '../../components/TabBar'
-import { currency, decimalSum, genId, request } from '../../util'
+import { currency, decimalSum, formatToFilter, genId, request } from '../../util'
 import { useNavigate, useParams } from 'react-router-dom'
 import Loading from '../../components/Loading'
 import { forwardRef, useContext, useMemo, useState } from 'react'
@@ -26,6 +26,7 @@ import { ListContainer } from '../../components/Containers'
 import ContextMenu from '../../components/ContextMenu'
 import { FaPen, FaTrash } from 'react-icons/fa6'
 import { BsDot } from 'react-icons/bs'
+import SearchBar from '../../components/SearchBar'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -100,6 +101,7 @@ export default function Products(props: ProductsProps) {
   const [menu, setMenu] = useState({ show: false, top: 0, left: 0 })
   const [products, setProducts] = useState<ProductGeneral[]>([])
   const [product, setProduct] = useState<Partial<Product<typeof path>>>({})
+  const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
   const { id } = useParams()
 
@@ -121,6 +123,8 @@ export default function Products(props: ProductsProps) {
     { length: 5 },
     () => productLoading
   )
+
+  const formatString = (item: ProductGeneral) => formatToFilter(`${item?.description ?? item?.product?.description} ${item?.barcode ?? item?.product?.barcode ?? ''} ${format(new Date(item?.last_update), 'dd/MM/yyyy')} ${item?.category ?? ''}`)
 
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
@@ -234,7 +238,7 @@ export default function Products(props: ProductsProps) {
 
   useEffectOnce(loadProducts, [])
   useEffectOnce(getProductByBarcode, [state])
-  const options: Option[] = [
+  const optionsContext: Option[] = [
     {
       onClick: () => {
         product.id && navigate(`/${path}/${id}/update/${product.id}`)
@@ -263,13 +267,14 @@ export default function Products(props: ProductsProps) {
 
   return (
     <>
-      {menu.show && <ContextMenu {...{ setMenu, menu, options }} />}
+      {menu.show && <ContextMenu {...{ setMenu, menu, options: optionsContext }} />}
       <Loading status={loading} label="Aguarde..." />
       <TabBar label={'Produtos'} back />
       <Container $height={show ? 83 : 46}>
+        {!!products.length && !!products?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
         <Virtuoso
-          style={{ height: '100%' }}
-          data={products}
+          style={{ height: 'calc(100% - 45px)' }}
+          data={products.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
