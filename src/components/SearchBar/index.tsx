@@ -20,10 +20,10 @@ const SearchButton = styled.button`
   cursor: pointer;
   outline: none;
   margin-left: 5px;
-  border: solid 1px var(--input-border);
+  border: solid 1px transparent;
   border-radius: 0.4em;
   padding: 0.637em 1.17em;
-  background: var(--input-item-bg);
+  background: transparent;
   color: var(--input-item-color);
   display: flex;
   align-items: center;
@@ -56,7 +56,7 @@ export default function SearchBar(props: SearchBarProps) {
             right: form.search.length
               ? {
                   onClick: () => setForm({ search: '', show: false }),
-                  children: <FaX style={{ margin: '0 0.6em' }} size={18} />,
+                  children: <FaX style={{ margin: '0 0.6em' }} size={16} />,
                 }
               : undefined,
           }}
