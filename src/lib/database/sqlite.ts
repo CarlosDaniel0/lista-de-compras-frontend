@@ -153,6 +153,7 @@ CREATE TABLE "ProductReciept" (
     "quantity" REAL NOT NULL,
     "price" DECIMAL NOT NULL,
     "total" DECIMAL NOT NULL,
+    "discount" DECIMAL NOT NULL,
     "removed" BOOLEAN NOT NULL DEFAULT false,
     "sync" BOOLEAN NOT NULL DEFAULT false,
     "receipt_id" TEXT NOT NULL,

@@ -35,6 +35,7 @@ export interface ProductReciept {
   quantity: number
   price: number
   total: number | string
+  discount: number
   receipt_id: string
   product_id: string
   receipt?: Reciept

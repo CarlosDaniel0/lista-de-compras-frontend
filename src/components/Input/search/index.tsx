@@ -1,4 +1,5 @@
-import { useContext, useRef, useState } from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useContext, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import Input, { InputProps } from '..'
 import { FormContext } from '../../../contexts/Form'
@@ -6,7 +7,6 @@ import { genId } from '../../../util'
 import Label from '../label'
 import { FaSearch } from 'react-icons/fa'
 import { Virtuoso } from 'react-virtuoso'
-import useEffectOnce from '../../../hooks/useEffectOnce'
 import { IconButton } from '../../Button'
 import { BsX } from 'react-icons/bs'
 
@@ -22,10 +22,25 @@ const Container = styled.div<{ $active?: boolean }>`
       : ''}
 `
 
-const List = styled.div<{ $active?: boolean }>`
+const ListContainer = styled.div<{ $active?: boolean }>`
   margin-top: 10px;
   height: calc(100% - 76px);
   display: ${(attr) => (attr?.$active ? 'block' : 'none')};
+`
+
+const List = styled.div`
+  overflow: hidden;
+  border-radius: 0.4em;
+  border: 1px solid var(--border-button);
+
+  & > *:first-child {
+    border-radius: 0.4em 0.4em 0 0;
+  }
+
+  & > *:last-child {
+    overflow: hidden;
+    border-radius: 0 0 0.4em 0.4em;
+  }
 `
 
 const Item = styled.div<{ $selected?: boolean }>`
@@ -33,8 +48,7 @@ const Item = styled.div<{ $selected?: boolean }>`
     attr?.$selected ? 'var(--bg-search-item)' : 'var(--bg-card-1)'};
   color: var(--color-card-1);
   padding: 0.4em 1.2em;
-  border: 1px solid var(--border-button);
-  border-radius: 0.4em;
+  border-bottom: 1px solid var(--border-button);
   font-size: 1.2em;
   cursor: pointer;
 `
@@ -94,7 +108,6 @@ export default function Search(
   const { form, setForm } = useContext(FormContext)
   const [object, setObject] = useState({ search: '', label: '' })
   const [index, setIndex] = useState(-1)
-  const mutex = useRef(0)
   const labelProps = typeof label === 'string' ? { value: label } : label
   const id = rest?.id ?? genId('txt')
   const value = active ? object?.search : object?.label ?? ''
@@ -135,15 +148,14 @@ export default function Search(
     setIndex(-1)
   }
 
-  useEffectOnce(() => {
+  useEffect(() => {
     const value = form?.[(field ?? '') as never]
-    if (!value || mutex.current) return
-    mutex.current = 1
+    if (!value) return
     const item = options?.find((el) => el?.value === value)
     const label = item?.label ?? ''
     const search = item?.label ?? ''
     setObject({ label, search })
-  }, [form?.[(field ?? '') as never]])
+  }, [options])
 
   return (
     <Container
@@ -157,7 +169,15 @@ export default function Search(
         onBlur={onBlur}
         icon={{
           right: {
-            children: <FaSearch size={20} style={{ margin: '0 4px', filter: rest?.disabled ? 'grayScale(0,6)' : undefined }} />,
+            children: (
+              <FaSearch
+                size={20}
+                style={{
+                  margin: '0 4px',
+                  filter: rest?.disabled ? 'grayScale(0,6)' : undefined,
+                }}
+              />
+            ),
           },
         }}
         {...rest}
@@ -165,11 +185,18 @@ export default function Search(
         onChange={onChange}
         onKeyDown={onKeyDown}
       />
-      {active && <IconButton onClick={() => setActive(false)} style={{ position: 'absolute', right: 5, top: 1, color: 'inherit' }}><BsX  size={32} /></IconButton>}
+      {active && (
+        <IconButton
+          onClick={() => setActive(false)}
+          style={{ position: 'absolute', right: 5, top: 1, color: 'inherit' }}
+        >
+          <BsX size={32} />
+        </IconButton>
+      )}
       {!options?.length && active ? (
         <Empty message="Não há itens para serem exibidos" />
       ) : (
-        <List $active={active}>
+        <ListContainer $active={active}>
           <Virtuoso
             style={{ height: '100%' }}
             data={options?.filter((item) =>
@@ -177,6 +204,9 @@ export default function Search(
                 .toLowerCase()
                 .includes(object?.search?.toLowerCase())
             )}
+            components={{
+              List,
+            }}
             itemContent={(i, option) => (
               <Item
                 $selected={index === i}
@@ -187,7 +217,7 @@ export default function Search(
               </Item>
             )}
           />
-        </List>
+        </ListContainer>
       )}
     </Container>
   )

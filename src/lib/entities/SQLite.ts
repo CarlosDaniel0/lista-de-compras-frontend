@@ -34,6 +34,7 @@ const productRecieptFields = [
   'quantity',
   'price',
   'total',
+  'discount',
   'removed',
   'sync',
   'receipt_id',

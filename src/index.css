@@ -51,6 +51,8 @@
 
   --color-label: rgb(63, 63, 63);
   --bg-bottom-bar: #ededed;
+
+  --green: green;
 }
 
 html[theme='dark'] {
@@ -102,6 +104,8 @@ html[theme='dark'] {
   --color-label: #4a4a4a;
 
   --bg-bottom-bar: #383838;
+
+  --green: #88e1a3;
 }
 
 html[theme='dark'] input[type='date'] {
@@ -130,4 +134,26 @@ body {
 
 .leaflet-container {
   background: var(--bg-leaflet);
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--bg-search);
+  border-radius: 0 0 1.2em 0;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 12px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

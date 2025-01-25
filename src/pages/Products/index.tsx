@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import TabBar from '../../components/TabBar'
-import { currency, decimalSum, formatToFilter, genId, request } from '../../util'
+import {
+  currency,
+  decimalSum,
+  formatToFilter,
+  genId,
+  request,
+} from '../../util'
 import { useNavigate, useParams } from 'react-router-dom'
 import Loading from '../../components/Loading'
 import { forwardRef, useContext, useMemo, useState } from 'react'
@@ -89,6 +95,7 @@ const productLoading: ProductGeneral = {
   receipt_id: '',
   supermarket_id: '',
   total: 0,
+  discount: 0,
   unity: '',
 }
 
@@ -111,8 +118,8 @@ export default function Products(props: ProductsProps) {
         (tot, item) =>
           decimalSum(
             tot,
-            Number(item?.quantity ?? 0) *
-              (item?.price ?? Number(item?.product?.price ?? 0))
+            decimalSum((Number(item?.quantity ?? 0) *
+              (item?.price ?? Number(item?.product?.price ?? 0))), -Number(item?.discount ?? 0))
           ),
         0
       ),
@@ -124,11 +131,19 @@ export default function Products(props: ProductsProps) {
     () => productLoading
   )
 
-  const formatString = (item: ProductGeneral) => formatToFilter(`${item?.description ?? item?.product?.description} ${item?.barcode ?? item?.product?.barcode ?? ''} ${format(new Date(item?.last_update), 'dd/MM/yyyy')} ${item?.category ?? ''}`)
+  const formatString = (item: ProductGeneral) =>
+    formatToFilter(
+      `${item?.description ?? item?.product?.description} ${
+        item?.barcode ?? item?.product?.barcode ?? ''
+      } ${format(new Date(item?.last_update), 'dd/MM/yyyy')} ${
+        item?.category ?? ''
+      }`
+    )
 
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
-      Array.isArray(products) && setShow(products.some((item) => item?.product?.price))
+      Array.isArray(products) &&
+        setShow(products.some((item) => item?.product?.price))
       return products.map((item) => ({
         ...item,
         total: (
@@ -146,7 +161,13 @@ export default function Products(props: ProductsProps) {
       `/${path}/${id}/products`
     )
       .then(
-        (res) => res.status && setProducts(Array.isArray(res.data.products) ? formatProducts(res.data.products) : [])
+        (res) =>
+          res.status &&
+          setProducts(
+            Array.isArray(res.data.products)
+              ? formatProducts(res.data.products)
+              : []
+          )
       )
       .catch((err) => {
         setProducts([])
@@ -267,14 +288,22 @@ export default function Products(props: ProductsProps) {
 
   return (
     <>
-      {menu.show && <ContextMenu {...{ setMenu, menu, options: optionsContext }} />}
+      {menu.show && (
+        <ContextMenu {...{ setMenu, menu, options: optionsContext }} />
+      )}
       <Loading status={loading} label="Aguarde..." />
       <TabBar label={'Produtos'} back />
       <Container $height={show ? 83 : 46}>
-        {!!products.length && !!products?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
+        {!!products.length && !!products?.[0]?.id && (
+          <SearchBar {...{ filter, setFilter }} />
+        )}
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={products.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
+          data={products.filter(
+            (item) =>
+              !filter.search ||
+              formatString(item).includes(formatToFilter(filter.search))
+          )}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
@@ -300,9 +329,17 @@ export default function Products(props: ProductsProps) {
         <BottomBar>
           <span style={{ fontSize: '1.1em' }}>Total</span>
           <div>
-            <span style={{ fontSize: '1.1em' }}>{products.length} Produto{products.length > 1 ? 's' : ''}</span>
-            <BsDot />
-            <span style={{ fontSize: '1.1em' }}>{currency.format(total)}</span>
+            <span style={{ fontSize: '1.1em' }}>
+              {products.length} Produto{products.length > 1 ? 's' : ''}
+            </span>
+            {path !== 'supermarkets' && (
+              <>
+                <BsDot />
+                <span style={{ fontSize: '1.1em' }}>
+                  {currency.format(total)}
+                </span>
+              </>
+            )}
           </div>
         </BottomBar>
       )}

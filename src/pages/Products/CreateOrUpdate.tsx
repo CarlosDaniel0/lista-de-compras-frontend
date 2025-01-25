@@ -308,7 +308,7 @@ export default function CreateOrUpdate(
               }
             />
           )}
-          {['lists', 'reciepts'].includes(path) && (
+          {['lists'].includes(path) && (
             <Text
               id="inpTxtUnity"
               container={{ style: { flexBasis: '40%' } }}
@@ -357,6 +357,7 @@ export default function CreateOrUpdate(
               id="inpTxtSupermarket"
               field="supermarket_id"
               label="Supermercado"
+              disabled={!supermarkets.length}
               options={supermarkets.map((item) => ({
                 value: item.id,
                 label: item.name,
@@ -365,7 +366,7 @@ export default function CreateOrUpdate(
             <Search
               field="product_id"
               label="Produto"
-              disabled={!data?.supermarket_id}
+              disabled={!data?.supermarket_id || !products.length}
               options={products.map((item) => ({
                 value: item.id,
                 label: item.description,

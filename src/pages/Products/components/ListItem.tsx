@@ -11,7 +11,7 @@ import {
 import { skeleton } from '../../../components/Loading/Skeleton'
 // import { useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
-import { currency, decimal } from '../../../util'
+import { currency, decimal, decimalSum } from '../../../util'
 import { BsDot } from 'react-icons/bs'
 
 interface ListCardProps<T extends ProductTypes>
@@ -77,6 +77,11 @@ export default function ListCard<T extends ProductTypes>(
   // const navigate = useNavigate()
 
   const { product: p, loading, onContextMenu, path, ...rest } = props // handleRemove, path, id
+
+  const calcTotal = (total?: number | string, discount?: number) => {
+    if (!total && !discount) return undefined
+    return decimalSum(Number(total ?? 0), -Number(discount ?? 0))
+  }
 
   const product = p as ProductSupermarket & ProductList & ProductReciept
   return (
@@ -163,6 +168,11 @@ export default function ListCard<T extends ProductTypes>(
                       )}
                     </>
                   )}
+                  {!!Number(product?.discount ?? 0) &&
+                    <span style={{ color: 'var(--green)'}}>
+                    {'  '}- {currency.format(product?.discount)}
+                    </span>
+                  }
                 </>
               )}
             </span>
@@ -184,7 +194,7 @@ export default function ListCard<T extends ProductTypes>(
               {loading
                 ? ''
                 : currency.format(
-                    Number(product?.total ?? product?.price ?? 0)
+                    Number(calcTotal(product?.total, product?.discount) ?? product?.price ?? 0)
                   )}
             </b>
           )}
