@@ -13,6 +13,7 @@ export interface Filter {
 interface SearchBarProps {
   filter: Filter
   setFilter: SetState<Filter>
+  id?: string
 }
 
 const SearchButton = styled.button`
@@ -30,7 +31,7 @@ const SearchButton = styled.button`
 `
 
 export default function SearchBar(props: SearchBarProps) {
-  const { filter: form, setFilter: setForm } = props
+  const { filter: form, setFilter: setForm, id } = props
   const obj = { form, setForm } as FormContextProps
   const close = () => setForm((prev) => ({ ...prev, show: false }))
   if (!form.show)
@@ -48,6 +49,7 @@ export default function SearchBar(props: SearchBarProps) {
           autoFocus
           // onBlur={close}
           field="search"
+          id={id}
           icon={{
             left: {
               onClick: close,

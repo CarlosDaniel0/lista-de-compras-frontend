@@ -23,7 +23,7 @@ import {
   ResponseData,
 } from '../../util/types'
 import { format } from 'date-fns'
-import { ButtonAdd } from '../../components/Button'
+import { ButtonAdd, IconButton } from '../../components/Button'
 import { Container } from '../Lists'
 import styled from 'styled-components'
 import { Virtuoso } from 'react-virtuoso'
@@ -33,6 +33,7 @@ import ContextMenu from '../../components/ContextMenu'
 import { FaPen, FaTrash } from 'react-icons/fa6'
 import { BsDot } from 'react-icons/bs'
 import SearchBar from '../../components/SearchBar'
+import { BiBarcodeReader } from 'react-icons/bi'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -118,8 +119,11 @@ export default function Products(props: ProductsProps) {
         (tot, item) =>
           decimalSum(
             tot,
-            decimalSum((Number(item?.quantity ?? 0) *
-              (item?.price ?? Number(item?.product?.price ?? 0))), -Number(item?.discount ?? 0))
+            decimalSum(
+              Number(item?.quantity ?? 0) *
+                (item?.price ?? Number(item?.product?.price ?? 0)),
+              -Number(item?.discount ?? 0)
+            )
           ),
         0
       ),
@@ -135,9 +139,11 @@ export default function Products(props: ProductsProps) {
     formatToFilter(
       `${item?.description ?? item?.product?.description} ${
         item?.barcode ?? item?.product?.barcode ?? ''
-      } ${format(new Date(item?.last_update), 'dd/MM/yyyy')} ${
-        item?.category ?? ''
-      }`
+      } ${
+        item?.last_update
+          ? format(new Date(item?.last_update), 'dd/MM/yyyy')
+          : ''
+      } ${item?.category ?? ''}`
     )
 
   const formatProducts = (products: ProductGeneral[]) => {
@@ -286,6 +292,18 @@ export default function Products(props: ProductsProps) {
     },
   ]
 
+  useEffectOnce(() => {
+    const { barcode } = state ?? {}
+    if (!barcode) return
+    const element = document.getElementById('inpTxtSearch')
+    setFilter({
+      show: true,
+      search: String(barcode)
+    })
+    element?.focus()
+    setState?.({})
+  }, [state])
+
   return (
     <>
       {menu.show && (
@@ -294,9 +312,26 @@ export default function Products(props: ProductsProps) {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label={'Produtos'} back />
       <Container $height={show ? 83 : 46}>
-        {!!products.length && !!products?.[0]?.id && (
-          <SearchBar {...{ filter, setFilter }} />
-        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          {!!products.length && !!products?.[0]?.id && (
+            <>
+              <SearchBar {...{ filter, setFilter, id: 'inpTxtSearch' }} />
+              {!filter.show && (
+                ['supermarkets', 'reciepts'].includes(path)  && <IconButton
+                  onClick={() => navigate('/barcode')}
+                  style={{
+                    padding: '0.2em 1.17em',
+                    color: 'var(--input-item-color)',
+                    justifyContent: 'space-between',
+                    marginRight: 5,
+                  }}
+                >
+                  <BiBarcodeReader size={32} />
+                </IconButton>
+              )}
+            </>
+          )}
+        </div>
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
           data={products.filter(
