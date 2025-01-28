@@ -34,7 +34,7 @@ import { BiMinus, BiPlus } from 'react-icons/bi'
 interface TextSelectorProps {
   width: number
   height: number
-  context: StateParams<{ text: string }>
+  context: StateParams
   navigate: NavigateFunction
   setResult: SetState<Tesseract.RecognizeResult | null>
   result: Tesseract.RecognizeResult
@@ -70,6 +70,7 @@ const Snack = styled.div`
   backdrop-filter: blur(3px);
   border-radius: 0.35em;
   padding: 0.25em 0.65em;
+  color: #fff;
 `
 
 const Controllers = styled.div`
@@ -135,7 +136,9 @@ const TextSelector = (props: TextSelectorProps) => {
   const [show, setShow] = useState(false)
   const [scale, setScale] = useState(1.0)
   const handleConfirm = () => {
-    context?.setState?.({ ...(context?.state ?? {}), text })
+    const state = context?.state ?? {}
+    const field = String(state?._field ?? 'text')
+    context?.setState?.({ ...state, _value: { [field]: text } })
     setTimeout(() => {
       navigate(-2)
     }, 50)

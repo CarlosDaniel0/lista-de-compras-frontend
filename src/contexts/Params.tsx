@@ -1,7 +1,7 @@
 import { createContext, useState } from 'react'
 import { SetState } from '../util/types'
 
-type G = { [key: string]: string | number | undefined | boolean | null }
+type G = { [key: string]: string | number | undefined | boolean | null | { [x: string]: string; } }
 export interface StateParams<T = G> {
   state?: T
   setState?: SetState<T>

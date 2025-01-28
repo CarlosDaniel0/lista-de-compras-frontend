@@ -96,9 +96,9 @@ CREATE TABLE "ProductReciept" (
     "removed" BOOLEAN NOT NULL DEFAULT false,
     "sync" BOOLEAN NOT NULL DEFAULT false,
     "receipt_id" TEXT NOT NULL,
-    "product_id" TEXT NOT NULL,
+    "product_id" TEXT,
     CONSTRAINT "ProductReciept_receipt_id_fkey" FOREIGN KEY ("receipt_id") REFERENCES "Reciept" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ProductReciept_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "ProductSupermarket" ("id") ON DELETE NO ACTION ON UPDATE CASCADE
+    CONSTRAINT "ProductReciept_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "ProductSupermarket" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable

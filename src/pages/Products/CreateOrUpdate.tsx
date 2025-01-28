@@ -83,24 +83,24 @@ export default function CreateOrUpdate(
   const navigate = useNavigate()
 
   const icons = {
-    Barcode: {
+    Barcode: (field: string, target: string) => ({
       value: <BiBarcodeReader size={24} />,
       style: { cursor: 'pointer' },
       onClick: async () => {
-        setState?.({ ...(data as object) })
-        await sleep(250)
+        setState?.({ ...(data as object), _field: field, _target: target })
+        await sleep(150)
         navigate('/barcode')
       },
-    },
-    Camera: {
+    }),
+    Camera: (field: string, target: string) => ({
       value: <IoCameraSharp size={24} />,
       style: { cursor: 'pointer' },
       onClick: async () => {
-        setState?.({ ...(data as object) })
-        await sleep(250)
+        setState?.({ ...(data as object), _field: field, _target: target })
+        await sleep(150)
         navigate('/camera')
       },
-    },
+    }),
   }
 
   const loadSupermarkets = () => {
@@ -217,10 +217,11 @@ export default function CreateOrUpdate(
     }>(`/supermarkets/${id}/products`)
       .then((res) => {
         if (!res.status) throw new Error(res.message)
-        if (!res.data.products) return
+        if (!res.data.products) return []
         setProducts(res.data.products)
+        return res.data.products
       })
-      .catch((err) => Dialog.info.show({ message: err.message }))
+      .catch((err) => { Dialog.info.show({ message: err.message }); return [] as ProductSupermarket[] })
       .finally(() => setProducts((prev) => (!prev[0]?.id ? [] : prev)))
 
   useEffect(() => {
@@ -242,16 +243,19 @@ export default function CreateOrUpdate(
       loadReciept(id).then((reciept) => loadProducts(reciept.supermarket_id))
   }, [])
 
-  useEffectOnce(() => {
-    const { barcode, text, ...rest } = state ?? {}
-    if (!barcode && !text) return
-    const id =
-      rest?.description !== text ? 'inpTxtDescription' : 'inpTxtBarcode'
-    const element = document.getElementById(id)
+  useEffectOnce(async () => {
+    const { _target, _value, ...rest } = state ?? {}
+    if (!_target || !_value) return
+    const element = document.getElementById(String(_target))
+    const product = { product_id: String(typeof _value === 'object' ? _value?.product_id : '') } // 
+    if (rest?.supermarket_id && product?.product_id) {
+      const prods = await loadProducts(rest?.supermarket_id + '')
+      if (product?.product_id) product.product_id = prods.find(p => p.barcode === product?.product_id)!.id
+    }
     setData({
       ...rest,
-      description: String(text ?? rest?.description ?? ''),
-      barcode: String(barcode ?? rest?.barcode ?? ''),
+      ...(_value as unknown as Record<string, string>),
+      ...product
     })
     element?.focus()
     setState?.({})
@@ -282,7 +286,7 @@ export default function CreateOrUpdate(
             id="inpTxtDescription"
             label="Produto"
             field="description"
-            icon={{ right: icons.Camera }}
+            icon={{ right: icons.Camera('description', 'inpTxtDescription') }}
           />
         )}
         <div style={{ display: 'flex', gap: 8 }}>
@@ -339,7 +343,7 @@ export default function CreateOrUpdate(
               <Text
                 id="inpTxtBarcode"
                 container={{ style: { flexBasis: '100%' } }}
-                icon={{ right: icons.Barcode }}
+                icon={{ right: icons.Barcode('barcode', 'inpTxtBarcode') }}
                 label="Código de Barras"
                 field="barcode"
               />
@@ -363,14 +367,26 @@ export default function CreateOrUpdate(
                 label: item.name,
               }))}
             />
+
             <Search
+              id="inpTxtProduct"
               field="product_id"
               label="Produto"
               disabled={!data?.supermarket_id || !products.length}
+              container={{ style: { flex: '1 0 0' } }}
               options={products.map((item) => ({
                 value: item.id,
                 label: item.description,
               }))}
+              icon={{
+                right:
+                  !data?.supermarket_id || !products.length
+                    ? {
+                        value: icons.Barcode('product_id', 'inpTxtProduct')
+                          .value,
+                      }
+                    : icons.Barcode('product_id', 'inpTxtProduct'),
+              }}
             />
           </>
         )}

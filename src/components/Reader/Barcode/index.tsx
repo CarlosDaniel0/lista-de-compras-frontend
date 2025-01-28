@@ -92,7 +92,9 @@ export default function Barcode() {
         }
         new Audio(beep).play()
         const barcode = result.getText()
-        context?.setState?.({ ...(context?.state ?? {}), barcode })
+        const state = context?.state ?? {}
+        const field = String(state?._field ?? 'barcode')
+        context?.setState?.({ ...state, _value: { [field]: barcode } })
         setTimeout(() => {
           stopCamera()
           navigate(-1)
@@ -139,7 +141,9 @@ export default function Barcode() {
       }
       new Audio(beep).play()
       const barcode = result.getText()
-      context?.setState?.({ ...(context?.state ?? {}), barcode })
+      const state = context?.state ?? {}
+      const field = String(state?._field ?? 'barcode')
+      context?.setState?.({ ...state, _value: { [field]: barcode } })
       setTimeout(() => {
         stopCamera()
         navigate(-1)

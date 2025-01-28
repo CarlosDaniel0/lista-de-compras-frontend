@@ -6,6 +6,7 @@ import { FaPen } from 'react-icons/fa6'
 import { skeleton } from '../../../components/Loading/Skeleton'
 import { Link, useNavigate } from 'react-router-dom'
 import { format } from 'date-fns'
+import { currency, decimalSum } from '../../../util'
 
 interface ListCardProps {
   reciept: Reciept
@@ -46,6 +47,7 @@ const ButtonRemove = styled.button`
 const loadingSkeleton = css`
   .label,
   .date,
+  .price,
   .button {
     ${skeleton}
   }
@@ -58,6 +60,11 @@ const loadingSkeleton = css`
   .date {
     height: 20px;
     width: 80px;
+  }
+
+  .price {
+    height: 20px;
+    width: 60px;
   }
 `
 
@@ -80,6 +87,9 @@ export default function ListCard(props: ListCardProps) {
           <span className="label" style={{ color: 'var(--color-title-card)' }}>{reciept.name}</span> 
           <span className="date" style={{ color: 'var(--color-subtitle-card)' }}>
             {!!reciept.date && format(new Date(reciept.date), 'dd/MM/yyyy')}
+          </span>
+          <span className='price'>
+            {reciept.total && currency.format(decimalSum(Number(reciept.total ?? 0), -Number(reciept.discount ?? 0)))}
           </span>
         </div>
         <div style={{ display: 'flex', gap: 12 }}>

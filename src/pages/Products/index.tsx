@@ -216,11 +216,11 @@ export default function Products(props: ProductsProps) {
   }
 
   const getProductByBarcode = () => {
-    const { barcode } = state ?? {}
-    if (!barcode) return
+    const { _value } = state ?? {}
+    if (typeof _value !== 'object') return
     setLoading(true)
     request<ResponseData<{ product: ProductSupermarket }>>(
-      `/supermarkets/${id}/products/${barcode}`
+      `/supermarkets/${id}/products/${_value?.barcode}`
     )
       .then((res) => {
         if (!res.status) return
@@ -293,12 +293,12 @@ export default function Products(props: ProductsProps) {
   ]
 
   useEffectOnce(() => {
-    const { barcode } = state ?? {}
-    if (!barcode) return
+    const { _value } = state ?? {}
+    if (typeof _value !== 'object') return
     const element = document.getElementById('inpTxtSearch')
     setFilter({
       show: true,
-      search: String(barcode)
+      search: String(_value?.barcode)
     })
     element?.focus()
     setState?.({})

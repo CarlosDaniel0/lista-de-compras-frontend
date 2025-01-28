@@ -1,12 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import Input, { InputProps } from '..'
 import { FormContext } from '../../../contexts/Form'
 import { genId } from '../../../util'
 import Label from '../label'
 import { FaSearch } from 'react-icons/fa'
-import { Virtuoso } from 'react-virtuoso'
+import { Virtuoso, VirtuosoHandle } from 'react-virtuoso'
 import { IconButton } from '../../Button'
 import { BsX } from 'react-icons/bs'
 
@@ -103,7 +103,7 @@ interface OptionSearch {
 export default function Search(
   props: InputProps & { options?: OptionSearch[] }
 ) {
-  const { label, container, field, options, ...rest } = props
+  const { label, container, field, options, icon, ...rest } = props
   const [active, setActive] = useState(false)
   const { form, setForm } = useContext(FormContext)
   const [object, setObject] = useState({ search: '', label: '' })
@@ -111,24 +111,34 @@ export default function Search(
   const labelProps = typeof label === 'string' ? { value: label } : label
   const id = rest?.id ?? genId('txt')
   const value = active ? object?.search : object?.label ?? ''
+  const ref = useRef<VirtuosoHandle>(null)
+  const listRef = useRef<HTMLElement | Window | null>(null)
   const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = evt.currentTarget
-    setObject((prev) => ({ ...prev, search: value }))
+    setObject((prev) => ({
+      ...prev,
+      search: value,
+      label: !value ? '' : prev.label,
+    }))
   }
 
   const onBlur = () => {}
 
-  const onKeyDown = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-    const { key } = evt
+  const onKeyDown = (evt: Event) => {
+    const { key, ctrlKey } = evt as KeyboardEvent
     if (!['Enter', 'Tab', 'ArrowDown', 'ArrowUp'].includes(key)) return
+    let _index: null | number = null
     switch (key) {
       case 'ArrowDown':
         evt.preventDefault()
-        setIndex((prev) => Math.min(++prev, options?.length ?? 0))
+        _index = Math.min(
+          ctrlKey ? (options?.length ?? 0) - 1 : index + 1,
+          (options?.length ?? 0) - 1
+        )
         break
       case 'ArrowUp':
         evt.preventDefault()
-        setIndex((prev) => Math.max(--prev, -1))
+        _index = Math.max(ctrlKey ? 0 : index - 1, -1)
         break
       case 'Enter':
       case 'Tab':
@@ -136,7 +146,31 @@ export default function Search(
         evt.preventDefault()
         if (options?.[index]) handleSelect(options?.[index])
     }
+
+    if (_index !== null) {
+      setIndex(_index)
+      ref.current!.scrollIntoView({
+        index: _index,
+        behavior: 'auto',
+      })
+    }
   }
+
+  const keyDownCallback = useCallback(onKeyDown, [index, ref])
+
+  const scrollerRef = useCallback(
+    (element: HTMLElement | Window | null) => {
+      if (element) {
+        element.addEventListener('keydown', keyDownCallback)
+        listRef.current = element
+      } else {
+        listRef.current!.removeEventListener('keydown', keyDownCallback)
+      }
+    },
+    [keyDownCallback]
+  )
+
+  const handleShow = () => !active && !rest?.disabled && setActive(true)
 
   const handleSelect = (item: OptionSearch) => {
     setActive(false)
@@ -155,12 +189,12 @@ export default function Search(
     const label = item?.label ?? ''
     const search = item?.label ?? ''
     setObject({ label, search })
-  }, [options])
+  }, [options, form?.[(field ?? '') as never] ])
 
   return (
     <Container
       $active={active}
-      onClick={() => !active && !rest?.disabled && setActive(true)}
+      onClick={handleShow}
       {...container}
     >
       <Label {...labelProps} htmlFor={id} />
@@ -168,7 +202,8 @@ export default function Search(
         id={id}
         onBlur={onBlur}
         icon={{
-          right: {
+          left: icon?.left,
+          right: icon?.right ?? {
             children: (
               <FaSearch
                 size={20}
@@ -183,7 +218,8 @@ export default function Search(
         {...rest}
         value={value}
         onChange={onChange}
-        onKeyDown={onKeyDown}
+        onFocus={handleShow}
+        onKeyDown={(evt) => onKeyDown(evt as unknown as KeyboardEvent)}
       />
       {active && (
         <IconButton
@@ -204,6 +240,8 @@ export default function Search(
                 .toLowerCase()
                 .includes(object?.search?.toLowerCase())
             )}
+            ref={ref}
+            scrollerRef={scrollerRef}
             components={{
               List,
             }}
