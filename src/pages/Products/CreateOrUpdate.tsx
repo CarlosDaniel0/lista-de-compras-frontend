@@ -15,6 +15,7 @@ import {
   ProductSupermarket,
   ProductTypes,
   Reciept,
+  ResponseData,
   Supermarket,
 } from '../../util/types'
 import Loading from '../../components/Loading'
@@ -206,6 +207,11 @@ export default function CreateOrUpdate(
         return err
       })
 
+  const getProductByBarcode = (supermarket_id: string, barcode?: string) => 
+    request<ResponseData<{ product: ProductSupermarket }>>(
+      `/supermarkets/${supermarket_id}/products/barcode/${barcode ?? ''}`
+    )
+
   const loadProducts = (id: string) =>
     request<{
       status: boolean
@@ -249,19 +255,27 @@ export default function CreateOrUpdate(
     const element = document.getElementById(String(_target))
     const product = {
       product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
-    } //
-    if (rest?.supermarket_id && product?.product_id) {
-      const prods = await loadProducts(rest?.supermarket_id + '')
-      if (product?.product_id)
-        product.product_id = prods.find(
-          (p) => p.barcode === product?.product_id
-        )!.id
-    }
+    }  
     setData({
       ...rest,
-      ...(_value as unknown as Record<string, string>),
-      ...product,
+      ...(_value as unknown as Record<string, string>)
     })
+    if (rest?.supermarket_id && product?.product_id) {
+      const res = await getProductByBarcode(rest?.supermarket_id + '', product?.product_id)
+      if (!res.status) {
+        Dialog.info.show({ message: res.message })
+        return setState?.({})
+      }
+      const { id } = res.data.product ?? {}
+      if (!id) return Dialog.info.show({ message: 'Produto não encontrado na base de dados'}) 
+      product.product_id = id
+      await loadProducts(rest?.supermarket_id + '')
+      // const { id } = prods.find(
+      //     (p) => p.barcode?.includes(product?.product_id)
+      // ) ?? {}
+      
+    }
+    setData(prev => ({ ...prev, ...product }))
     element?.focus()
     setState?.({})
   }, [state])

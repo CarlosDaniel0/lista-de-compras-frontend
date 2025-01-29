@@ -238,7 +238,7 @@ router.delete('/:id/products/:id_product', async (req, res, channel) => {
   }
 })
 
-router.get('/:id/products/:barcode', async (req, res, channel) => {
+router.get('/:id/products/barcode/:barcode', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
     const { barcode } = req.params
@@ -247,7 +247,7 @@ router.get('/:id/products/:barcode', async (req, res, channel) => {
     })
     const rest = product ? { data: { product } } : {}
     res.send({
-      status: true,
+      status: !!product,
       message: product
         ? 'Produto encontrado na base de dados'
         : 'Produto não encontrado na base de dados',

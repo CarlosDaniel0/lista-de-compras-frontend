@@ -7,6 +7,7 @@ import {
   genId,
   getFiles,
   JSONToFile,
+  // parseNumberToCurrency,
   request,
 } from '../../util'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -15,7 +16,7 @@ import { forwardRef, useContext, useMemo, useState } from 'react'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
-import Text from '../../components/Input/text'
+// import Text from '../../components/Input/text'
 import {
   Option,
   Product,
@@ -59,43 +60,43 @@ const BottomBar = styled.div`
   right: 0px;
 `
 
-const ProductResultPanel = (props: { product: ProductSupermarket }) => {
-  const { product } = props
-  return (
-    <>
-      <h3>{product?.description}</h3>
-      <p
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          color: 'var(--color-title-card)',
-          fontSize: '1.4em',
-        }}
-      >
-        <span>{product?.barcode}</span>{' '}
-        <Text
-          style={{
-            fontSize: '0.85em',
-            maxWidth: 90,
-            padding: '0.2em 0.4em',
-          }}
-          defaultValue={product?.price ?? ''}
-          mask="currency"
-        />
-      </p>
-      <p
-        className="d-flex gap-2"
-        style={{ color: 'var(--color-subtitle-card)' }}
-      >
-        <span>Última Atualização</span>
-        <b>
-          {product?.last_update &&
-            format(new Date(product?.last_update), 'dd/MM/yyyy')}
-        </b>
-      </p>
-    </>
-  )
-}
+// const ProductResultPanel = (props: { product: ProductSupermarket }) => {
+//   const { product } = props
+//   return (
+//     <>
+//       <h3>{product?.description}</h3>
+//       <p
+//         style={{
+//           display: 'flex',
+//           justifyContent: 'space-between',
+//           color: 'var(--color-title-card)',
+//           fontSize: '1.4em',
+//         }}
+//       >
+//         <span>{product?.barcode}</span>{' '}
+//         <Text
+//           style={{
+//             fontSize: '0.85em',
+//             maxWidth: 90,
+//             padding: '0.2em 0.4em',
+//           }}
+//           defaultValue={parseNumberToCurrency(product?.price ?? '')}
+//           mask="currency"
+//         />
+//       </p>
+//       <p
+//         className="d-flex gap-2"
+//         style={{ color: 'var(--color-subtitle-card)' }}
+//       >
+//         <span>Última Atualização</span>{' '}
+//         <b>
+//           {product?.last_update &&
+//             format(new Date(product?.last_update), 'dd/MM/yyyy')}
+//         </b>
+//       </p>
+//     </>
+//   )
+// }
 
 type ProductGeneral = ProductSupermarket & ProductList & ProductReciept
 const productLoading: ProductGeneral = {
@@ -236,42 +237,42 @@ export default function Products(props: ProductsProps) {
     })
   }
 
-  const getProductByBarcode = () => {
-    const { _value } = state ?? {}
-    if (typeof _value !== 'object') return
-    setLoading(true)
-    request<ResponseData<{ product: ProductSupermarket }>>(
-      `/supermarkets/${id}/products/${_value?.barcode}`
-    )
-      .then((res) => {
-        if (!res.status) return
-        if (!res.data?.product)
-          return Dialog.option.show({
-            onConfirm: {
-              label: 'Adicionar',
-              onClick: () => {
-                navigate('/register')
-              },
-            },
-            onCancel: {
-              color: '#a11515',
-              label: 'Cancelar',
-            },
-            message: res.message,
-          })
-        const { product } = res.data
-        Dialog.option.show({
-          onConfirm: () => {},
-          onCancel: () => {},
-          content: <ProductResultPanel product={product} />,
-        })
-      })
-      .catch((err) => console.log(err.message))
-      .finally(() => {
-        setLoading(false)
-        setState?.({})
-      })
-  }
+  // const getProductByBarcode = () => {
+  //   const { _value } = state ?? {}
+  //   if (typeof _value !== 'object') return
+  //   setLoading(true)
+  //   request<ResponseData<{ product: ProductSupermarket }>>(
+  //     `/supermarkets/${id}/products/barcode/${_value?.barcode}`
+  //   )
+  //     .then((res) => {
+  //       if (!res.status) return
+  //       if (!res.data?.product)
+  //         return Dialog.option.show({
+  //           onConfirm: {
+  //             label: 'Adicionar',
+  //             onClick: () => {
+  //               navigate('/register')
+  //             },
+  //           },
+  //           onCancel: {
+  //             color: '#a11515',
+  //             label: 'Cancelar',
+  //           },
+  //           message: res.message,
+  //         })
+  //       const { product } = res.data
+  //       Dialog.option.show({
+  //         onConfirm: (setShow) => { setShow(false) },
+  //         onCancel: (setShow) => { setShow(false) },
+  //         content: <ProductResultPanel product={product} />,
+  //       })
+  //     })
+  //     .catch((err) => console.log(err.message))
+  //     .finally(() => {
+  //       setLoading(false)
+  //       setState?.({})
+  //     })
+  // }
 
   const onContextMenu = (
     evt: React.MouseEvent<HTMLDivElement>,
@@ -285,7 +286,7 @@ export default function Products(props: ProductsProps) {
   }
 
   useEffectOnce(loadProducts, [])
-  useEffectOnce(getProductByBarcode, [state])
+  // useEffectOnce(getProductByBarcode, [state])
   const optionsContext: Option[] = [
     {
       onClick: () => {
