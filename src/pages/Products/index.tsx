@@ -5,6 +5,8 @@ import {
   decimalSum,
   formatToFilter,
   genId,
+  getFiles,
+  JSONToFile,
   request,
 } from '../../util'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -30,13 +32,20 @@ import { Virtuoso } from 'react-virtuoso'
 import ListCard from './components/ListItem'
 import { ListContainer } from '../../components/Containers'
 import ContextMenu from '../../components/ContextMenu'
-import { FaPen, FaTrash } from 'react-icons/fa6'
+import { FaDownload, FaPen, FaTrash, FaUpload } from 'react-icons/fa6'
 import { BsDot } from 'react-icons/bs'
 import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
+import { handleCreateProduct } from './functions'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
+}
+
+const names = {
+  lists: 'Lista',
+  supermarkets: 'Supermercado',
+  reciepts: 'Comprovante',
 }
 
 const BottomBar = styled.div`
@@ -59,7 +68,7 @@ const ProductResultPanel = (props: { product: ProductSupermarket }) => {
         style={{
           display: 'flex',
           justifyContent: 'space-between',
-          color: '#4a4a4a',
+          color: 'var(--color-title-card)',
           fontSize: '1.4em',
         }}
       >
@@ -74,9 +83,15 @@ const ProductResultPanel = (props: { product: ProductSupermarket }) => {
           mask="currency"
         />
       </p>
-      <p className="d-flex gap-2">
+      <p
+        className="d-flex gap-2"
+        style={{ color: 'var(--color-subtitle-card)' }}
+      >
         <span>Última Atualização</span>
-        <b>{format(new Date(product?.last_update), 'dd/MM/yyyy')}</b>
+        <b>
+          {product?.last_update &&
+            format(new Date(product?.last_update), 'dd/MM/yyyy')}
+        </b>
       </p>
     </>
   )
@@ -158,7 +173,13 @@ export default function Products(props: ProductsProps) {
       }))
     }
     Array.isArray(products) && setShow(products.some((item) => item?.price))
-    return products
+    return products.sort((a, b) =>
+      path === 'reciepts'
+        ? 0
+        : (a?.description || a?.product?.description)?.localeCompare(
+            b?.description || b?.product?.description || ''
+          ) ?? 0
+    )
   }
 
   const loadProducts = () => {
@@ -292,13 +313,59 @@ export default function Products(props: ProductsProps) {
     },
   ]
 
+  const handleImport = () => {
+    getFiles({
+      accept: 'application/json',
+    }).then(async (data) => {
+      if (!data) return
+      const file = await data.item(0)?.text()
+      try {
+        const json = JSON.parse(file!)
+        setLoading(true)
+
+        handleCreateProduct(path, id!, json)
+          .then((res) => {
+            if (res.status)
+              setProducts((prev) => [...prev, ...res.data.product as ProductGeneral[]])
+            Dialog.info.show({ message: res.message })
+          })
+          .finally(() => setLoading(false))
+      } catch (e) {
+        Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+      }
+    })
+  }
+
+  const handleExport = () => JSONToFile(products, `Produtos-${names[path]}`)
+
+  const options: Option[] = [
+    {
+      key: 'import',
+      label: (
+        <>
+          <FaDownload /> Importar
+        </>
+      ),
+      onClick: handleImport,
+    },
+    {
+      key: 'export',
+      label: (
+        <>
+          <FaUpload /> Exportar
+        </>
+      ),
+      onClick: handleExport,
+    },
+  ]
+
   useEffectOnce(() => {
     const { _value } = state ?? {}
     if (typeof _value !== 'object') return
     const element = document.getElementById('inpTxtSearch')
     setFilter({
       show: true,
-      search: String(_value?.barcode)
+      search: String(_value?.barcode),
     })
     element?.focus()
     setState?.({})
@@ -310,14 +377,14 @@ export default function Products(props: ProductsProps) {
         <ContextMenu {...{ setMenu, menu, options: optionsContext }} />
       )}
       <Loading status={loading} label="Aguarde..." />
-      <TabBar label={'Produtos'} back />
+      <TabBar label="Produtos" options={options} back />
       <Container $height={show ? 83 : 46}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           {!!products.length && !!products?.[0]?.id && (
             <>
               <SearchBar {...{ filter, setFilter, id: 'inpTxtSearch' }} />
-              {!filter.show && (
-                ['supermarkets', 'reciepts'].includes(path)  && <IconButton
+              {!filter.show && ['supermarkets', 'reciepts'].includes(path) && (
+                <IconButton
                   onClick={() => navigate('/barcode')}
                   style={{
                     padding: '0.2em 1.17em',

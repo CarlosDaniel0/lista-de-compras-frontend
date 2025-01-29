@@ -28,7 +28,7 @@ model Wholesale {
   removed      Boolean            @default(false)
   sync         Boolean            @default(false)
   product_id   String             @unique
-  product      ProductSupermarket @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  product      ProductSupermarket @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Coordinates {
@@ -36,7 +36,7 @@ model Coordinates {
   lat            Float
   long           Float
   supermarket_id String      @unique
-  supermarket    Supermarket @relation(fields: [supermarket_id], references: [id], onDelete: Cascade)
+  supermarket    Supermarket @relation(fields: [supermarket_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model ProductSupermarket {
@@ -53,7 +53,7 @@ model ProductSupermarket {
   wholesale        Wholesale?
   products_reciept ProductReciept[]
   products_list    ProductList[]
-  supermarket      Supermarket      @relation(fields: [supermarket_id], references: [id], onDelete: Cascade)
+  supermarket      Supermarket      @relation(fields: [supermarket_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 //   Lista
@@ -64,7 +64,7 @@ model List {
   removed  Boolean       @default(false)
   sync     Boolean       @default(false)
   user_id  String
-  user     User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user     User          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   products ProductList[]
 }
 
@@ -80,7 +80,7 @@ model ProductList {
   supermarket_id String?
   product        ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: NoAction)
   supermarket    Supermarket?        @relation(fields: [supermarket_id], references: [id], onDelete: NoAction)
-  list           List                @relation(fields: [list_id], references: [id], onDelete: Cascade)
+  list           List                @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 //  Receita
@@ -90,13 +90,13 @@ model Reciept {
   date           DateTime         @default(now())
   total          Decimal
   discount       Decimal
-  supermarket_id String
+  supermarket_id String?
   user_id        String
   removed        Boolean          @default(false)
   sync           Boolean          @default(false)
   products       ProductReciept[]
   supermarket    Supermarket?     @relation(fields: [supermarket_id], references: [id], onDelete: NoAction)
-  user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model ProductReciept {
@@ -110,8 +110,8 @@ model ProductReciept {
   sync       Boolean            @default(false)
   receipt_id String
   product_id String?
-  receipt    Reciept            @relation(fields: [receipt_id], references: [id], onDelete: Cascade)
-  product    ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  receipt    Reciept            @relation(fields: [receipt_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  product    ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: NoAction)
 }
 
 // User

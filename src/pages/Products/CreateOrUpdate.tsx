@@ -30,12 +30,13 @@ import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import styled from 'styled-components'
 import Search from '../../components/Input/search'
+import { handleCreateProduct } from './functions'
 
 interface CreateOrUpdateCreateOrUpdateProps {
   path: ProductTypes
 }
 
-type GeneralProduct = ProductSupermarket & ProductList & ProductReciept
+export type GeneralProduct = ProductSupermarket & ProductList & ProductReciept
 
 const ButtonWholesale = styled(Button)`
   width: 100%;
@@ -141,19 +142,15 @@ export default function CreateOrUpdate(
 
   const create = async () => {
     setLoading(true)
-    return request<{
-      status: boolean
-      message: string
-      data: { product: Product<typeof path>[] }
-    }>(
-      `/${path}/${id}/products`,
+    return handleCreateProduct(
+      path,
+      id!,
       formatFormNumbers(data as GeneralProduct, [
         'price',
         'price',
         'quantity',
         'total',
-      ]),
-      'POST'
+      ])
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
@@ -221,7 +218,10 @@ export default function CreateOrUpdate(
         setProducts(res.data.products)
         return res.data.products
       })
-      .catch((err) => { Dialog.info.show({ message: err.message }); return [] as ProductSupermarket[] })
+      .catch((err) => {
+        Dialog.info.show({ message: err.message })
+        return [] as ProductSupermarket[]
+      })
       .finally(() => setProducts((prev) => (!prev[0]?.id ? [] : prev)))
 
   useEffect(() => {
@@ -247,15 +247,20 @@ export default function CreateOrUpdate(
     const { _target, _value, ...rest } = state ?? {}
     if (!_target || !_value) return
     const element = document.getElementById(String(_target))
-    const product = { product_id: String(typeof _value === 'object' ? _value?.product_id : '') } // 
+    const product = {
+      product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
+    } //
     if (rest?.supermarket_id && product?.product_id) {
       const prods = await loadProducts(rest?.supermarket_id + '')
-      if (product?.product_id) product.product_id = prods.find(p => p.barcode === product?.product_id)!.id
+      if (product?.product_id)
+        product.product_id = prods.find(
+          (p) => p.barcode === product?.product_id
+        )!.id
     }
     setData({
       ...rest,
       ...(_value as unknown as Record<string, string>),
-      ...product
+      ...product,
     })
     element?.focus()
     setState?.({})
