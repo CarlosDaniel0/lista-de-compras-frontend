@@ -136,8 +136,8 @@ export default function Products(props: ProductsProps) {
           decimalSum(
             tot,
             decimalSum(
-              Number(item?.quantity ?? 0) *
-                (item?.price ?? Number(item?.product?.price ?? 0)),
+              +(Number(item?.quantity ?? 0) *
+                (item?.price ?? Number(item?.product?.price ?? 0))).toFixed(2),
               -Number(item?.discount ?? 0)
             )
           ),
@@ -152,15 +152,12 @@ export default function Products(props: ProductsProps) {
   )
 
   const formatString = (item: ProductGeneral) =>
-    formatToFilter(
-      `${item?.description ?? item?.product?.description} ${
-        item?.barcode ?? item?.product?.barcode ?? ''
-      } ${
-        item?.last_update
-          ? format(new Date(item?.last_update), 'dd/MM/yyyy')
-          : ''
-      } ${item?.category ?? ''}`
-    )
+    formatToFilter(`
+      ${item?.position ?? ''} ${
+      item?.description ?? item?.product?.description
+    } ${item?.barcode ?? item?.product?.barcode ?? ''} ${
+      item?.last_update ? format(new Date(item?.last_update), 'dd/MM/yyyy') : ''
+    } ${item?.category ?? ''}`)
 
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
@@ -327,7 +324,10 @@ export default function Products(props: ProductsProps) {
         handleCreateProduct(path, id!, json)
           .then((res) => {
             if (res.status)
-              setProducts((prev) => [...prev, ...res.data.product as ProductGeneral[]])
+              setProducts((prev) => [
+                ...prev,
+                ...(res.data.product as ProductGeneral[]),
+              ])
             Dialog.info.show({ message: res.message })
           })
           .finally(() => setLoading(false))

@@ -88,12 +88,12 @@ if (selfDestroying) options.selfDestroying = selfDestroying
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), VitePWA(options), replace(replaceOptions) as PluginOption],
-  server: {
-    headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
-    },
-  },
+  // server: {
+  //   headers: {
+  //     'Cross-Origin-Opener-Policy': 'same-origin',
+  //     'Cross-Origin-Embedder-Policy': 'require-corp'
+  //   },
+  // },
   optimizeDeps: {
     exclude: ['@jlongster_sql', 'absurd-sql'],
   },

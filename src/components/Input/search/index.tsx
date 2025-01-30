@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import styled from 'styled-components'
 import Input, { InputProps } from '..'
 import { FormContext } from '../../../contexts/Form'
@@ -113,6 +120,17 @@ export default function Search(
   const value = active ? object?.search : object?.label ?? ''
   const ref = useRef<VirtuosoHandle>(null)
   const listRef = useRef<HTMLElement | Window | null>(null)
+
+  const data = useMemo(
+    () =>
+      options?.filter((item) =>
+        `${item?.value} ${item?.label}`
+          .toLowerCase()
+          .includes(object?.search?.toLowerCase())
+      ),
+    [options, object?.search]
+  )
+
   const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = evt.currentTarget
     setObject((prev) => ({
@@ -132,8 +150,8 @@ export default function Search(
       case 'ArrowDown':
         evt.preventDefault()
         _index = Math.min(
-          ctrlKey ? (options?.length ?? 0) - 1 : index + 1,
-          (options?.length ?? 0) - 1
+          ctrlKey ? (data?.length ?? 0) - 1 : index + 1,
+          (data?.length ?? 0) - 1
         )
         break
       case 'ArrowUp':
@@ -144,7 +162,7 @@ export default function Search(
       case 'Tab':
       default:
         evt.preventDefault()
-        if (options?.[index]) handleSelect(options?.[index])
+        if (data?.[index]) handleSelect(data?.[index])
     }
 
     if (_index !== null) {
@@ -189,14 +207,10 @@ export default function Search(
     const label = item?.label ?? ''
     const search = item?.label ?? ''
     setObject({ label, search })
-  }, [options, form?.[(field ?? '') as never] ])
+  }, [options, form?.[(field ?? '') as never]])
 
   return (
-    <Container
-      $active={active}
-      onClick={handleShow}
-      {...container}
-    >
+    <Container $active={active} onClick={handleShow} {...container}>
       <Label {...labelProps} htmlFor={id} />
       <Input
         id={id}
@@ -235,11 +249,7 @@ export default function Search(
         <ListContainer $active={active}>
           <Virtuoso
             style={{ height: '100%' }}
-            data={options?.filter((item) =>
-              `${item?.value} ${item?.label}`
-                .toLowerCase()
-                .includes(object?.search?.toLowerCase())
-            )}
+            data={data}
             ref={ref}
             scrollerRef={scrollerRef}
             components={{

@@ -132,9 +132,16 @@ export default function CreateOrUpdate(
         const { product } = res.data
         setData({
           ...res.data.product,
-          price: parseNumberToCurrency(
-            'price' in product ? product?.price : 0
-          ) as unknown as number,
+          ...(Object.fromEntries(
+            ['price', 'quantity', 'total'].map((key) => [
+              key,
+              parseNumberToCurrency(
+                key in product
+                  ? product?.[key as keyof Product<ProductTypes>]
+                  : 0
+              ) as unknown as number,
+            ])
+          ) as unknown as GeneralProduct),
         })
       })
       .catch((err) => Dialog.info.show({ message: err.message }))
@@ -146,12 +153,7 @@ export default function CreateOrUpdate(
     return handleCreateProduct(
       path,
       id!,
-      formatFormNumbers(data as GeneralProduct, [
-        'price',
-        'price',
-        'quantity',
-        'total',
-      ])
+      formatFormNumbers(data as GeneralProduct, ['price', 'quantity', 'total'])
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
@@ -173,7 +175,11 @@ export default function CreateOrUpdate(
       status: boolean
       message: string
       data: { reciept: Product<typeof path> }
-    }>(`/${path}/${id}/products/${product_id}`, data, 'PUT')
+    }>(
+      `/${path}/${id}/products/${product_id}`,
+      formatFormNumbers(data as GeneralProduct, ['price', 'quantity', 'total']),
+      'PUT'
+    )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         Dialog.info.show({
@@ -198,7 +204,7 @@ export default function CreateOrUpdate(
         if (!res.status || !res.data.reciept) throw new Error(res.message)
         setData((prev) => ({
           ...prev,
-          position: (res.data.reciept.products?.length ?? 0) + 1,
+          position: product_id ? prev?.position : (res.data.reciept.products?.length ?? 0) + 1,
         }))
         return res.data.reciept
       })
@@ -207,7 +213,7 @@ export default function CreateOrUpdate(
         return err
       })
 
-  const getProductByBarcode = (supermarket_id: string, barcode?: string) => 
+  const getProductByBarcode = (supermarket_id: string, barcode?: string) =>
     request<ResponseData<{ product: ProductSupermarket }>>(
       `/supermarkets/${supermarket_id}/products/barcode/${barcode ?? ''}`
     )
@@ -255,27 +261,32 @@ export default function CreateOrUpdate(
     const element = document.getElementById(String(_target))
     const product = {
       product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
-    }  
+    }
     setData({
       ...rest,
-      ...(_value as unknown as Record<string, string>)
+      ...(_value as unknown as Record<string, string>),
     })
     if (rest?.supermarket_id && product?.product_id) {
-      const res = await getProductByBarcode(rest?.supermarket_id + '', product?.product_id)
+      const res = await getProductByBarcode(
+        rest?.supermarket_id + '',
+        product?.product_id
+      )
       if (!res.status) {
         Dialog.info.show({ message: res.message })
         return setState?.({})
       }
       const { id } = res.data.product ?? {}
-      if (!id) return Dialog.info.show({ message: 'Produto não encontrado na base de dados'}) 
+      if (!id)
+        return Dialog.info.show({
+          message: 'Produto não encontrado na base de dados',
+        })
       product.product_id = id
       await loadProducts(rest?.supermarket_id + '')
       // const { id } = prods.find(
       //     (p) => p.barcode?.includes(product?.product_id)
       // ) ?? {}
-      
     }
-    setData(prev => ({ ...prev, ...product }))
+    setData((prev) => ({ ...prev, ...product }))
     element?.focus()
     setState?.({})
   }, [state])
