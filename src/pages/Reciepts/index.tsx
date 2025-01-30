@@ -16,6 +16,7 @@ import { Virtuoso } from 'react-virtuoso'
 import { handleCreateReciept } from './functions'
 import SearchBar from '../../components/SearchBar'
 import { format } from 'date-fns'
+import { store } from '../../redux/store'
 
 const loadingReciepts = Array.from(
   { length: 5 },
@@ -37,14 +38,17 @@ export default function Reciepts() {
   const [loading, setLoading] = useState(false)
   const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
+  const { user } = store.getState()
 
   const loadContent = async () => {
     setReciepts(loadingReciepts)
+    const params = new URLSearchParams()
+    params.append('u', user?.id ?? '')
     request<{
       status: boolean
       message: string
       data: { reciepts: Reciept[] }
-    }>('/reciepts')
+    }>('/reciepts?' + params)
       .then((res) => {
         if (!res.status) throw new Error(res.message)
         setReciepts(res.data.reciepts)

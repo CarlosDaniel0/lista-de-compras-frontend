@@ -5,14 +5,15 @@ import { SQLite } from '../../entities/SQLite'
 import { databaseErrorResponse } from '../../utils'
 const router = new APIRouter()
 
-router.get('/', async (_, res, channel) => {
+router.get('/', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const reciepts = await sqlite.reciept.findMany({
+    const { u: user_id } = req.query as never
+    const reciepts = user_id ? await sqlite.reciept.findMany({
       select: { id: true, name: true, date: true, discount: true, total: true, supermarket_id: true, user_id: true },
-      where: { removed: false },
-    })
-    res.send({ status: true, data: { reciepts } })
+      where: { removed: false, user_id },
+    }) : null
+    res.send({ status: !!user_id, message: !user_id ? 'O parâmetro "u" é obrigatório na requisição' : '', data: { reciepts } })
   } catch (e) {
     res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
   }
