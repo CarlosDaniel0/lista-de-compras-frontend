@@ -135,8 +135,7 @@ export default function Products(props: ProductsProps) {
   )
 
   const productsData = useMemo(() => {
-    if (path === 'lists') {
-      console.log(products)
+    if (!loading && path === 'lists') {
       return products.reduce((acc, item, __, arr) => {
         const i = acc.findIndex((el) => el.description === item.description)
         if (i !== -1) {
@@ -166,7 +165,7 @@ export default function Products(props: ProductsProps) {
     }
 
     return products
-  }, [products, path])
+  }, [products, path, loading])
   const formatString = (item: ProductGeneral) =>
     formatToFilter(`
       ${item?.position ?? ''} ${
