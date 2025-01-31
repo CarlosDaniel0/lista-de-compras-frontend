@@ -14,6 +14,7 @@ import { format } from 'date-fns'
 import { currency, decimal, decimalSum } from '../../../util'
 import { BsDot } from 'react-icons/bs'
 
+type ProductGeneral = ProductList & ProductReciept & ProductSupermarket
 interface ListCardProps<T extends ProductTypes>
   extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onContextMenu'> {
   onContextMenu?: (
@@ -21,6 +22,7 @@ interface ListCardProps<T extends ProductTypes>
     product: Product<T>
   ) => void
   product: Product<T>
+  products: Product<T>[]
   path: T
   id?: string
   loading: boolean
@@ -74,20 +76,34 @@ const loadingSkeleton = css`
 export default function ListCard<T extends ProductTypes>(
   props: ListCardProps<T>
 ) {
-  // const navigate = useNavigate()
-
-  const { product: p, loading, onContextMenu, path, ...rest } = props // handleRemove, path, id
+  const {
+    product: prod,
+    loading,
+    onContextMenu,
+    path,
+    products: prods,
+    ...rest
+  } = props // handleRemove, path, id
 
   const calcTotal = (total?: number | string, discount?: number) => {
     if (!total && !discount) return undefined
     return decimalSum(Number(total ?? 0), -Number(discount ?? 0))
   }
 
-  const product = p as ProductSupermarket & ProductList & ProductReciept
+  const product = prod as ProductGeneral
+  const products = prods as ProductGeneral[]
+
   return (
     <Card
       {...rest}
-      onContextMenu={(evt) => onContextMenu?.(evt, product as Product<T>)}
+      onContextMenu={(evt) => {
+        const prod = product?.group
+          ? products
+              .reverse()
+              .find((p) => p.description === product.description)
+          : product
+        onContextMenu?.(evt, prod as Product<T>)
+      }}
       css={loading ? loadingSkeleton : undefined}
       style={{
         padding: '0.8em 0.4em',
@@ -127,7 +143,9 @@ export default function ListCard<T extends ProductTypes>(
           }}
         >
           <span className="label" style={{ color: 'var(--color-title-card)' }}>
-            {product?.product?.description ?? product?.description}
+            {path === 'lists'
+              ? product?.description
+              : product?.product?.description ?? product?.description}
           </span>
           <span
             className="category"
@@ -160,19 +178,20 @@ export default function ListCard<T extends ProductTypes>(
                   {decimal.format(Number(product?.quantity ?? 0))}{' '}
                   {product?.unity ?? product?.product?.unity}
                   {(!!Number(product?.product?.price ?? 0) ||
-                    !!Number(product?.price ?? 0)) && (
-                    <>
-                      <BsDot />
-                      {currency.format(
-                        Number(product?.product?.price ?? product?.price ?? 0)
-                      )}
-                    </>
-                  )}
-                  {!!Number(product?.discount ?? 0) &&
-                    <span style={{ color: 'var(--green)'}}>
-                    {'  '}- {currency.format(product?.discount)}
+                    !!Number(product?.price ?? 0)) &&
+                    !product?.group && (
+                      <>
+                        <BsDot />
+                        {currency.format(
+                          Number(product?.product?.price ?? product?.price ?? 0)
+                        )}
+                      </>
+                    )}
+                  {!!Number(product?.discount ?? 0) && (
+                    <span style={{ color: 'var(--green)' }}>
+                      {'  '}- {currency.format(product?.discount)}
                     </span>
-                  }
+                  )}
                 </>
               )}
             </span>
@@ -194,7 +213,11 @@ export default function ListCard<T extends ProductTypes>(
               {loading
                 ? ''
                 : currency.format(
-                    Number(calcTotal(product?.total, product?.discount) ?? product?.price ?? 0)
+                    Number(
+                      calcTotal(product?.total, product?.discount) ??
+                        product?.price ??
+                        0
+                    )
                   )}
             </b>
           )}

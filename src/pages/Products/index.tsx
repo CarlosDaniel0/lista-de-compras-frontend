@@ -129,28 +129,44 @@ export default function Products(props: ProductsProps) {
   const navigate = useNavigate()
   const { id } = useParams()
 
-  const total = useMemo(
-    () =>
-      products.reduce(
-        (tot, item) =>
-          decimalSum(
-            tot,
-            decimalSum(
-              +(Number(item?.quantity ?? 0) *
-                (item?.price ?? Number(item?.product?.price ?? 0))).toFixed(2),
-              -Number(item?.discount ?? 0)
-            )
-          ),
-        0
-      ),
-    [products]
-  )
-
   const loadingProducts: ProductGeneral[] = Array.from(
     { length: 5 },
     () => productLoading
   )
 
+  const productsData = useMemo(() => {
+    if (path === 'lists') {
+      console.log(products)
+      return products.reduce((acc, item, __, arr) => {
+        const i = acc.findIndex((el) => el.description === item.description)
+        if (i !== -1) {
+          const prods = arr.filter((p, index) => index !== i && p.description === item.description)
+
+          acc[i] = {
+            ...acc[i],
+            group: true,
+            quantity: prods.reduce(
+              (t, p) => decimalSum(t, p.quantity),
+              acc[i].quantity
+            ),
+            total: prods.reduce(
+              (t, p) =>
+                decimalSum(
+                  t,
+                  +((p.quantity ?? 0) * Number(p?.product?.price ?? 0)).toFixed(
+                    2
+                  )
+                ),
+              Number(acc[i].total ?? 0)
+            ),
+          }
+        } else acc.push(item)
+        return acc
+      }, [] as ProductGeneral[])
+    }
+
+    return products
+  }, [products, path])
   const formatString = (item: ProductGeneral) =>
     formatToFilter(`
       ${item?.position ?? ''} ${
@@ -372,6 +388,27 @@ export default function Products(props: ProductsProps) {
     setState?.({})
   }, [state])
 
+  const total = useMemo(
+    () =>
+      productsData.reduce(
+        (tot, item) =>
+          decimalSum(
+            tot,
+            path === 'lists'
+              ? Number(item.total ?? 0)
+              : decimalSum(
+                  +(
+                    Number(item?.quantity ?? 0) *
+                    (item?.price ?? Number(item?.product?.price ?? 0))
+                  ).toFixed(2),
+                  -Number(item?.discount ?? 0)
+                )
+          ),
+        0
+      ),
+    [productsData, path]
+  )
+
   return (
     <>
       {menu.show && (
@@ -402,7 +439,7 @@ export default function Products(props: ProductsProps) {
         </div>
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={products.filter(
+          data={productsData.filter(
             (item) =>
               !filter.search ||
               formatString(item).includes(formatToFilter(filter.search))
@@ -418,6 +455,7 @@ export default function Products(props: ProductsProps) {
             <ListCard
               key={genId(`product-${path}-${i}`)}
               {...{
+                products,
                 onContextMenu,
                 product,
                 id,

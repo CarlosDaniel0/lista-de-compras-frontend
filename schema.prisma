@@ -78,8 +78,8 @@ model ProductList {
   list_id        String
   product_id     String?
   supermarket_id String?
-  product        ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: NoAction)
-  supermarket    Supermarket?        @relation(fields: [supermarket_id], references: [id], onDelete: NoAction)
+  product        ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  supermarket    Supermarket?        @relation(fields: [supermarket_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   list           List                @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 

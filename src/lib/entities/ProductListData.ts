@@ -48,8 +48,8 @@ export class ProductListData implements ProductList {
   }
 
   static parse(json: Record<string, any>) {
-    const { id, description, unity, quantity, removed, sync, list_id, supermarket_id, product_id, list, product, supermarket } = json;
-    return new ProductListData(id, description, unity, quantity, removed, sync, list_id, supermarket_id, product_id, list, product, supermarket);
+    const { id, description, unity, quantity, removed, sync, list_id, product_id, supermarket_id, list, product, supermarket } = json;
+    return new ProductListData(id, description, unity, quantity, removed, sync, list_id, product_id, supermarket_id, list, product, supermarket);
   }
 
   toEntity() {

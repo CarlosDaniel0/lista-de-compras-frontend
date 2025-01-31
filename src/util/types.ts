@@ -19,6 +19,7 @@ export interface ProductList {
   supermarket_id?: string
   product?: ProductSupermarket
   supermarket?: Supermarket
+  group?: boolean
 }
 
 export interface User {
@@ -110,7 +111,8 @@ export interface ResponseData <T,> {
 export interface Option {
   key: string | number
   label: React.ReactNode
-  onClick?: (evt: React.MouseEvent<HTMLButtonElement>, close: () => void) => void
+  onClick?: (evt: React.MouseEvent<HTMLButtonElement>, close: () => void) => void,
+  disabled?: boolean
 }
 
 export type ObjectFromList<T extends ReadonlyArray<string>, V = string> = {

@@ -4,7 +4,13 @@ import Loading from '../../components/Loading'
 import TabBar from '../../components/TabBar'
 import { Container } from '../Lists'
 import { useNavigate } from 'react-router-dom'
-import { formatToFilter, genId, getFiles, JSONToFile, request } from '../../util'
+import {
+  formatToFilter,
+  genId,
+  JSONToFile,
+  getFiles,
+  request,
+} from '../../util'
 import { Option, Reciept } from '../../util/types'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DialogContext } from '../../contexts/Dialog'
@@ -17,6 +23,14 @@ import { handleCreateReciept } from './functions'
 import SearchBar from '../../components/SearchBar'
 import { format } from 'date-fns'
 import { store } from '../../redux/store'
+import {
+  BsFiletypeJson,
+  BsFiletypeTxt,
+  BsFiletypeXml,
+  BsQrCode,
+} from 'react-icons/bs'
+import { LuScanText } from 'react-icons/lu'
+import Menu from '../../components/Dialog/menu'
 
 const loadingReciepts = Array.from(
   { length: 5 },
@@ -36,6 +50,7 @@ export default function Reciepts() {
   const [reciepts, setReciepts] = useState<Reciept[]>([])
   const Dialog = useContext(DialogContext)
   const [loading, setLoading] = useState(false)
+  const [show, setShow] = useState(false)
   const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
   const { user } = store.getState()
@@ -88,31 +103,42 @@ export default function Reciepts() {
     })
   }
 
-  const handleImport = () => {
-    getFiles({
-      accept: 'application/json',
-    }).then(async (data) => {
-      if (!data) return
-      const file = await data.item(0)?.text()
-      try {
-        const json = JSON.parse(file!)
-        setLoading(true)
-        handleCreateReciept(json)
-          .then((res) => {
-            if (res.status)
-              setReciepts((prev) => [...prev, ...res.data.reciept])
-            Dialog.info.show({ message: res.message })
+  const handleImport =
+    (type: 'ocr' | 'txt' | 'json' | 'xml' | 'qrcode') =>
+    (__: React.MouseEvent<HTMLButtonElement>, close: () => void) => {
+      close()
+      switch (type) {
+        case 'json':
+          return getFiles({
+            accept: 'application/json',
+          }).then(async (data) => {
+            if (!data) return
+            const file = await data.item(0)?.text()
+            try {
+              const json = JSON.parse(file!)
+              setLoading(true)
+              handleCreateReciept(json)
+                .then((res) => {
+                  if (res.status)
+                    setReciepts((prev) => [...prev, ...res.data.reciept])
+                  Dialog.info.show({ message: res.message })
+                })
+                .finally(() => setLoading(false))
+            } catch (e) {
+              Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+            }
           })
-          .finally(() => setLoading(false))
-      } catch (e) {
-        Dialog.info.show({ message: e instanceof Error ? e.message : '' })
+        case 'ocr': break
+        case 'qrcode': break
+        case 'txt': break
+        case 'xml': break
       }
-    })
-  }
+    }
 
   const handleExport = () => JSONToFile(reciepts, 'Comprovantes')
 
-  const formatString = (item: Reciept) => formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
+  const formatString = (item: Reciept) =>
+    formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
 
   const options: Option[] = [
     {
@@ -122,7 +148,7 @@ export default function Reciepts() {
           <FaDownload /> Importar
         </>
       ),
-      onClick: handleImport,
+      onClick: () => setShow(true),
     },
     {
       key: 'export',
@@ -135,17 +161,83 @@ export default function Reciepts() {
     },
   ]
 
+  const optionsMenu: Option[] = [
+    {
+      key: 'qr-code',
+      label: (
+        <>
+          {' '}
+          <BsQrCode /> QR Code
+        </>
+      ),
+      onClick: handleImport('qrcode'),
+    },
+    {
+      key: 'xml',
+      label: (
+        <>
+          <BsFiletypeXml /> Arquivo XML
+        </>
+      ),
+      onClick: handleImport('xml'),
+    },
+    {
+      key: 'json',
+      label: (
+        <>
+          <BsFiletypeJson /> Arquivo JSON
+        </>
+      ),
+      onClick: handleImport('json'),
+    },
+    {
+      key: 'txt',
+      label: (
+        <>
+          <BsFiletypeTxt /> Arquivo TXT
+        </>
+      ),
+      onClick: handleImport('txt'),
+    },
+    {
+      key: 'ocr',
+      label: (
+        <>
+          <LuScanText /> OCR (beta)
+        </>
+      ),
+      onClick: handleImport('ocr'),
+      disabled: true,
+    },
+  ]
+
   useEffectOnce(loadContent, [])
 
   return (
     <>
+      {show && (
+        <Menu
+          {...{
+            show,
+            setShow,
+            options: optionsMenu,
+            title: 'Opções de Importação',
+          }}
+        />
+      )}
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Comprovantes" options={options} />
       <Container>
-        {!!reciepts.length && !!reciepts?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
+        {!!reciepts.length && !!reciepts?.[0]?.id && (
+          <SearchBar {...{ filter, setFilter }} />
+        )}
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={reciepts.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
+          data={reciepts.filter(
+            (item) =>
+              !filter.search ||
+              formatString(item).includes(formatToFilter(filter.search))
+          )}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>

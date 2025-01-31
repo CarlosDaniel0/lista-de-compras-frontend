@@ -52,6 +52,11 @@
   --color-label: rgb(63, 63, 63);
   --bg-bottom-bar: #ededed;
 
+
+  --hover-button:rgb(243, 243, 243);
+  --color-inactive:rgb(39, 39, 39);
+  --color-active: #000;
+
   --green: green;
 }
 
@@ -104,6 +109,10 @@ html[theme='dark'] {
   --color-label: #4a4a4a;
 
   --bg-bottom-bar: #383838;
+
+  --hover-button:rgb(71, 71, 71);
+  --color-inactive:rgb(209, 209, 209);
+  --color-active: #f9f9f9;
 
   --green: #88e1a3;
 }
