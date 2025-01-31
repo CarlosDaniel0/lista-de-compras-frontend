@@ -157,7 +157,7 @@ const TextSelector = (props: TextSelectorProps) => {
     context?.scale(scale, scale)
     context?.drawImage(img, delta.h, delta.v, img.width, img.height)
 
-    result.data.words.map((word) => {
+    result.data.blocks?.forEach((word) => {
       context!.fillStyle = '#3a78ff37'
       context?.fillRect(
         word.bbox.x0 + delta.h,
@@ -185,9 +185,9 @@ const TextSelector = (props: TextSelectorProps) => {
 
   const handleClick = (evt: React.MouseEvent<HTMLCanvasElement>) => {
     const [x, y] = [evt.pageX, evt.pageY]
-    result.data.words.forEach((word) => {
-      const { x0, x1, y0, y1 } = word.bbox
-      const { text } = word
+    result.data.blocks?.forEach((block) => {
+      const { x0, x1, y0, y1 } = block.bbox
+      const { text } = block
       if (
         x >= (delta.h + x0) * scale &&
         x <= (delta.h + x1) * scale &&
