@@ -33,7 +33,7 @@ import { Virtuoso } from 'react-virtuoso'
 import ListCard from './components/ListItem'
 import { ListContainer } from '../../components/Containers'
 import ContextMenu from '../../components/ContextMenu'
-import { FaDownload, FaPen, FaTrash, FaUpload } from 'react-icons/fa6'
+import { FaCopy, FaDownload, FaPen, FaTrash, FaUpload } from 'react-icons/fa6'
 import { BsDot } from 'react-icons/bs'
 import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
@@ -300,6 +300,21 @@ export default function Products(props: ProductsProps) {
   useEffectOnce(loadProducts, [])
   // useEffectOnce(getProductByBarcode, [state])
   const optionsContext: Option[] = [
+    ...(path === 'lists' ? [
+      {
+        key: 'copy',
+        label: (
+          <>
+            <FaCopy /> Copiar
+          </>
+        ),
+        onClick: () => {
+          setState?.({ product } as never)
+          navigate(`/${path}/${id}/create`)
+          setProduct({})
+        }
+      }
+    ] : []),
     {
       onClick: () => {
         product.id && navigate(`/${path}/${id}/update/${product.id}`)

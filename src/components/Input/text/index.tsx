@@ -35,7 +35,7 @@ export default function Text(props: InputProps) {
 
   const onChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = evt.target
-    setValue(value.replace(/\./g, '').replace(/,/g, '.'))
+    setValue(value)
   }
 
   const onKeyDown = (evt: React.KeyboardEvent<HTMLInputElement>) => {

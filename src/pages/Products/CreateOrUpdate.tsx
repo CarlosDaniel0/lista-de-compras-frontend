@@ -204,7 +204,9 @@ export default function CreateOrUpdate(
         if (!res.status || !res.data.reciept) throw new Error(res.message)
         setData((prev) => ({
           ...prev,
-          position: product_id ? prev?.position : (res.data.reciept.products?.length ?? 0) + 1,
+          position: product_id
+            ? prev?.position
+            : (res.data.reciept.products?.length ?? 0) + 1,
         }))
         return res.data.reciept
       })
@@ -257,6 +259,15 @@ export default function CreateOrUpdate(
 
   useEffectOnce(async () => {
     const { _target, _value, ...rest } = state ?? {}
+    if (rest?.product) {
+      const { description, category, quantity, unity, supermarket_id, product_id } =
+        (rest?.product ?? {}) as never
+
+      document.getElementById('inpTxtQuantity')?.focus()
+      setData({ description, category, quantity, unity, supermarket_id, product_id })
+      if (supermarket_id) loadProducts(supermarket_id)
+      return setState?.({})
+    }
     if (!_target || !_value) return
     const element = document.getElementById(String(_target))
     const product = {
@@ -324,9 +335,20 @@ export default function CreateOrUpdate(
             <Text
               container={{ style: { flex: '1 0 0' } }}
               id="inpTxtQuantity"
-              mask="decimal"
               label="Quantidade"
               field="quantity"
+              format={(value) => {
+                const [int, dec] = value.includes(',')
+                  ? value.split(',')
+                  : [value, '']
+                return `${int
+                  .replace(/\./g, '')
+                  .replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.')}${
+                  value.includes(',')
+                    ? `,${dec.replace(/,/g, '').substring(0, 4) ?? ''}`
+                    : ''
+                }`
+              }}
               nextElement={path === 'lists' ? 'inpTxtUnity' : 'inpTxtPrice'}
             />
           )}
