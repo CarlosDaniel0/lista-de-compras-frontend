@@ -1,4 +1,4 @@
-import { aggregateByKey, decimalSum } from '../../utils'
+import { aggregateByKey } from '../../utils'
 import { SQLite } from '../../entities/SQLite'
 import { RecieptData } from '../../entities/RecieptData'
 import { RecieptImportData } from '../../entities/RecieptImportData'
