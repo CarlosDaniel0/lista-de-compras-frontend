@@ -339,7 +339,7 @@ export default function CreateOrUpdate() {
                 <span>{currency.format(Number(data?.total ?? 0))}</span>
               </div>
               <Button
-                onClick={() => setProducts([])}
+                onClick={() => { setProducts([]); setData(({ discount, total, ...rest }) => rest)}}
                 style={{
                   padding: '0.1em 0.4em',
                   background: '#b81717',
