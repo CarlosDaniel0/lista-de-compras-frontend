@@ -120,11 +120,11 @@ export default function CreateOrUpdate() {
   return (
     <Form {...form}>
       <Loading status={loading} label="Aguarde..." />
-      <TabBar
+       <TabBar
         label={`${isUpdate ? 'Alterar' : 'Cadastrar'} Supermercado`}
         back
       />
-      <main style={{ padding: '15px 8px', height: 'calc(100dvh - 80px)' }}>
+     <main style={{ padding: '15px 8px', height: 'calc(100dvh - 80px)' }}>
         <Text autoFocus label="Nome" field="name" />
         <Textarea
           rows={3}
@@ -132,11 +132,11 @@ export default function CreateOrUpdate() {
           field="address"
           style={{ resize: 'none' }}
         />
-        <div style={{ height: 'calc(100% - 260px', marginTop: 5 }}>
+       <div style={{ height: 'calc(100% - 260px', marginTop: 5 }}>
           <label htmlFor="" style={{ fontSize: '1.2em' }}>
             Localização
           </label>
-          <ContainerMap>
+         <ContainerMap>
             {show && (
               <TileHelp onClick={() => setShow(false)}>
                 <span
@@ -154,7 +154,7 @@ export default function CreateOrUpdate() {
               </div>
             )}
           </ContainerMap>
-        </div>
+        </div> 
         <Button
           style={{
             marginTop: 15,

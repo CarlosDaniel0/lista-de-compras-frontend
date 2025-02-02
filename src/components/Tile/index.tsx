@@ -4,8 +4,8 @@ import { useMemo } from "react"
 interface TileProps extends React.ComponentPropsWithoutRef<'svg'> {
   width: number,
   height: number,
-  cropWidth: string | number | { value?: string | number, minHeight?: number },
-  cropHeight: string | number | { value?: string | number, minHeight?: number },
+  cropWidth: string | number | { value?: string | number, minWidth?: number, maxWidth?: number },
+  cropHeight: string | number | { value?: string | number, minHeight?: number, maxHeight?: number },
   borderRadius?: string | number,
   x?: string | number,
   y?: string | number
@@ -13,14 +13,15 @@ interface TileProps extends React.ComponentPropsWithoutRef<'svg'> {
 
 export default function Tile(props: TileProps) {
   const { width, height, cropHeight, cropWidth, ...rest } = props
-  const parseValue = (value: string | number | { value?: string | number, minHeight?: number }, total: number) => {
-    const minHeight = typeof value === 'object' ? value?.minHeight ?? 0 : 0
+  const parseValue = (value: string | number | { value?: string | number, minHeight?: number, minWidth?: number, maxHeight?: number, maxWidth?: number }, total: number) => {
+    const max = typeof value === 'object' ? value?.maxHeight ?? value?.maxWidth ?? width : width
+    const min = typeof value === 'object' ? value?.minHeight ?? value?.minWidth ?? 0 : 0
     let v = typeof value == 'object' ? value?.value : value
     if (typeof v === 'string') {
       if (v.includes('%')) v = +((Number(String(v).replace(/[^0-9.]/g, '')) / 100) * total).toFixed(2)
       v = Number(v)
     }
-    return Math.max(v ?? 0, minHeight)
+    return Math.min(Math.max(v ?? 0, min), max)
   }
   const cWidth = parseValue(cropWidth, width)
   const cHeight = parseValue(cropHeight, height)

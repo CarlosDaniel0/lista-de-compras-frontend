@@ -102,6 +102,17 @@ interface ProductOption {
 
 export type Product <T extends 'lists' | 'supermarkets' |'reciepts'> = ProductOption[T]
 
+export interface ProductRecieptImport {
+  position: number
+  barcode: string
+  description: string
+  quantity: number
+  unity: string
+  price: number
+  discount: number
+  total: number
+}
+
 export interface ResponseData <T,> {
   status: boolean
   message: string

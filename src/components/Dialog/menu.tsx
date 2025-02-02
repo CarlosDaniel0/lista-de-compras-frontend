@@ -25,7 +25,7 @@ const styles = css`
 
   & p {
     text-align: center;
-    font-size: 1.2em;
+    font-size: 1.35em;
     font-weight: 500;
     padding: 0.4em 1.2em;
   }
@@ -38,7 +38,7 @@ const styles = css`
     width: 100%;
     padding: 0.6em 1.4em;
     width: 100%;
-    font-size: 1.2em;
+    font-size: 1.35em;
     color: var(--color-inactive);
     background-color: transparent;
     border: none;

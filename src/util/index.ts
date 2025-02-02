@@ -276,15 +276,6 @@ export const JSONToFile = <T>(obj: T, filename: string) => {
   URL.revokeObjectURL(url)
 }
 
-export const decimalFormatter = (text: string, fixed?: number) => {
-  if (text === '') return text
-  const num = text.replace(/[^0-9.,]/g, '')
-  const [int, dec] = num.includes(',')
-    ? num.split(',').map((n, i) => (i === 1 ? n.substring(0, fixed) : n))
-    : [num, '']
-  return dec.length ? `${int},${dec}` : int
-}
-
 export const getImageFromBase64 = (base64: string) =>
   new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image()
@@ -304,6 +295,14 @@ export const getImageFromFile = async (file: File) =>
     }
     reader.readAsDataURL(file)
   })
+
+export const decimalFormatter = (text: string, decimals = 4) => {
+  const value = text.replace(/[^0-9,]/g, '')
+  const [int, dec] = value.includes(',') ? value.split(',') : [value, '']
+  return `${int.replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.')}${
+    value.includes(',') ? `,${dec.replace(/,/g, '').substring(0, decimals) ?? ''}` : ''
+  }`
+}
 
 export const formatToFilter = (text: string) =>
   text

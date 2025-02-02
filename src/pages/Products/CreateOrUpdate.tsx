@@ -2,7 +2,7 @@ import TabBar from '../../components/TabBar'
 import Text from '../../components/Input/text/index'
 import { IoCameraSharp } from 'react-icons/io5'
 import { BiBarcodeReader } from 'react-icons/bi'
-import Button from '../../components/Button'
+import Button, { ButtonNeutral } from '../../components/Button'
 import { BsBoxes } from 'react-icons/bs'
 import { Container } from '../Lists'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -21,6 +21,7 @@ import {
 import Loading from '../../components/Loading'
 import { DialogContext } from '../../contexts/Dialog'
 import {
+  decimalFormatter,
   formatFormNumbers,
   parseCurrencyToNumber,
   parseNumberToCurrency,
@@ -38,17 +39,6 @@ interface CreateOrUpdateCreateOrUpdateProps {
 }
 
 export type GeneralProduct = ProductSupermarket & ProductList & ProductReciept
-
-const ButtonWholesale = styled(Button)`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 10px;
-  background: var(--bg-button-trasparent);
-  color: var(--color-button-transparent);
-`
 
 const Label = styled.span`
   font-size: 1.2em;
@@ -293,9 +283,6 @@ export default function CreateOrUpdate(
         })
       product.product_id = id
       await loadProducts(rest?.supermarket_id + '')
-      // const { id } = prods.find(
-      //     (p) => p.barcode?.includes(product?.product_id)
-      // ) ?? {}
     }
     setData((prev) => ({ ...prev, ...product }))
     element?.focus()
@@ -337,18 +324,7 @@ export default function CreateOrUpdate(
               id="inpTxtQuantity"
               label="Quantidade"
               field="quantity"
-              format={(value) => {
-                const [int, dec] = value.includes(',')
-                  ? value.split(',')
-                  : [value, '']
-                return `${int
-                  .replace(/\./g, '')
-                  .replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.')}${
-                  value.includes(',')
-                    ? `,${dec.replace(/,/g, '').substring(0, 4) ?? ''}`
-                    : ''
-                }`
-              }}
+              format={decimalFormatter}
               nextElement={path === 'lists' ? 'inpTxtUnity' : 'inpTxtPrice'}
             />
           )}
@@ -400,10 +376,10 @@ export default function CreateOrUpdate(
                 field="barcode"
               />
             </div>
-            <ButtonWholesale>
+            <ButtonNeutral>
               <BsBoxes />
               Preços Atacado
-            </ButtonWholesale>
+            </ButtonNeutral>
           </>
         )}
         {path === 'lists' && (

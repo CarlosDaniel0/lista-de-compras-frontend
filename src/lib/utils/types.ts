@@ -85,3 +85,5 @@ export interface ArrayParamsORM<T extends ReadonlyArray<string>> {
   >
   // include?: Partial<ObjectFromList<T, boolean>>
 }
+
+export type CaptureType = "json" | "xml" | "txt" | "qrcode" | "ocr";

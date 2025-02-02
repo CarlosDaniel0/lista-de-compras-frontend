@@ -58,6 +58,17 @@ export const IconButton = styled.button`
   padding: 2px;
 `
 
+export const ButtonNeutral = styled(Button)`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+  background: var(--bg-button-trasparent);
+  color: var(--color-button-transparent);
+`
+
 export default function Button(props: ButtonProps) {
   const { children, $bg, ...rest } = props
   return (

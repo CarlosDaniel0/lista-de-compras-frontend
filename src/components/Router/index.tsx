@@ -15,6 +15,7 @@ import CreateOrUpdateSupermarket from '../../pages/Supermarkets/CreateOrUpdate'
 import CreateOrUpdateReciept from '../../pages/Reciepts/CreateOrUpdate'
 import CreateOrUpdateProducts from '../../pages/Products/CreateOrUpdate'
 import Camera from '../Reader/Camera'
+import QRCode from '../Reader/QRCode'
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
         <Route path="/reciepts/update/:id" element={<CreateOrUpdateReciept />} />
         <Route path="/reciepts/:id/create" element={<CreateOrUpdateProducts path='reciepts' />} />
         <Route path="/reciepts/:id/update/:product_id" element={<CreateOrUpdateProducts path='reciepts' />} />
+        <Route path="/qrcode" element={<QRCode />} />
         <Route path="/barcode" element={<Barcode />} />
         <Route path="/camera" element={<Camera />} />
         <Route path="/edit" element={<Register />} />

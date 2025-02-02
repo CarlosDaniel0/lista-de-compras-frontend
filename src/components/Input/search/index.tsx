@@ -25,7 +25,8 @@ const Container = styled.div<{ $active?: boolean }>`
     top: 0px; left: 0px;
     right: 0px; bottom: 0;
     background: var(--bg);
-    padding: 10px 5px;`
+    padding: 10px 5px;
+    z-index: 3;`
       : ''}
 `
 
