@@ -205,11 +205,11 @@ export default function CreateOrUpdate() {
               getProducts('json', file)
             )
           case 'ocr':
-            setState?.({})
+            setState?.(data as never)
             navigate('/camera')
             break
           case 'qrcode':
-            setState?.({})
+            setState?.(data as never)
             navigate('/qrcode')
             break
           case 'txt':
@@ -279,8 +279,8 @@ export default function CreateOrUpdate() {
   useEffectOnce(() => {
     const { _value, ...rest } = state ?? {}
     if (typeof _value !== 'object') return
-    getProducts('qrcode', null, _value?.qrcode ?? '')
     setData({ ...rest })
+    getProducts('qrcode', null, _value?.qrcode ?? '')
     setState?.({})
   }, [state])
 
