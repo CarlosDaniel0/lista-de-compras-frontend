@@ -381,7 +381,7 @@ export default function CreateOrUpdate() {
         )}
 
         <Button
-          disabled={!data?.supermarket_id || !products?.length}
+          disabled={!data?.supermarket_id || (!products?.length && !isUpdate)}
           style={{
             marginTop: 15,
             width: '100%',

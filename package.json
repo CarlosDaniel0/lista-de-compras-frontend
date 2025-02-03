@@ -1,7 +1,7 @@
 {
   "name": "lista-de-compras",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "rimraf dev-dist && cross-env SW_DEV=true vite --force",
