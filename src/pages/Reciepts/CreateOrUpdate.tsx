@@ -167,6 +167,7 @@ export default function CreateOrUpdate() {
         content = (await files.item(0)?.text()) ?? ''
     }
 
+    setLoading(true)
     return await request<
       ResponseData<{
         chavenfe?: string
@@ -190,6 +191,7 @@ export default function CreateOrUpdate() {
       .catch((err) => {
         Dialog.info.show({ message: err instanceof Error ? err.message : '' })
       })
+      .finally(() => setLoading(false))
   }
 
   const handleImportProducts =
