@@ -167,6 +167,8 @@ export default function CreateOrUpdate() {
         content = (await files.item(0)?.text()) ?? ''
     }
 
+    const input = document.getElementById('inpTxtName')
+    if (document.activeElement && document.activeElement === input) input.blur()
     setLoading(true)
     return await request<
       ResponseData<{
@@ -191,7 +193,10 @@ export default function CreateOrUpdate() {
       .catch((err) => {
         Dialog.info.show({ message: err instanceof Error ? err.message : '' })
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+        if (input) input.focus()
+      })
   }
 
   const handleImportProducts =
@@ -307,7 +312,11 @@ export default function CreateOrUpdate() {
         back
       />
       <main style={{ padding: '30px 8px', height: 'calc(100dvh - 120px)' }}>
-        <Text autoFocus label="Nome" field="name" />
+        <Text 
+          autoFocus 
+          label="Nome" 
+          field="name" 
+          id="inpTxtName" />
         <Search
           id="inpTxtSupermarket"
           field="supermarket_id"
