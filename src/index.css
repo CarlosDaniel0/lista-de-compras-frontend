@@ -57,6 +57,8 @@
   --color-inactive:rgb(39, 39, 39);
   --color-active: #000;
 
+  --color-subtitle-permission: #6d6d6d;
+
   --green: green;
 }
 
@@ -113,6 +115,8 @@ html[theme='dark'] {
   --hover-button:rgb(71, 71, 71);
   --color-inactive:rgb(209, 209, 209);
   --color-active: #f9f9f9;
+
+  --color-subtitle-permission: #d6d6d6;
 
   --green: #88e1a3;
 }

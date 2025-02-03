@@ -84,7 +84,7 @@ export default function CreateOrUpdate() {
   }
 
   const importReciept = async () => {
-    const reciept = { ...data, products }
+    const reciept = { ...data, products: products.map(p => Object.assign(p, { user_id: user.id })) }
     setLoading(true)
     return request<ResponseData<{ reciept: Reciept }>>(
       '/reciepts/import',

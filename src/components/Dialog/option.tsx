@@ -47,7 +47,7 @@ export default function Panel(props: IPanel) {
         }}
       >
         {p?.message ? (
-          <p style={{ margin: '15px 20px' }}>{p?.message}</p>
+          <p style={{ margin: '15px 20px', whiteSpace: 'pre-line' }}>{p?.message}</p>
         ) : (
           cloneElement(p?.content as ReactElement ?? <></>, {
             form,

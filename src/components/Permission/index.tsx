@@ -64,7 +64,7 @@ export default function RequestPermission (props: RequestPermissionProps) {
           {icon ?? <IoCameraSharp size="6em" style={{ color: '#4470c6' }} />}
           <h2>{title ?? 'Permissão de Câmera'}</h2>
           <p
-            style={{ fontSize: '1.1em', color: '#6d6d6d', textAlign: 'center' }}
+            style={{ fontSize: '1.1em', color: 'var(--color-subtitle-permission)', textAlign: 'center' }}
           >
             {message ?? 'Por favor, permita o acesso a camera para utilizar o leitor de Códigos de Barras'}
           </p>
