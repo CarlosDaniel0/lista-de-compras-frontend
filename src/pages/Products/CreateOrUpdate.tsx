@@ -30,7 +30,6 @@ import {
 } from '../../util'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
-import styled from 'styled-components'
 import Search from '../../components/Input/search'
 import { handleCreateProduct } from './functions'
 
@@ -39,23 +38,6 @@ interface CreateOrUpdateCreateOrUpdateProps {
 }
 
 export type GeneralProduct = ProductSupermarket & ProductList & ProductReciept
-
-const Label = styled.span`
-  font-size: 1.2em;
-  margin: 10px 0;
-  color: var(--color-label);
-  display: block;
-
-  &::after {
-    content: '';
-    margin-left: 8px;
-    border: 1px dashed rgb(117, 117, 117);
-    height: 0px;
-    position: absolute;
-    width: calc(100% - 120px);
-    transform: translateY(15px);
-  }
-`
 
 export default function CreateOrUpdate(
   props: CreateOrUpdateCreateOrUpdateProps
@@ -302,6 +284,7 @@ export default function CreateOrUpdate(
         <div style={{ height: 10 }}></div>
         {path === 'reciepts' ? (
           <Search
+            disabled={!products.length}
             field="product_id"
             label="Produto"
             options={products.map((item) => ({
@@ -356,6 +339,7 @@ export default function CreateOrUpdate(
             container={{ style: { flex: '1 0 0' } }}
             mask="currency"
             field="total"
+            nextElement='btnTotal'
           />
         )}
         {path === 'supermarkets' && (
@@ -384,7 +368,6 @@ export default function CreateOrUpdate(
         )}
         {path === 'lists' && (
           <>
-            <Label>Adicionais</Label>
             <Search
               id="inpTxtSupermarket"
               field="supermarket_id"
@@ -420,6 +403,7 @@ export default function CreateOrUpdate(
         )}
         <div style={{ marginTop: 10 }}>
           <Button
+            id="btnTotal"
             onClick={product_id ? update : create}
             style={{
               border: 'none',

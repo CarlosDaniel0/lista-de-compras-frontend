@@ -143,13 +143,11 @@ export const request = async <T = never, K = unknown>(
         log.error('res', e instanceof Error ? e.message : 'Error in JSON parse')
       }
       log.info('res', json)
-      if ('status' in json && !json.status)
-        sendMessageToWorker({ verifyOnlineStatus: true })
       return json as T
     })
     .catch((err) => {
-      sendMessageToWorker({ verifyOnlineStatus: true })
       if (err.message.includes('Failed to fetch')) {
+        sendMessageToWorker({ verifyOnlineStatus: true })
         online.status = false
         throw new Error('API Indisponível')
       }

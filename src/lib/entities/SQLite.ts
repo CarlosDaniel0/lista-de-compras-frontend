@@ -271,7 +271,6 @@ export class SQLite {
         const items = optionals.filter(
           (k) => k && Object.keys(include ?? {}).includes(k)
         )
-        console.log('antes de data')
         const data: [string, unknown[]][] = []
         await (async () => {
           for await (const k of items) {
@@ -301,7 +300,7 @@ export class SQLite {
           ? result.map((item) => format(item, data))
           : format(result, data)
       }
-      return result
+      return result ?? []
     })
   }
 

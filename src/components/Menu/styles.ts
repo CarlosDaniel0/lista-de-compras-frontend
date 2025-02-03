@@ -70,7 +70,7 @@ export const BottomContainerMenu = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
 `
 
 export const Profile = styled.div`

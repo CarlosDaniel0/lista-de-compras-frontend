@@ -21,6 +21,7 @@ import {
 import { genId, setTheme } from '../../util'
 import Switch from '../Input/switch'
 import Form, { FormContextProps } from '../../contexts/Form'
+import { VERSION } from '../../util/constants'
 
 interface MenuProps {
   show: boolean
@@ -72,7 +73,7 @@ function Menu(props: MenuProps) {
 
   const handleChangeTheme = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = evt.target
-    setForm(prev => ({ ...prev, dark: checked }))
+    setForm((prev) => ({ ...prev, dark: checked }))
     const theme = checked ? 'dark' : 'light'
     dispatch(changeTheme(theme))
     setTheme(theme)
@@ -96,9 +97,17 @@ function Menu(props: MenuProps) {
         </ListMenu>
 
         <BottomContainerMenu>
-          <div style={{ margin: '10px 15px' }}>
+          <div style={{ margin: '5px 15px' }}>
+            <span>Versão: {VERSION}</span>
+          </div>
+          <div style={{ margin: '5px 15px' }}>
             <Form {...obj}>
-              <Switch onChange={handleChangeTheme} size={2} field="dark" label="Modo Escuro" />
+              <Switch
+                onChange={handleChangeTheme}
+                size={2}
+                field="dark"
+                label="Modo Escuro"
+              />
             </Form>
           </div>
           <Profile>
