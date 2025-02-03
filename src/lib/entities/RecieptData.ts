@@ -63,8 +63,7 @@ export class RecieptData implements Reciept {
       sync: this.sync,
       discount: this.discount,
       supermarket_id: this.supermarket_id,
-      user_id: this.user_id,
-      products: this.products
+      user_id: this.user_id
     };
     return json;
   }
