@@ -68,14 +68,12 @@ router.post('/products/capture/:type', async (req, res) => {
         !type || !hasLocalHeader
           ? 'O parâmetro :type é obrigatório na requisição'
           : 'Produtos importados com sucesso!',
-      data: hasLocalHeader
-        ?  {
+      data: {
           ...(chavenfe ? { chavenfe } : {}),
           discount,
           total,
           products,
-        }
-        : null,
+        },
     })
   } catch (e: any) {
     res.send(databaseErrorResponse(e?.message ?? ''))
