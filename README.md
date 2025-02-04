@@ -69,7 +69,7 @@ Tipos de dados aceitos:
 No terminal rode o comando para criar a estrutura das tabelas
 em SQL para utiliza-las posteriormente durante a criação do banco
 ```bash
-npx prisma migrate dev --create-only init
+npx prisma migrate dev --name init --create-only
 ```
 
 3 - Rode o projeto
