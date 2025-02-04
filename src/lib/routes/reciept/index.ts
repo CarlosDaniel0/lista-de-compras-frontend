@@ -61,7 +61,7 @@ router.post('/products/capture/:type', async (req, res) => {
     const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { type: t } = req.params
     const type = t as CaptureType
-    const { products, chavenfe } = await handleProducts(type, req.body.content)
+    const { products, chavenfe, discount, total } = await handleProducts(type, req.body.content)
     res.send({
       status: !!type || !hasLocalHeader,
       message:
@@ -69,10 +69,12 @@ router.post('/products/capture/:type', async (req, res) => {
           ? 'O parâmetro :type é obrigatório na requisição'
           : 'Produtos importados com sucesso!',
       data: hasLocalHeader
-        ? {
-            ...(chavenfe ? { chavenfe } : {}),
-            products,
-          }
+        ?  {
+          ...(chavenfe ? { chavenfe } : {}),
+          discount,
+          total,
+          products,
+        }
         : null,
     })
   } catch (e: any) {

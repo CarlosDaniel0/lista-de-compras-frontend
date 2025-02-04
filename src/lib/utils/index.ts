@@ -84,4 +84,8 @@ export const decimalSum = (...numbers: number[]): number =>
     )
   }, 0)
 
+export const sum = <T,>(arr: T[], field: keyof T) => {
+  return arr.reduce((tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)), 0)
+}
+
 export const captalize = (text: string) => text.substring(0, 1).toUpperCase() + text.slice(1)

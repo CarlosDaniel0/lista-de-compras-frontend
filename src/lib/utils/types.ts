@@ -86,4 +86,49 @@ export interface ArrayParamsORM<T extends ReadonlyArray<string>> {
   // include?: Partial<ObjectFromList<T, boolean>>
 }
 
+export interface XMLProduct {
+  prod: {
+    cProd: number;
+    cEAN: number;
+    xProd: string;
+    NCM: number;
+    CEST: number;
+    CFOP: number;
+    uCom: string;
+    qCom: number;
+    vUnCom: number;
+    vDesc?: number;
+    vProd: number;
+    cEANTrib: number;
+    uTrib: string;
+    qTrib: number;
+    vUnTrib: number;
+    indTot: number;
+  };
+  imposto: {
+    ICMS: {
+      ICMS60: {
+        orig: number;
+        CST: number;
+      };
+    };
+    PIS: {
+      PISAliq: {
+        CST: number;
+        vBC: number;
+        pPIS: number;
+        vPIS: number;
+      };
+    };
+    COFINS: {
+      COFINSAliq: {
+        CST: number;
+        vBC: number;
+        pCOFINS: number;
+        vCOFINS: number;
+      };
+    };
+  };
+}
+
 export type CaptureType = "json" | "xml" | "txt" | "qrcode" | "ocr";

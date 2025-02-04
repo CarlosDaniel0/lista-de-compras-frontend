@@ -17,6 +17,7 @@
     "@zxing/library": "^0.21.3",
     "absurd-sql": "^0.0.54",
     "date-fns": "^4.1.0",
+    "fast-xml-parser": "^4.5.1",
     "leaflet": "^1.9.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

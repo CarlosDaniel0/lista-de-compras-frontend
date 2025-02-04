@@ -1,9 +1,10 @@
-import { aggregateByKey } from '../../utils'
+import { aggregateByKey, decimalSum, sum } from '../../utils'
 import { SQLite } from '../../entities/SQLite'
 import { RecieptData } from '../../entities/RecieptData'
 import { RecieptImportData } from '../../entities/RecieptImportData'
 import { ProductRecieptImportData } from '../../entities/ProductRecieptImportData'
-import { CaptureType } from '../../utils/types'
+import { CaptureType, XMLProduct } from '../../utils/types'
+import { XMLParser } from 'fast-xml-parser'
 
 export const handleImport = async (
   channel: BroadcastChannel,
@@ -101,6 +102,33 @@ export const handleImport = async (
   return null
 }
 
+
+const parseProductsFromXML = (text: string) => {
+  const parser = new XMLParser();
+  const xml = parser.parse(text);
+
+  try {
+    return (xml.nfeProc.proc.nfeProc.NFe.infNFe.det as XMLProduct[]).map(({ prod }, i) => ({
+      position: i + 1,
+      description: prod.xProd,
+      barcode: prod.cEAN.toString().padStart(14, '0'),
+      unity: prod.uCom,
+      quantity: prod.qCom,
+      discount: prod?.vDesc ?? 0,
+      price: prod.vUnCom,
+      total: prod.vProd,
+    }) as ProductRecieptImportData);
+  } catch (e) {
+    const error =
+      e instanceof Error ? e : { message: "", stack: "", cause: "" };
+    console.error(
+      `Error\n${error.message}\ndetail: ${error.stack}`
+    );
+    throw new Error("Não foi possível capturar os produtos para o XML fornecido");
+  }
+};
+
+
 const parseProductsFromTXT = (text: string) => {
   let index = 0
   const lines = text.split('\n')
@@ -145,21 +173,32 @@ export const handleProducts = async (
   type: CaptureType,
   file: string | Record<string, never> | Record<string, never>[]
 ) => {
+  const record = typeof file === "object" ? (file as Record<string, any>) : {};
   let products: ProductRecieptImportData[] = [],
-    chavenfe = ''
+    chavenfe = "",
+    discount = 0,
+    total = 0;
   switch (type) {
-    case 'json':
-      products = (
-        Array.isArray(file) ? file : (file as Record<string, any>).products
-      ).map(ProductRecieptImportData.parse)
-      break
-    case 'txt':
-      products = parseProductsFromTXT(file + '')
-      break
-    case 'qrcode':
-      throw new Error(
-        'Não é possível importar os produtos por QR Code com a aplicação offline'
-      )
+    case "json":
+      products = (Array.isArray(file) ? file : record.products).map(
+        ProductRecieptImportData.parse
+      );
+      break;
+    case "xml":
+      products = parseProductsFromXML(file + "");
+      break;
+    case "txt":
+      products = parseProductsFromTXT(file + "");
+      break;
+    case "qrcode":
+      throw new Error('Não é possível importar os produtos por QR Code com a aplicação offline')
   }
-  return { products, chavenfe }
-}
+  discount = sum(products, "discount");
+  total = decimalSum(sum(products, "total"), -discount);
+  return {
+    chavenfe,
+    products,
+    discount,
+    total,
+  };
+};
