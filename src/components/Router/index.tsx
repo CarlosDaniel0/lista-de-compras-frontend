@@ -2,7 +2,6 @@ import { Route, Routes } from 'react-router-dom'
 import Lists from '../../pages/Lists'
 import Error from '../../pages/Error'
 import Barcode from '../Reader/Barcode'
-import Register from '../../pages/Register'
 import Supermarkets from '../../pages/Supermarkets'
 import Reciepts from '../../pages/Reciepts'
 import Home from '../../pages/Home'
@@ -16,6 +15,7 @@ import CreateOrUpdateReciept from '../../pages/Reciepts/CreateOrUpdate'
 import CreateOrUpdateProducts from '../../pages/Products/CreateOrUpdate'
 import Camera from '../Reader/Camera'
 import QRCode from '../Reader/QRCode'
+import Settings from '../../pages/Settings'
 
 function Router() {
   return (
@@ -43,8 +43,7 @@ function Router() {
         <Route path="/qrcode" element={<QRCode />} />
         <Route path="/barcode" element={<Barcode />} />
         <Route path="/camera" element={<Camera />} />
-        <Route path="/edit" element={<Register />} />
-        {/* <Route path="/map" element={<Map />} /> */}
+        <Route path='/settings' element={<Settings />} />
       </Route>
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-use" element={<TermsOfUse />} />

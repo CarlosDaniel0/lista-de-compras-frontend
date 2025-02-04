@@ -22,6 +22,7 @@ import { genId, setTheme } from '../../util'
 import Switch from '../Input/switch'
 import Form, { FormContextProps } from '../../contexts/Form'
 import { VERSION } from '../../util/constants'
+import { IoSettingsSharp } from 'react-icons/io5'
 
 interface MenuProps {
   show: boolean
@@ -42,6 +43,11 @@ const routes = {
   '/reciepts': (
     <>
       <FaReceipt /> <span>Comprovantes</span>
+    </>
+  ),
+  '/settings': (
+    <>
+     <IoSettingsSharp /> <span>Configurações</span>
     </>
   ),
   // "/map": <><FaMapMarkerAlt /> <span>Mapa</span></>

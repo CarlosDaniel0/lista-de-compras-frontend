@@ -5,6 +5,9 @@ const initialState: Config = {
   user: {},
   token: '',
   theme: 'light',
+  settings: {
+    groupProducts: false
+  },
   permissions: [],
   isLoggedIn: false,
 };
@@ -15,6 +18,9 @@ const config = createSlice({
   reducers: {
     changeTheme: (state, action) => {
       state.theme = action.payload
+    },
+    updateSettings: (state, action) => {
+      state.settings = action.payload 
     },
     addPermission: (state, action) => {
       state.permissions.push(action.payload)
@@ -35,5 +41,5 @@ const config = createSlice({
   },
 });
 
-export const { signIn, signOut, changeTheme, addPermission, removePermission } = config.actions;
+export const { signIn, signOut, changeTheme, updateSettings, addPermission, removePermission } = config.actions;
 export default config.reducer;
