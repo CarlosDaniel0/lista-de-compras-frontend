@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react'
 import replace, { RollupReplaceOptions } from '@rollup/plugin-replace'
 
 const isDEV = process.env.NODE_ENV === 'development'
+const workerLibs = ['strnum', 'fast-xml-parser']
 const options: Partial<VitePWAOptions> = {
   mode: isDEV ? 'development' : 'production',
   base: '/',
@@ -105,12 +106,13 @@ export default defineConfig({
       },
       output: {
         entryFileNames: assetInfo => {
+          console.log(assetInfo)
           return assetInfo.name === 'service-worker'
              ? '[name].js'
              : 'assets/js/[name]-[hash].js'
         },
         manualChunks(id) {
-          if (id.includes('node_modules')) {
+          if (id.includes('node_modules') && !workerLibs.some(key => id.includes(key))) {
             return id
               .toString()
               .split('node_modules/')[1]
