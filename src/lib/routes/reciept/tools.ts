@@ -3,8 +3,8 @@ import { SQLite } from '../../entities/SQLite'
 import { RecieptData } from '../../entities/RecieptData'
 import { RecieptImportData } from '../../entities/RecieptImportData'
 import { ProductRecieptImportData } from '../../entities/ProductRecieptImportData'
-import { CaptureType } from '../../utils/types'
-import { DOMParser } from '@xmldom/xmldom'
+import { CaptureType, XMLProduct } from '../../utils/types'
+import { XMLParser } from 'fast-xml-parser'
 
 export const handleImport = async (
   channel: BroadcastChannel,
@@ -110,31 +110,23 @@ export const handleImport = async (
   return null
 }
 
-const parseProductsFromXML = (text: string) => {
-  const parser = new DOMParser()
-  const xml = parser.parseFromString(text, 'text/xml')
+const parseProductsFromXML = async (text: string) => {
+  const parser = new XMLParser()
+  const xml = parser.parse(text)
+
   try {
-    return Array.from(xml.getElementsByTagName('prod') ?? []).map(
-      (prod, i) => {
-        return {
+    return (xml.nfeProc.proc.nfeProc.NFe.infNFe.det as XMLProduct[]).map(
+      ({ prod }, i) =>
+        ({
           position: i + 1,
-          description: prod.getElementsByTagName('xProd')[0].firstChild?.nodeValue,
-          barcode: prod.getElementsByTagName('cEAN')[0]?.firstChild?.nodeValue,
-          unity: prod.getElementsByTagName('uCom')[0]?.firstChild?.nodeValue,
-          quantity: Number(
-            prod.getElementsByTagName('qCom')[0]?.firstChild?.nodeValue || '0'
-          ),
-          discount: Number(
-            prod.getElementsByTagName('vDesc')[0]?.firstChild?.nodeValue || '0'
-          ),
-          price: Number(
-            prod.getElementsByTagName('vUnCom')[0].firstChild?.nodeValue || '0'
-          ),
-          total: Number(
-            prod.getElementsByTagName('vProd')[0].firstChild?.nodeValue || '0'
-          ),
-        } as ProductRecieptImportData
-      }
+          description: prod.xProd,
+          barcode: prod.cEAN.toString().padStart(14, '0'),
+          unity: prod.uCom,
+          quantity: prod.qCom,
+          discount: prod?.vDesc ?? 0,
+          price: prod.vUnCom,
+          total: prod.vProd,
+        } as ProductRecieptImportData)
     )
   } catch (e) {
     const error = e instanceof Error ? e : { message: '', stack: '', cause: '' }
@@ -202,7 +194,7 @@ export const handleProducts = async (
       )
       break
     case 'xml':
-      products = parseProductsFromXML(file + '')
+      products = await parseProductsFromXML(file + '')
       break
     case 'txt':
       products = parseProductsFromTXT(file + '')
