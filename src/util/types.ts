@@ -139,10 +139,15 @@ export enum CameraStates {
   ALLOWED,
 }
 
+export interface Settings {
+  groupProducts: boolean
+}
+
 export interface Config {
   user: Partial<User>,
   token: string,
   isLoggedIn: boolean,
+  settings: Settings,
   theme: 'dark' | 'light',
   permissions: Permission[]
 }

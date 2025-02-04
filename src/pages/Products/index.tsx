@@ -38,6 +38,7 @@ import { BsDot } from 'react-icons/bs'
 import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
 import { handleCreateProduct } from './functions'
+import { store } from '../../redux/store'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -127,6 +128,7 @@ export default function Products(props: ProductsProps) {
   const [product, setProduct] = useState<Partial<Product<typeof path>>>({})
   const [filter, setFilter] = useState({ show: false, search: '' })
   const navigate = useNavigate()
+  const { settings } = store.getState()
   const { id } = useParams()
 
   const loadingProducts: ProductGeneral[] = Array.from(
@@ -135,7 +137,7 @@ export default function Products(props: ProductsProps) {
   )
 
   const productsData = useMemo(() => {
-    if (!loading && path === 'lists') {
+    if (!products?.[0]?.id && settings.groupProducts && path === 'lists') {
       return products.reduce((acc, item, __, arr) => {
         const i = acc.findIndex((el) => el.description === item.description)
         if (i !== -1) {
