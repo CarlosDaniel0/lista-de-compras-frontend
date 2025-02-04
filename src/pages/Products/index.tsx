@@ -137,7 +137,7 @@ export default function Products(props: ProductsProps) {
   )
 
   const productsData = useMemo(() => {
-    if (!products?.[0]?.id && settings.groupProducts && path === 'lists') {
+    if (!!products?.[0]?.id && settings.groupProducts && path === 'lists') {
       return products.reduce((acc, item, __, arr) => {
         const i = acc.findIndex((el) => el.description === item.description)
         if (i !== -1) {
