@@ -370,6 +370,7 @@ export default function CreateOrUpdate(
           <>
             <Search
               id="inpTxtSupermarket"
+              nextElement='inpTxtProduct'
               field="supermarket_id"
               label="Supermercado"
               disabled={!supermarkets.length}

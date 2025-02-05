@@ -39,6 +39,7 @@ import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
 import { handleCreateProduct } from './functions'
 import { store } from '../../redux/store'
+import { aggregateByKey, sum } from '../../lib/utils'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
@@ -137,33 +138,21 @@ export default function Products(props: ProductsProps) {
   )
 
   const productsData = useMemo(() => {
-    if (!products?.[0]?.id && settings.groupProducts && path === 'lists') {
-      return products.reduce((acc, item, __, arr) => {
-        const i = acc.findIndex((el) => el.description === item.description)
-        if (i !== -1) {
-          const prods = arr.filter((p, index) => index !== i && p.description === item.description)
-
-          acc[i] = {
-            ...acc[i],
-            group: true,
-            quantity: prods.reduce(
-              (t, p) => decimalSum(t, p.quantity),
-              acc[i].quantity
-            ),
-            total: prods.reduce(
-              (t, p) =>
-                decimalSum(
-                  t,
-                  +((p.quantity ?? 0) * Number(p?.product?.price ?? 0)).toFixed(
-                    2
-                  )
-                ),
-              Number(acc[i].total ?? 0)
-            ),
-          }
-        } else acc.push(item)
-        return acc
-      }, [] as ProductGeneral[])
+    if (!!products?.[0]?.id && settings.groupProducts && path === 'lists') {
+      return aggregateByKey(products, 'description') 
+      .map(prod => {
+        const prods = products.filter((p) => p.description === prod.description)
+        const quantity = sum(prods, 'quantity')
+        const total = prods.reduce((tot, p) => 
+            decimalSum(tot, +(Number(p.quantity ?? 0) * Number(p.product?.price ?? 0)).toFixed(2)),0)
+        return  {
+          ...prod,
+          total,
+          quantity,
+          group: true,
+        }
+      })
+       
     }
 
     return products
