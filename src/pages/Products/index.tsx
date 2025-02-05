@@ -39,7 +39,7 @@ import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
 import { handleCreateProduct } from './functions'
 import { store } from '../../redux/store'
-import { aggregateByKey, sum } from '../../lib/utils'
+import { aggregateByKey, sum } from '../../util/index'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
