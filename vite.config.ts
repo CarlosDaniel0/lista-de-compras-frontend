@@ -27,11 +27,20 @@ const options: Partial<VitePWAOptions> = {
     short_name: 'Lista de Compras',
     description: 'Lista de Compras com um toque a mais',
     theme_color: '#ffffff',
+    id: "0250205",
+    launch_handler: {
+      client_mode: 'auto'
+    },
+    dir: 'ltr',
+    prefer_related_applications: false,
+    categories: ['supermarket', 'notes', 'products', 'utilites'],
+    orientation: 'natural',
     icons: [
       {
         src: '/icon/android-chrome-192x192.png',
         sizes: '192x192',
         type: 'image/png',
+        purpose: 'any',
       },
       {
         src: '/icon/android-chrome-512x512.png',
@@ -75,7 +84,7 @@ if (isDEV) {
     enableWorkboxModulesLogs: true,
   }
 } else {
-  options.workbox = { importScripts: ['/service-worker.js'] } 
+  options.workbox = { importScripts: ['/service-worker.js'] }
 }
 
 if (claims) options.registerType = 'autoUpdate'
@@ -92,7 +101,7 @@ export default defineConfig({
   server: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp'
+      'Cross-Origin-Embedder-Policy': 'require-corp',
     },
   },
   optimizeDeps: {
@@ -105,13 +114,16 @@ export default defineConfig({
         'service-worker': './src/lib/database/worker.ts',
       },
       output: {
-        entryFileNames: assetInfo => {
+        entryFileNames: (assetInfo) => {
           return assetInfo.name === 'service-worker'
-             ? '[name].js'
-             : 'assets/js/[name]-[hash].js'
+            ? '[name].js'
+            : 'assets/js/[name]-[hash].js'
         },
         manualChunks(id) {
-          if (id.includes('node_modules') && !workerLibs.some(key => id.includes(key))) {
+          if (
+            id.includes('node_modules') &&
+            !workerLibs.some((key) => id.includes(key))
+          ) {
             return id
               .toString()
               .split('node_modules/')[1]
