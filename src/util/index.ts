@@ -302,6 +302,17 @@ export const decimalFormatter = (text: string, decimals = 4) => {
   }`
 }
 
+
+export const aggregateByKey = <T,>(arr: T[], field: keyof T) => {
+  const map = new Map<string, any>()
+  arr.forEach(item => map.set(String(item[field]), item))
+  return Array.from(map.values()) as T[]
+}
+
+export const sum = <T,>(arr: T[], field: keyof T) => {
+  return arr.reduce((tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)), 0)
+}
+
 export const formatToFilter = (text: string) =>
   text
     .toLocaleLowerCase()
