@@ -5,6 +5,7 @@ const online = { status: false }
 const channelSQL = new BroadcastChannel('sqlite')
 const channelStatus = new BroadcastChannel('status')
 
+const db = { started: false }
 channelStatus.addEventListener('message', (evt) => {
   const { data } = evt
   if ('verifyOnlineStatus' in data) {
@@ -26,11 +27,16 @@ channelStatus.addEventListener('message', (evt) => {
   if ('status' in data) online.status = data.status
 })
 
+channelSQL.addEventListener('message', (evt) => {
+  const { data } = evt
+  if (typeof data === 'object' && 'status' in data)
+    db.started = data.status
+})
+
 self.addEventListener('fetch', (evt) => {
   const { url } = evt.request
-
-  if (url.includes(VITE_API_URL))
-  evt.respondWith(localAPI(evt, channelSQL, online.status))
+  if (url.includes(VITE_API_URL) && db.started)
+    evt.respondWith(localAPI(evt, channelSQL, online.status))
 })
 
 const sendMessage = async (msg: { statusonline: boolean }) => {

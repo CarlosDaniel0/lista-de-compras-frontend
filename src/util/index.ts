@@ -9,6 +9,13 @@ import { HTTPMethods } from './types'
 //   log: 'color:rgb(235, 235, 235);'
 // }
 const channel = new BroadcastChannel('status')
+const dbChannel = new BroadcastChannel('sqlite')
+dbChannel.addEventListener('message', evt => {
+  if (typeof evt === 'object' && (evt as never as { status: boolean })?.status) {
+    if (DEBUG) console.log('DB Iniciado com sucesso!')
+  }
+})
+
 const hightlight = (
   value: string
   // type: 'error' | 'warn' | 'info' | 'log'
@@ -173,6 +180,11 @@ export const verifyOnlineStatus = () => {
   sendMessageToWorker({ verifyOnlineStatus: online.status })
 }
 
+export const startOrRestSQLiteDB = (isStart: boolean) => {
+  if (DEBUG) console.log(`${isStart ? 'Iniciando' : 'Limpando'} DB`)  
+  dbChannel.postMessage(isStart ? { start: true } : { reset: true })
+}
+
 export const setTheme = (theme: 'dark' | 'light') => {
   const html = document.querySelector('html')
   if (!html) return
@@ -312,6 +324,19 @@ export const aggregateByKey = <T,>(arr: T[], field: keyof T) => {
 export const sum = <T,>(arr: T[], field: keyof T) => {
   return arr.reduce((tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)), 0)
 }
+
+const delayController: { timer: null|NodeJS.Timeout } = { timer: null }
+export const delay = (fn: Function, time: number) => {
+  if (delayController.timer) return
+  console.log('executou!')
+  fn()
+  delayController.timer = setTimeout(() => delayController.timer = null, time)
+}
+
+export const scapeNoASCII = (text: string) =>
+  text.replace(/[\u007F-\uFFFF]/g, function(chr) {
+    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4)
+})
 
 export const formatToFilter = (text: string) =>
   text

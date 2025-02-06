@@ -107,6 +107,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['@jlongster_sql', 'absurd-sql'],
   },
+  assetsInclude: ["**/*.sql"],
   build: {
     rollupOptions: {
       input: {

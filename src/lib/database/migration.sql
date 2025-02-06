@@ -125,3 +125,4 @@ CREATE UNIQUE INDEX "Coordinates_supermarket_id_key" ON "Coordinates"("supermark
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+

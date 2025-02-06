@@ -265,7 +265,7 @@ export class SQLite {
       conditions ? ` AND ${conditions}` : ''
     };`
     return this.#exec<E[]>(sql).then(async (result) => {
-      if (Object.entries(include ?? {}).length) {
+      if (Object.entries(include ?? {}).length && result) {
         //** TODO: Mapeamento fraco entre tabelas com multiplos elementos filhos com a tabela pai */
         const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
         const items = optionals.filter(
@@ -295,7 +295,6 @@ export class SQLite {
           ...item,
           ...Object.fromEntries(data),
         })
-
         return Array.isArray(result)
           ? result.map((item) => format(item, data))
           : format(result, data)
