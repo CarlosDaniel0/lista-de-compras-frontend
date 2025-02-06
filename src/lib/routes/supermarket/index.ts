@@ -25,6 +25,11 @@ router.get('/', async (_, res, channel) => {
       .then((res) => res.map(SupermarketData.parse))
     res.send({ status: true, data: { supermarkets } })
   } catch (e) {
+    if (e instanceof Error) {
+      console.log(`cause: ${e.name}`)
+      console.log(`message: ${e.message}`)
+      console.log(`stack: ${e.stack ?? 'no stack'}`)
+    }
     res.send(databaseErrorResponse(e instanceof Error ? e?.message : ''))
   }
 })

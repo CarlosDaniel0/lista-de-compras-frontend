@@ -6,7 +6,8 @@ const initialState: Config = {
   token: '',
   theme: 'light',
   settings: {
-    groupProducts: false
+    groupProducts: false,
+    localPersistence: false
   },
   permissions: [],
   isLoggedIn: false,

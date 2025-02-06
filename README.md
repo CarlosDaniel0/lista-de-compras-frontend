@@ -69,7 +69,18 @@ Tipos de dados aceitos:
 No terminal rode o comando para criar a estrutura das tabelas
 em SQL para utiliza-las posteriormente durante a criação do banco
 ```bash
-npx prisma migrate dev --name init --create-only
+yarn migrate
+```
+
+Um arquivo SQL será  criado no diretório abaixo e será utilizado na 
+criação do banco SQLite local
+```
+src
+└─lib
+   └─database
+      │ migration.sql <<< 
+      │ sqlite.ts
+      │ worker.ts
 ```
 
 3 - Rode o projeto

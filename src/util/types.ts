@@ -140,7 +140,8 @@ export enum CameraStates {
 }
 
 export interface Settings {
-  groupProducts: boolean
+  groupProducts: boolean,
+  localPersistence: boolean
 }
 
 export interface Config {
