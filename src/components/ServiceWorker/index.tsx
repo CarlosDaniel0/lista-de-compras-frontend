@@ -3,9 +3,7 @@ import styled from 'styled-components'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { DEBUG } from '../../util/constants'
-import { startOrRestSQLiteDB, verifyOnlineStatus } from '../../util'
-import { initBackend } from 'absurd-sql/dist/indexeddb-main-thread'
-import { store } from '../../redux/store'
+import { verifyOnlineStatus } from '../../util'
 
 const Panel = styled.div`
   position: absolute;
@@ -42,7 +40,6 @@ const ButtonRefresh = styled.button`
 `
 
 export default function ServiceWorker() {
-  const { settings } = store.getState()
   const reloadSW = '__RELOAD_SW__'
 
   const {
@@ -80,12 +77,6 @@ export default function ServiceWorker() {
   }
 
   useEffectOnce(() => {
-    const worker = new Worker(
-      new URL('../../lib/database/sqlite.ts', import.meta.url),
-      { type: 'module' }
-    )
-    initBackend(worker)
-    setTimeout(() => startOrRestSQLiteDB(settings.localPersistence), 500) 
     verifyOnlineStatus()
     setTimeout(() => setOfflineReady(false), 15 * 1000)
   }, [])

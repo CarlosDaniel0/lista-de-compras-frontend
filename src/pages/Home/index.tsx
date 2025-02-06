@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Card from '../../components/Card'
 import { Link, useNavigate } from 'react-router-dom'
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
-import { request } from '../../util'
+import { request, startOrRestSQLiteDB } from '../../util'
 import { useContext, useState } from 'react'
 import { Loader } from '../../components/Loading'
 import { User } from '../../util/types'
@@ -12,6 +12,7 @@ import { signIn } from '../../redux/slices/config'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import { store } from '../../redux/store'
 import { DialogContext } from '../../contexts/Dialog'
+import { initBackend } from 'absurd-sql/dist/indexeddb-main-thread'
 
 const Container = styled.main`
   width: 100%;
@@ -21,18 +22,6 @@ const Container = styled.main`
   align-items: center;
   justify-content: center;
 `
-
-// const Button = styled.button<{ $bg?: string }>`
-//   padding: 0.4em 0.8em;
-//   width: 100%;
-//   font-size: 1.1em;
-//   background: ${(attr) => attr?.$bg};
-//   color: ${(attr) => attr?.color ?? '#1a1a1a'};
-//   border-radius: 0.4em;
-//   outline: none;
-//   border: none;
-//   cursor: pointer;
-// `
 
 const Row = styled.section`
   margin-top: 20px;
@@ -96,15 +85,22 @@ export default function Home() {
   }
 
   useEffectOnce(() => {
+    const { token, user, settings } = store.getState()
+    const worker = new Worker(
+      new URL('../../lib/database/sqlite.ts', import.meta.url),
+      { type: 'module' }
+    )
+    initBackend(worker)
+    setTimeout(() => startOrRestSQLiteDB(settings.localPersistence), 250)
     setTimeout(() => {
-      const { token, user } = store.getState()
+     
       if (token && !user?.id)
         handleSuccess({
           clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
           select_by: 'btn',
           credential: token,
         })
-    }, 350)
+    }, 450)
   }, [])
 
   return (
