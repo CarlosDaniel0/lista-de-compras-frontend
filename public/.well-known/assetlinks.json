@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "br.com.listacompras.www.twa",
+      "sha256_cert_fingerprints": [
+        "0B:06:91:7D:2A:D3:15:FD:A9:CA:B7:F8:C1:06:E2:58:3C:83:5C:25:D4:46:ED:98:C6:AB:77:CA:7D:B8:FE:DB"
+      ]
+    }
+  }
+]
