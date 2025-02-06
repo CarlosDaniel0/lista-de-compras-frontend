@@ -328,7 +328,6 @@ export const sum = <T,>(arr: T[], field: keyof T) => {
 const delayController: { timer: null|NodeJS.Timeout } = { timer: null }
 export const delay = (fn: Function, time: number) => {
   if (delayController.timer) return
-  console.log('executou!')
   fn()
   delayController.timer = setTimeout(() => delayController.timer = null, time)
 }
