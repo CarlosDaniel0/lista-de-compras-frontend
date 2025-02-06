@@ -27,7 +27,6 @@ const options: Partial<VitePWAOptions> = {
     short_name: 'Lista de Compras',
     description: 'Lista de Compras com um toque a mais',
     theme_color: '#ffffff',
-    id: "0250205",
     launch_handler: {
       client_mode: 'auto'
     },
