@@ -1,36 +1,19 @@
 import localAPI from '..'
+import { messageHandler } from '../core'
 declare let self: ServiceWorkerGlobalScope
 const { VITE_API_URL } = import.meta.env
 const online = { status: false }
 const channelSQL = new BroadcastChannel('sqlite')
-const channelStatus = new BroadcastChannel('status')
+const channelWorker = new BroadcastChannel('worker')
 
 const db = { started: false }
-channelStatus.addEventListener('message', (evt) => {
-  const { data } = evt
-  if ('verifyOnlineStatus' in data) {
-    const img = '/icon/android-chrome-192x192.png'
-    const req = new Request(img, {
-      method: 'HEAD',
-    })
-
-    fetch(req)
-      .then(() => {
-        online.status = true
-        sendMessage({ statusonline: true })
-      })
-      .catch(() => {
-        online.status = false
-        sendMessage({ statusonline: false })
-      })
-  }
-  if ('status' in data) online.status = data.status
-})
+channelWorker.addEventListener('message', (evt) =>
+  messageHandler({ sqlite: channelSQL, worker: channelWorker }, evt, online)
+)
 
 channelSQL.addEventListener('message', (evt) => {
   const { data } = evt
-  if (typeof data === 'object' && 'status' in data)
-    db.started = data.status
+  if (typeof data === 'object' && 'status' in data) db.started = data.status
 })
 
 self.addEventListener('fetch', (evt) => {
@@ -38,7 +21,3 @@ self.addEventListener('fetch', (evt) => {
   if (url.includes(VITE_API_URL) && db.started)
     evt.respondWith(localAPI(evt, channelSQL, online.status))
 })
-
-const sendMessage = async (msg: { statusonline: boolean }) => {
-  channelStatus.postMessage(msg)
-}

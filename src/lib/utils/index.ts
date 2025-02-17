@@ -84,6 +84,8 @@ export const decimalSum = (...numbers: number[]): number =>
     )
   }, 0)
 
+export const trunc = (num: number, decimals: number = 2) => Math.trunc(num * Math.pow(10, decimals)) / Math.pow(10, decimals)
+
 export const sum = <T,>(arr: T[], field: keyof T) => {
   return arr.reduce((tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)), 0)
 }
