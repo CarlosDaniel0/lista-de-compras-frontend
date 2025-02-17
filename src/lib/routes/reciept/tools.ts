@@ -171,7 +171,7 @@ const parseProductsFromTXT = (text: string) => {
         acc[index].unity = line![0].replace(/[0-9.]/g, '')
         acc[index].price = parseFloat(line?.[1] ?? '0')
         if (discount) acc[index].discount = discount
-        acc[index].total = +(acc[index].quantity * acc[index].price).toFixed(2)
+        acc[index].total = parseFloat(line?.[2] ?? '0')
       }
       return acc
     }, [] as ProductRecieptImportData[])

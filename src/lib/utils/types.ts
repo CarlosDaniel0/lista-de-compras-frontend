@@ -1,4 +1,4 @@
-import { ObjectFromList } from '../../util/types'
+import { List, ObjectFromList, ProductList, ProductReciept, ProductSupermarket, Reciept, Supermarket, User } from '../../util/types'
 import { APIResponse } from '../entities/APIResponse'
 
 export interface ParamsDictionary {
@@ -129,6 +129,16 @@ export interface XMLProduct {
       };
     };
   };
+}
+
+export interface DataExport {
+  user: User,
+  supermarkets: Supermarket[],
+  lists: List[],
+  reciepts: Reciept[],
+  productSupermarket: ProductSupermarket[],
+  productList: ProductList[],
+  productReciept: ProductReciept[],
 }
 
 export type CaptureType = "json" | "xml" | "txt" | "qrcode" | "ocr";

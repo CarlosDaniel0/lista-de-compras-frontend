@@ -139,20 +139,26 @@ export default function Products(props: ProductsProps) {
 
   const productsData = useMemo(() => {
     if (!!products?.[0]?.id && settings.groupProducts && path === 'lists') {
-      return aggregateByKey(products, 'description') 
-      .map(prod => {
+      return aggregateByKey(products, 'description').map((prod) => {
         const prods = products.filter((p) => p.description === prod.description)
         const quantity = sum(prods, 'quantity')
-        const total = prods.reduce((tot, p) => 
-            decimalSum(tot, +(Number(p.quantity ?? 0) * Number(p.product?.price ?? 0)).toFixed(2)),0)
-        return  {
+        const total = prods.reduce(
+          (tot, p) =>
+            decimalSum(
+              tot,
+              +(
+                Number(p.quantity ?? 0) * Number(p.product?.price ?? 0)
+              ).toFixed(2)
+            ),
+          0
+        )
+        return {
           ...prod,
           total,
           quantity,
           group: true,
         }
       })
-       
     }
 
     return products
@@ -291,21 +297,23 @@ export default function Products(props: ProductsProps) {
   useEffectOnce(loadProducts, [])
   // useEffectOnce(getProductByBarcode, [state])
   const optionsContext: Option[] = [
-    ...(path === 'lists' ? [
-      {
-        key: 'copy',
-        label: (
-          <>
-            <FaCopy /> Copiar
-          </>
-        ),
-        onClick: () => {
-          setState?.({ product } as never)
-          navigate(`/${path}/${id}/create`)
-          setProduct({})
-        }
-      }
-    ] : []),
+    ...(path === 'lists'
+      ? [
+          {
+            key: 'copy',
+            label: (
+              <>
+                <FaCopy /> Copiar
+              </>
+            ),
+            onClick: () => {
+              setState?.({ product } as never)
+              navigate(`/${path}/${id}/create`)
+              setProduct({})
+            },
+          },
+        ]
+      : []),
     {
       onClick: () => {
         product.id && navigate(`/${path}/${id}/update/${product.id}`)
@@ -396,22 +404,10 @@ export default function Products(props: ProductsProps) {
   const total = useMemo(
     () =>
       productsData.reduce(
-        (tot, item) =>
-          decimalSum(
-            tot,
-            path === 'lists'
-              ? Number(item.total ?? 0)
-              : decimalSum(
-                  +(
-                    Number(item?.quantity ?? 0) *
-                    (item?.price ?? Number(item?.product?.price ?? 0))
-                  ).toFixed(2),
-                  -Number(item?.discount ?? 0)
-                )
-          ),
+        (tot, item) => decimalSum(tot, Number(item.total ?? 0)),
         0
       ),
-    [productsData, path]
+    [productsData]
   )
 
   return (

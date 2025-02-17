@@ -8,7 +8,7 @@ import { HTTPMethods } from './types'
 //   info: 'color: #82aaff;',
 //   log: 'color:rgb(235, 235, 235);'
 // }
-const channel = new BroadcastChannel('status')
+const channel = new BroadcastChannel('worker')
 const dbChannel = new BroadcastChannel('sqlite')
 dbChannel.addEventListener('message', evt => {
   if (typeof evt === 'object' && (evt as never as { status: boolean })?.status) {
