@@ -2,6 +2,12 @@ import { useRef, useState } from "react"
 import { BiBulb } from "react-icons/bi"
 import styled from "styled-components"
 import Circle from "../Progress/circle"
+import { IoWarning } from "react-icons/io5"
+
+interface Information {
+  type: 'info' | 'error',
+  message: string
+}
 
 const Panel = styled.div`
   position: absolute;
@@ -23,22 +29,27 @@ const Panel = styled.div`
     color: var(--color-card-1);
   }
 `
+const defaultInfo: Information = { type: 'info', message: 'Sincronização de Base de Dados' }
+
 export default function BackgroundService () {
   const worker = new BroadcastChannel('worker')
   const [progress, setProgress] = useState(0)
+  const [info, setInfo] = useState<Information>(defaultInfo)
   const [indicator, setIndicator] = useState(false)
   const timer = useRef<NodeJS.Timeout|null>(null)
 
   worker.addEventListener('message', (evt) => {
     const { data } = evt
     if (typeof data !== 'object' || !('progress' in data)) return
-    const { progress: p, finish } = data
+    const { progress: p, finish, error, message } = data
     setProgress(p)
     if (!indicator && !timer.current) timer.current = setTimeout(() => setIndicator(true), 5 * 1000)
+    if (error) setInfo({ type: 'error', message })
     if (finish) setTimeout(() => {
       setIndicator(false)
       setProgress(0)
-    }, 1.5 * 1000)
+      setInfo(defaultInfo)
+    }, 2 * 1000)
   })
 
   if (!progress) return null
@@ -49,8 +60,8 @@ export default function BackgroundService () {
         {progress && <span style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', fontSize: '0.7em' }}>{progress}%</span>}
       </>
     : <>
-      <span style={{ marginTop: 2 }}><BiBulb size={22} /></span>
-      <span>Sincronização de Base de Dados</span>
+      <span style={{ marginTop: 2 }}>{info.type === 'info' ? <BiBulb size={22} /> : <IoWarning size={22} />}</span>
+      <span>{info.message}</span>
     </>}
   </Panel>
 }
