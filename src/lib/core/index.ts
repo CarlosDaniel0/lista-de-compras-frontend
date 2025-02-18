@@ -26,6 +26,8 @@ const dataImport = async (
         try {
           json = JSON.parse(res)
         } catch (_) {}
+        if ('status' in json && 'message' in json && !json.status)
+          throw new Error(json.message + '')
         return json as DataExport
       })
 
@@ -162,7 +164,13 @@ const dataImport = async (
     }
 
     sendMessage(worker, { progress: 100, finish: true })
-  } catch (_) {}
+  } catch (e) {
+    sendMessage(worker, {
+      finish: true,
+      message: e instanceof Error ? e.message : '',
+      error: true,
+    })
+  }
 }
 
 export const dataExport = (
