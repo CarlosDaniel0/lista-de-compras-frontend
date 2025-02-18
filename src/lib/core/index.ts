@@ -205,8 +205,8 @@ export const messageHandler = (
       })
   }
   if ('status' in data) online.status = data.status
-  if ('import' in data && data.user_id) dataImport(sqlite, worker, data.user_id)
-  if ('export' in data && data.user_id) dataExport(sqlite, worker, data.user_id)
+  if ('import' in data && data.user_id && online.status) dataImport(sqlite, worker, data.user_id)
+  if ('export' in data && data.user_id && online.status) dataExport(sqlite, worker, data.user_id)
 }
 
 const sendMessage = async <T>(channel: BroadcastChannel, msg: T) => {

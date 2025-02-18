@@ -183,6 +183,10 @@ export const verifyOnlineStatus = () => {
   sendMessageToWorker({ verifyOnlineStatus: online.status })
 }
 
+export const startDatabase = () => {
+  dbChannel.postMessage({ start: true })
+}
+
 export const databaseSync = async (
   isStart: boolean,
   user_id?: string

@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Card from '../../components/Card'
 import { Link, useNavigate } from 'react-router-dom'
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
-import { request, databaseSync } from '../../util'
+import { request, databaseSync, sleep, startDatabase } from '../../util'
 import { useContext, useState } from 'react'
 import { Loader } from '../../components/Loading'
 import { User } from '../../util/types'
@@ -87,13 +87,15 @@ export default function Home() {
     Dialog.info.show({ message: 'Falha ao efetuar o login' })
   }
 
-  useEffectOnce(() => {
-    
+  useEffectOnce(async () => {
     const worker = new Worker(
       new URL('../../lib/database/sqlite.ts', import.meta.url),
       { type: 'module' }
     )
     initBackend(worker)
+    await sleep(100)
+    startDatabase()
+    await sleep(100)
     if (token && !user?.id)
       handleSuccess({
         clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
