@@ -8,7 +8,7 @@ export class ProductSupermarketData implements ProductSupermarket {
   id: string
   description: string
   unity: string
-  category: string
+  category: string = ''
   barcode?: string
   price: number
   removed: boolean = false
@@ -22,7 +22,7 @@ export class ProductSupermarketData implements ProductSupermarket {
     id: string,
     description: string,
     unity: string,
-    category: string,
+    category: string = '',
     barcode: string = '',
     price: number,
     removed: boolean,
