@@ -5,7 +5,6 @@ import { RecieptImportData } from '../../entities/RecieptImportData'
 import { ProductRecieptImportData } from '../../entities/ProductRecieptImportData'
 import { CaptureType, XMLProduct } from '../../utils/types'
 import { XMLParser } from 'fast-xml-parser'
-import { format } from 'date-fns'
 
 const currency = Intl.NumberFormat('pt-BR', {
   style: 'currency',
@@ -36,7 +35,7 @@ export const handleImport = async (
     }
   })
   if (currentReciept !== null)
-    throw new Error(`Comprovante ${currentReciept?.name} encontrado!\nData: ${format(new Date(currentReciept?.date ?? Date.now), 'dd/MM/yyyy')}\nValor: ${currency.format(Number(currentReciept?.total ?? 0))}`)
+    throw new Error(`Comprovante ${currentReciept?.name} encontrado!\nData: ${currentReciept?.date?.substring(0, 10)?.replace(/(\d{4})-(\d{2})-(\d{2})/g, '$3/$2/$1')}\nValor: ${currency.format(Number(currentReciept?.total ?? 0))}`)
 
   const supermarket = await sqlite.supermarket.findFirst({
     where: { id },
