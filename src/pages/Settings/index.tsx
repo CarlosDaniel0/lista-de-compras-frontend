@@ -8,19 +8,19 @@ import { store } from '../../redux/store'
 import Card from '../../components/Card'
 import { useDispatch } from 'react-redux'
 import { updateSettings } from '../../redux/slices/config'
-import { delay, startOrRestSQLiteDB } from '../../util'
 import useEffectOnce from '../../hooks/useEffectOnce'
+import { databaseSync, delay } from '../../util'
 
 export default function Settings() {
-  const { settings } = store.getState()
+  const { settings, user } = store.getState()
   const [form, setForm] = useState<SettingsTypes>(settings)
-  const dispatch = useDispatch()
   const obj = { form, setForm } as FormContextProps
+  const dispatch = useDispatch()
 
   useEffectOnce(() => {
-    delay(() => startOrRestSQLiteDB(form.localPersistence), 500) 
-    dispatch(updateSettings(form))
-  }, [form])
+    delay(() => databaseSync(form.localPersistence, user?.id), 250)
+  }, [form?.localPersistence])
+  useEffectOnce(() => dispatch(updateSettings(form)), [form])
 
   return (
     <Form {...obj}>

@@ -11,6 +11,7 @@ const initialState: Config = {
   },
   permissions: [],
   isLoggedIn: false,
+  context: {}
 };
 
 const config = createSlice({
@@ -29,6 +30,12 @@ const config = createSlice({
     removePermission: (state, action) => {
       state.permissions.splice(state.permissions.indexOf(action.payload), 1)
     },
+    addContext: (state, action) => {
+      state.context = action.payload
+    },
+    removeContext: (state) => { 
+      state.context = {} 
+    },
     signIn: (state, action) => {
       state.user = { ...state.user, ...action.payload };
       state.token = action.payload.token,
@@ -42,5 +49,5 @@ const config = createSlice({
   },
 });
 
-export const { signIn, signOut, changeTheme, updateSettings, addPermission, removePermission } = config.actions;
+export const { signIn, signOut, changeTheme, updateSettings, addPermission, removePermission, addContext, removeContext } = config.actions;
 export default config.reducer;

@@ -10,8 +10,11 @@ import { HTTPMethods } from './types'
 // }
 const channel = new BroadcastChannel('worker')
 const dbChannel = new BroadcastChannel('sqlite')
-dbChannel.addEventListener('message', evt => {
-  if (typeof evt === 'object' && (evt as never as { status: boolean })?.status) {
+dbChannel.addEventListener('message', (evt) => {
+  if (
+    typeof evt === 'object' &&
+    (evt as never as { status: boolean })?.status
+  ) {
     if (DEBUG) console.log('DB Iniciado com sucesso!')
   }
 })
@@ -180,9 +183,19 @@ export const verifyOnlineStatus = () => {
   sendMessageToWorker({ verifyOnlineStatus: online.status })
 }
 
-export const startOrRestSQLiteDB = (isStart: boolean) => {
-  if (DEBUG) console.log(`${isStart ? 'Iniciando' : 'Limpando'} DB`)  
+export const databaseSync = async (
+  isStart: boolean,
+  user_id?: string
+) => {
+  if (DEBUG) console.log(`${isStart ? 'Iniciando' : 'Limpando'} DB`)
   dbChannel.postMessage(isStart ? { start: true } : { reset: true })
+  await sleep(50)
+  if (isStart) {
+    channel.postMessage({
+      import: true,
+      user_id,
+    })
+  }
 }
 
 export const setTheme = (theme: 'dark' | 'light') => {
@@ -310,32 +323,36 @@ export const decimalFormatter = (text: string, decimals = 4) => {
   const value = text.replace(/[^0-9,]/g, '')
   const [int, dec] = value.includes(',') ? value.split(',') : [value, '']
   return `${int.replace(/(\d)(?=(\d{3})+(,|$))/g, '$1.')}${
-    value.includes(',') ? `,${dec.replace(/,/g, '').substring(0, decimals) ?? ''}` : ''
+    value.includes(',')
+      ? `,${dec.replace(/,/g, '').substring(0, decimals) ?? ''}`
+      : ''
   }`
 }
 
-
-export const aggregateByKey = <T,>(arr: T[], field: keyof T) => {
+export const aggregateByKey = <T>(arr: T[], field: keyof T) => {
   const map = new Map<string, any>()
-  arr.forEach(item => map.set(String(item[field]), item))
+  arr.forEach((item) => map.set(String(item[field]), item))
   return Array.from(map.values()) as T[]
 }
 
-export const sum = <T,>(arr: T[], field: keyof T) => {
-  return arr.reduce((tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)), 0)
+export const sum = <T>(arr: T[], field: keyof T) => {
+  return arr.reduce(
+    (tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)),
+    0
+  )
 }
 
-const delayController: { timer: null|NodeJS.Timeout } = { timer: null }
+const delayController: { timer: null | NodeJS.Timeout } = { timer: null }
 export const delay = (fn: Function, time: number) => {
   if (delayController.timer) return
   fn()
-  delayController.timer = setTimeout(() => delayController.timer = null, time)
+  delayController.timer = setTimeout(() => (delayController.timer = null), time)
 }
 
 export const scapeNoASCII = (text: string) =>
-  text.replace(/[\u007F-\uFFFF]/g, function(chr) {
-    return "\\u" + ("0000" + chr.charCodeAt(0).toString(16)).substring(-4)
-})
+  text.replace(/[\u007F-\uFFFF]/g, function (chr) {
+    return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substring(-4)
+  })
 
 export const formatToFilter = (text: string) =>
   text

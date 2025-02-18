@@ -150,5 +150,6 @@ export interface Config {
   isLoggedIn: boolean,
   settings: Settings,
   theme: 'dark' | 'light',
-  permissions: Permission[]
+  permissions: Permission[],
+  context: Record<string, any>
 }

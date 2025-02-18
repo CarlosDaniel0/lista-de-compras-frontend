@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import {
+  forwardRef,
   useCallback,
   useContext,
   useEffect,
@@ -254,7 +255,7 @@ export default function Search(
             ref={ref}
             scrollerRef={scrollerRef}
             components={{
-              List,
+              List: forwardRef(({ context, ...props }, ref) => <List {...props} ref={ref} />),
             }}
             itemContent={(i, option) => (
               <Item

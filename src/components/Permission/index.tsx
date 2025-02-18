@@ -4,17 +4,11 @@ import TabBar from "../TabBar"
 import { IoCameraSharp } from "react-icons/io5"
 import Card from "../Card"
 
-interface RequestPermissionProps {
+interface RequestPermissionProps<T> {
   icon?: JSX.Element,
   title?: string,
   message?: string,
-  requestCameraPermission: () => Promise<null | {
-    stream: MediaStream
-    track: MediaStreamTrack
-    capabilities: MediaTrackCapabilities
-    settings: MediaTrackSettings
-    hasTorch: boolean
-  }>
+  requestPermission: () => Promise<null | T>
 }
 
 const Button = styled.button`
@@ -43,8 +37,8 @@ const Container = styled.div`
   justify-content: center;
 `
 
-export default function RequestPermission (props: RequestPermissionProps) {
-  const { icon, title, message, requestCameraPermission } = props
+export default function RequestPermission <T,>(props: RequestPermissionProps<T>) {
+  const { icon, title, message, requestPermission } = props
   return (
     <>
       <TabBar label="Verificar Permissão" back />
@@ -68,7 +62,7 @@ export default function RequestPermission (props: RequestPermissionProps) {
           >
             {message ?? 'Por favor, permita o acesso a camera para utilizar o leitor de Códigos de Barras'}
           </p>
-          <Button onClick={() => requestCameraPermission()}>Permitir</Button>
+          <Button onClick={() => requestPermission()}>Permitir</Button>
         </Card>
       </Container>
     </>

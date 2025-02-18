@@ -9,11 +9,16 @@ import { UserData } from '../entities/UserData'
 import { API_URL } from '../utils/constants'
 import { DataExport } from '../utils/types'
 
-const dataImport = async (channel: BroadcastChannel, user_id: string) => {
-  const sqlite = new SQLite(channel)
+const dataImport = async (
+  sql: BroadcastChannel,
+  worker: BroadcastChannel,
+  user_id: string
+) => {
+  const sqlite = new SQLite(sql)
   try {
     const search = new URLSearchParams()
     search.append('u', user_id)
+    sendMessage(worker, { progress: 0 })
     const data = await fetch(`${API_URL}/core/export?${search}`)
       .then((res) => res.text())
       .then((res) => {
@@ -24,6 +29,7 @@ const dataImport = async (channel: BroadcastChannel, user_id: string) => {
         return json as DataExport
       })
 
+    sendMessage(worker, { progress: 50 })
     const {
       user,
       lists,
@@ -38,38 +44,133 @@ const dataImport = async (channel: BroadcastChannel, user_id: string) => {
       data: UserData.parse(user as Record<string, any>).toEntity(),
     })
 
-    await sqlite.list.createMany({
-      data: lists.map(ListData.parse).map((e) => e.toEntity()),
-    })
+    sendMessage(worker, { progress: 58 })
+    if (lists.length) {
+      const localLists = await sqlite.list.findMany({})
+      const list = lists
+        .filter((list) => !localLists.some((l) => l.id === list.id))
+        .map(ListData.parse)
+        .map((e) => e.toEntity())
+      const removed = localLists.filter(
+        (list) => !supermarkets.some((l) => l.id === list.id)
+      )
+      if (removed.length)
+        await sqlite.list.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (list.length)
+        await sqlite.list.createMany({
+          data: list,
+        })
+    }
+    sendMessage(worker, { progress: 65 })
+    if (supermarkets.length) {
+      const localSupermarkets = await sqlite.supermarket.findMany({})
+      const list = supermarkets
+        .filter(
+          (supermarket) =>
+            !localSupermarkets.some((s) => s.id === supermarket.id)
+        )
+        .map(SupermarketData.parse)
+        .map((e) => e.toEntity())
+      const removed = localSupermarkets.filter(
+        (supermarket) => !supermarkets.some((s) => s.id === supermarket.id)
+      )
+      if (removed.length)
+        await sqlite.supermarket.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (list.length) await sqlite.supermarket.createMany({ data: list })
+    }
 
-    await sqlite.supermarket.createMany({
-      data: supermarkets.map(SupermarketData.parse).map((e) => e.toEntity()),
-    })
+    sendMessage(worker, { progress: 72 })
+    if (reciepts.length) {
+      const localReciepts = await sqlite.reciept.findMany({})
+      const list = reciepts
+        .filter((reciept) => !localReciepts.some((r) => r.id === reciept.id))
+        .map(RecieptData.parse)
+        .map((e) => e.toEntity())
+      const removed = localReciepts.filter(
+        (reciept) => !reciepts.some((r) => r.id === reciept.id)
+      )
+      if (removed.length)
+        await sqlite.reciept.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (list.length) await sqlite.reciept.createMany({ data: list })
+    }
 
-    await sqlite.reciept.createMany({
-      data: reciepts.map(RecieptData.parse).map((e) => e.toEntity()),
-    })
-
-    await sqlite.productSupermarket.createMany({
-      data: productSupermarket
+    sendMessage(worker, { progress: 79 })
+    if (productSupermarket.length) {
+      const localProductSupermarket = await sqlite.productSupermarket.findMany(
+        {}
+      )
+      const list = productSupermarket
+        .filter(
+          (product) => !localProductSupermarket.some((p) => p.id === product.id)
+        )
         .map(ProductSupermarketData.parse)
-        .map((e) => e.toEntity()),
-    })
+        .map((e) => e.toEntity())
+      const removed = localProductSupermarket.filter(
+        (product) => !productSupermarket.some((p) => p.id === product.id)
+      )
+      if (removed.length)
+        await sqlite.productSupermarket.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (lists.length)
+        await sqlite.productSupermarket.createMany({ data: list })
+    }
 
-    await sqlite.productReciept.createMany({
-      data: productReciept
+    sendMessage(worker, { progress: 79 })
+    if (productReciept.length) {
+      const localProductReciept = await sqlite.productReciept.findMany({})
+      const list = productReciept
+        .filter(
+          (product) => !localProductReciept.some((p) => p.id === product.id)
+        )
         .map(ProductRecieptData.parse)
-        .map((e) => e.toEntity()),
-    })
+        .map((e) => e.toEntity())
+      const removed = localProductReciept.filter(
+        (product) => !productReciept.some((p) => p.id === product.id)
+      )
+      if (removed.length)
+        await sqlite.productReciept.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (list.length) await sqlite.productReciept.createMany({ data: list })
+    }
 
-    await sqlite.productList.createMany({
-      data: productList.map(ProductListData.parse).map((e) => e.toEntity()),
-    })
+    sendMessage(worker, { progress: 86 })
+    if (productList.length) {
+      const localProductList = await sqlite.productList.findMany({})
+      const list = productList
+        .filter((product) => !localProductList.some((p) => p.id === product.id))
+        .map(ProductListData.parse)
+        .map((e) => e.toEntity())
+      const removed = localProductList.filter(
+        (product) => !productList.some((p) => p.id === product.id)
+      )
+      if (removed.length)
+        await sqlite.productList.deleteMany({
+          where: { id: { in: removed.map((r) => r.id) } },
+        })
+      if (lists.length)
+        await sqlite.productList.createMany({
+          data: list,
+        })
+    }
+
+    sendMessage(worker, { progress: 100, finish: true })
   } catch (_) {}
 }
 
-export const dataExport = (channel: BroadcastChannel, user_id: string) => {
-  console.log(channel, user_id)
+export const dataExport = (
+  sql: BroadcastChannel,
+  worker: BroadcastChannel,
+  user_id: string
+) => {
+  console.log(sql, worker, user_id)
 }
 
 export const messageHandler = (
@@ -96,13 +197,10 @@ export const messageHandler = (
       })
   }
   if ('status' in data) online.status = data.status
-  if ('import' in data && data.user_id) dataImport(sqlite, data.user_id)
-  if ('export' in data && data.user_id) dataExport(sqlite, data.user_id)
+  if ('import' in data && data.user_id) dataImport(sqlite, worker, data.user_id)
+  if ('export' in data && data.user_id) dataExport(sqlite, worker, data.user_id)
 }
 
-const sendMessage = async (
-  channel: BroadcastChannel,
-  msg: { statusonline: boolean }
-) => {
+const sendMessage = async <T>(channel: BroadcastChannel, msg: T) => {
   channel.postMessage(msg)
 }

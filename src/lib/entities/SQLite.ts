@@ -86,33 +86,34 @@ const tablesFields = {
 
 const assossiations = {
   Reciept: {
-    products: 'ProductReciept',
-    supermarket: 'Supermarket',
-    user: 'User',
+    products: { table: 'ProductReciept', field: 'receipt_id', assoc: 'id' },
+    supermarket: { table: 'Supermarket', field: 'supermarket_id', assoc: 'id' },
+    user: { table: 'User', field: 'user_id', assoc: 'id' },
   },
   ProductReciept: {
-    receipt: 'Receipt',
-    product: 'ProductSupermarket',
+    receipt: { table: 'Receipt', field: 'reciept_id', assoc: 'id' },
+    product: { table: 'ProductSupermarket', field: 'id', assoc: 'product_id' },
   },
   ProductList: {
-    list: 'List',
-    product: 'ProductSupermarket',
-    supermarket: 'Supermarket',
+    list: { table: 'List', field: 'product_id', assoc: 'id' },
+    product: { table: 'ProductSupermarket', field: 'id', assoc: 'product_id' },
+    supermarket: { table: 'Supermarket', field: 'product_id', assoc: 'id' },
   },
   List: {
-    user: 'User',
-    products: 'ProductList',
+    user: { table: 'User', field: 'list_id', assoc: 'id' },
+    products: { table: 'ProductList', field: 'list_id', assoc: 'id' },
   },
   Supermarket: {
-    coords: 'Coordinates',
-    reciepts: 'Reciept',
-    products: 'ProductSupermarket',
-    ProductList: 'ProductList',
+    coords: { table: 'Coordinates', field: 'supermarket_id', assoc: 'id' },
+    reciepts: { table: 'Reciept', field: 'supermarket_id', assoc: 'id' },
+    products: { table: 'ProductSupermarket', field: 'supermarket_id', assoc: 'id' },
+    ProductList: { table: 'ProductList', field: 'supermarket_id', assoc: 'id' },
   },
 }
 
 const methods = {
   includes: 'LIKE',
+  in: 'IN'
 }
 
 export class SQLite {
@@ -143,7 +144,7 @@ export class SQLite {
       ProductReciept,
       typeof productRecieptFields,
       typeof productRecieptOptionalFields
-    >('productReciept', productRecieptFields, productRecieptOptionalFields)
+    >('ProductReciept', productRecieptFields, productRecieptOptionalFields)
     this.productSupermarket = this.#ORM<
       ProductSupermarket,
       typeof productSupermarketFields,
@@ -239,6 +240,8 @@ export class SQLite {
         return `'${percent}${value.replace(/['`]/g, '')}${percent}'`
       case 'number':
       case 'object':
+        if (Array.isArray(value))
+          return `(${value.map(v => `'${v.toString()}'`).join(',')})`
         if (typeof value === 'object' && 'getDay' in value)
           return `'${value.toJSON()}'`
         return `'${value.toString()}'`
@@ -255,7 +258,7 @@ export class SQLite {
   >(
     table: string,
     params: K,
-    fields: T,
+    // fields: T,
     optionals: O
   ) => {
     const { where, select, include } = params
@@ -266,31 +269,29 @@ export class SQLite {
     };`
     return this.#exec<E[]>(sql).then(async (result) => {
       if (Object.entries(include ?? {}).length && result) {
+       
         //** TODO: Mapeamento fraco entre tabelas com multiplos elementos filhos com a tabela pai */
-        const fieldItem = `${table.toLowerCase().replace(/s$/g, '')}_id`
         const items = optionals.filter(
           (k) => k && Object.keys(include ?? {}).includes(k)
         )
-        const data: [string, unknown[]][] = []
-        await (async () => {
+        const data: [string, unknown[]|unknown][] = []
+        ;(await (async () => {
           for await (const k of items) {
-            const t =
+            const { table: t, field, assoc } =
               assossiations[table as keyof typeof assossiations][k as never]
             const res =
               (await this.#select(
                 captalize(t),
                 {
                   where: {
-                    [fieldItem]: (result?.[0] as any)?.[fields[0]],
+                    [field]: (result?.[0] as any)?.[assoc],
                   },
                 },
-                [],
                 []
               )) ?? []
-            data.push([k, res])
+            data.push([k, /s$/.test(k) ? res : res?.[0]])
           }
-        })() as never
-
+        })()) as never
         const format = <T>(item: T, data: any) => ({
           ...item,
           ...Object.fromEntries(data),
@@ -337,6 +338,11 @@ export class SQLite {
     optionals: O
   ) => {
     const { data } = params
+    if (
+      (Array.isArray(data) && !data.length) ||
+      !Object.keys(data ?? {}).length
+    )
+      return null as E
     if (optionals.some((key) => Object.keys(data ?? {}).includes(key))) {
       const items = Object.keys(data ?? {})
         .filter((key) => optionals.includes(key))
@@ -401,7 +407,7 @@ export class SQLite {
     const { where } = params
     const conditions = this.#formatConditions(where ?? {})
     const sql = `DELETE FROM ${table} WHERE 1 = 1${
-      conditions ? ` AND  ${conditions}` : ''
+      conditions ? ` AND ${conditions}` : ''
     };`
     return this.#exec<E>(sql)
   }
@@ -418,14 +424,14 @@ export class SQLite {
           typeof fields,
           typeof optionals,
           ParamsORM<typeof fields, typeof optionals>
-        >(table, params, fields, optionals),
+        >(table, params, optionals),
       findFirst: async (params: ParamsORM<typeof fields, typeof optionals>) => {
         const base = await this.#select<
           E,
           typeof fields,
           typeof optionals,
           ParamsORM<typeof fields, typeof optionals>
-        >(table, params, fields, optionals)
+        >(table, params, optionals)
         if (base?.length) return base[0] as E
         return null as E
       },
@@ -437,7 +443,7 @@ export class SQLite {
           typeof fields,
           typeof optionals,
           ParamsORM<typeof fields, typeof optionals>
-        >(table, params, fields, optionals)
+        >(table, params, optionals)
         if (base.length === 1) {
           return base[0] as E
         }

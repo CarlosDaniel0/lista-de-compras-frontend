@@ -39,11 +39,9 @@ router.get('/', async (req, res, channel) => {
 router.post('/', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
-    if (hasLocalHeader) await sqlite.reciept.delete({})
     const content = Array.isArray(req.body) ? req.body : [req.body]
     const data = content.map((item) =>
-      RecieptData.parse({ ...item, sync: hasLocalHeader }).toEntity()
+      RecieptData.parse({ ...item, sync: false }).toEntity()
     )
     const reciept = await sqlite.reciept.createMany({ data })
     res.send({
@@ -58,14 +56,13 @@ router.post('/', async (req, res, channel) => {
 
 router.post('/products/capture/:type', async (req, res) => {
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { type: t } = req.params
     const type = t as CaptureType
     const { products, chavenfe, discount, total } = await handleProducts(type, req.body.content)
     res.send({
-      status: !!type || !hasLocalHeader,
+      status: !!type,
       message:
-        !type || !hasLocalHeader
+        !type
           ? 'O parâmetro :type é obrigatório na requisição'
           : 'Produtos importados com sucesso!',
       data: {
@@ -97,8 +94,6 @@ router.post('/import', async (req, res, channel) => {
 router.post('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
-    if (hasLocalHeader) await sqlite.reciept.delete({})
     const data = RecieptData.parse(req.body).toEntity()
     const reciept = await sqlite.reciept.create({ data })
     res.send({
@@ -114,12 +109,10 @@ router.post('/:id', async (req, res, channel) => {
 router.put('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id } = req.params
-    if (hasLocalHeader) await sqlite.reciept.delete({})
     const data = RecieptData.parse({
       ...req.body,
-      sync: hasLocalHeader,
+      sync: false,
     }).toEntity()
     const reciept = await sqlite.reciept.update({ data, where: { id } })
     res.send({
@@ -135,12 +128,8 @@ router.put('/:id', async (req, res, channel) => {
 router.delete('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id } = req.params
-    let reciept
-    if (hasLocalHeader) reciept = await sqlite.reciept.delete({ where: { id } })
-    else
-      reciept = await sqlite.reciept.update({
+    const reciept = await sqlite.reciept.update({
         data: { removed: true },
         where: { id },
       })
@@ -194,13 +183,11 @@ router.get('/:id/products', async (req, res, channel) => {
 router.post('/:id/products', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: receipt_id } = req.params
     const content = (Array.isArray(req.body) ? req.body : [req.body]).map((e) =>
-      Object.assign(e, { receipt_id, sync: hasLocalHeader })
+      Object.assign(e, { receipt_id, sync: false })
     )
     const data = content.map(ProductRecieptData.parse).map((e) => e.toEntity())
-    if (hasLocalHeader) await sqlite.productReciept.delete({})
     const product = await sqlite.productReciept.createMany({ data })
     res.send({
       status: true,
@@ -228,11 +215,10 @@ router.get('/:id/products/:id_product', async (req, res, channel) => {
 router.put('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: receipt_id, id_product: id } = req.params
     const data = ProductRecieptData.parse({
       ...req.body,
-      sync: hasLocalHeader,
+      sync: false,
     }).toEntity()
     const product = await sqlite.productReciept.update({
       data,
@@ -251,15 +237,8 @@ router.put('/:id/products/:id_product', async (req, res, channel) => {
 router.delete('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: receipt_id, id_product: id } = req.params
-    let product
-    if (hasLocalHeader)
-      product = await sqlite.productReciept.delete({
-        where: { id, receipt_id },
-      })
-    else
-      product = await sqlite.productReciept.update({
+    const product = await sqlite.productReciept.update({
         data: { removed: true },
         where: { id, receipt_id },
       })

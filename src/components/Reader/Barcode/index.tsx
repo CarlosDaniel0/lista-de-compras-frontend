@@ -216,7 +216,6 @@ export default function Barcode() {
     if (image && reader.current) {
       reader.current.reset()
       const img = await readFile(image)
-      console.log(img)
       stopCamera()
       setTimeout(() => setImage(img), 50)
     }
@@ -276,7 +275,7 @@ export default function Barcode() {
         </>
       )}
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (
-        <RequestPermission {...{ requestCameraPermission }} />
+        <RequestPermission {...{ requestPermission: requestCameraPermission }} />
       )}
     </ContainerReader>
   )

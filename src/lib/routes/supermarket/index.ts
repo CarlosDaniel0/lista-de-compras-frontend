@@ -37,12 +37,10 @@ router.get('/', async (_, res, channel) => {
 router.post('/', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const content = Array.isArray(req.body) ? req.body : [req.body]
     const data = content.map((item) =>
-      SupermarketData.parse({ ...item, sync: hasLocalHeader }).toEntity()
+      SupermarketData.parse({ ...item, sync: false }).toEntity()
     )
-    if (hasLocalHeader) await sqlite.supermarket.delete({})
     const dataCoords = data.map((item) =>
       Coordinates.parse({
         lat: item.coords[0],
@@ -71,11 +69,10 @@ router.post('/', async (req, res, channel) => {
 router.put('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id } = req.params
     const data = SupermarketData.parse({
       ...req.body,
-      sync: hasLocalHeader,
+      sync: false,
     }).toEntity()
     const supermarket = await sqlite.supermarket.update({ data, where: { id } })
     res.send({
@@ -91,13 +88,8 @@ router.put('/:id', async (req, res, channel) => {
 router.delete('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id } = req.params
-    let supermarket = null
-    if (hasLocalHeader)
-      supermarket = await sqlite.supermarket.delete({ where: { id } })
-    else
-      supermarket = await sqlite.supermarket.update({
+    const supermarket = await sqlite.supermarket.update({
         data: { removed: true },
         where: { id },
       })
@@ -114,12 +106,9 @@ router.delete('/:id', async (req, res, channel) => {
 router.post('/:id', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
-    const { id } = req.params
-    if (hasLocalHeader) await sqlite.supermarket.delete({ where: { id } })
     const content = Array.isArray(req.body) ? req.body : [req.body]
     const data = content.map((item) =>
-      SupermarketData.parse({ ...item, sync: hasLocalHeader }).toEntity()
+      SupermarketData.parse({ ...item, sync: false }).toEntity()
     )
     const dataCoords = data.map((item) =>
       Coordinates.parse({
@@ -182,12 +171,10 @@ router.get('/:id/products', async (req, res, channel) => {
 router.post('/:id/products', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: supermarket_id } = req.params
     const content = (Array.isArray(req.body) ? req.body : [req.body]).map(
-      (item) => Object.assign(item, { supermarket_id, sync: hasLocalHeader })
+      (item) => Object.assign(item, { supermarket_id, sync: false })
     )
-    if (hasLocalHeader) await sqlite.productSupermarket.delete({})
     const data = content
       .map(ProductSupermarketData.parse)
       .map((e) => e.toEntity())
@@ -201,16 +188,12 @@ router.post('/:id/products', async (req, res, channel) => {
 router.post('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: supermarket_id, id_product: id } = req.params
-
-    if (hasLocalHeader)
-      await sqlite.productSupermarket.delete({ where: { supermarket_id, id } })
     const data = ProductSupermarketData.parse({
       ...req.body,
       id,
       supermarket_id,
-      sync: hasLocalHeader,
+      sync: false,
     }).toEntity()
     const product = await sqlite.productSupermarket.create({
       data,
@@ -245,11 +228,10 @@ router.get('/:id/products/:id_product', async (req, res, channel) => {
 router.put('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: supermarket_id, id_product: id } = req.params
     const data = ProductSupermarketData.parse({
       ...req.body,
-      sync: hasLocalHeader,
+      sync: false,
     }).toEntity()
     const product = await sqlite.productSupermarket.update({
       data,
@@ -264,15 +246,8 @@ router.put('/:id/products/:id_product', async (req, res, channel) => {
 router.delete('/:id/products/:id_product', async (req, res, channel) => {
   const sqlite = new SQLite(channel)
   try {
-    const hasLocalHeader = req.headers.has('x-chached-by-api')
     const { id: supermarket_id, id_product: id } = req.params
-    let product
-    if (hasLocalHeader)
-      product = await sqlite.productSupermarket.delete({
-        where: { id, supermarket_id },
-      })
-    else
-      product = await sqlite.productSupermarket.update({
+    const product = await sqlite.productSupermarket.update({
         data: { removed: true },
         where: { id, supermarket_id },
       })
