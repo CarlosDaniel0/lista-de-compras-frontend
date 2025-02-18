@@ -3,13 +3,6 @@ import { formatParams, formatQueryParams } from '../utils'
 import { APIResponse } from './APIResponse'
 import { APIRouter, APIRoutes } from './APIRouter'
 
-const methods: Record<string, string> = {
-  GET: 'POST',
-  POST: 'POST',
-  DELETE: 'DELETE',
-  PUT: 'PUT',
-  PATCH: 'PATCH',
-}
 export class API {
   private readonly status
   private readonly channel
@@ -60,29 +53,7 @@ export class API {
 
     try {
       if (!this.status) return this.#exec(request)
-      const res = await fetch(request)
-      if (['HEAD'].includes(request.method)) return res
-      await res
-        .clone()
-        .json()
-        .then((res) => {
-          if (res.status) {
-            const headers = new Headers()
-            headers.append('X-Chached-By-API', 'true')
-            this.#exec(
-              new Request(clone, {
-                headers,
-                method: methods[request.method],
-                body: JSON.stringify(
-                  Array.isArray(res.data)
-                    ? res.data
-                    : Object.values(res.data)[0]
-                ),
-              })
-            )
-          }
-        })
-      return res
+      return await fetch(request)
     } catch (_) {
       return this.#exec(clone)
     }

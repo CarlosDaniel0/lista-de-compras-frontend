@@ -540,7 +540,7 @@ export default function Camera() {
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (
         <RequestPermission
           {...{
-            requestCameraPermission,
+            requestPermission: requestCameraPermission,
             message:
               'Por favor, permita o acesso a camera para utilizar o leitor OCR \n(Reconhecimento Óptico de Caracteres)',
           }}

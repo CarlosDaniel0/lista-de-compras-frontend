@@ -90,8 +90,7 @@ export default function CreateOrUpdate(
       .catch((err) => Dialog.info.show({ message: err.message }))
       .finally(() => setSupermarkets((prev) => (!prev[0]?.id ? [] : prev)))
   }
-
-  const getProduct = (id: string, product_id: string) => {
+  const getProduct = async (id: string, product_id: string) => {
     setLoading(true)
     request<{
       status: boolean
@@ -118,6 +117,7 @@ export default function CreateOrUpdate(
       })
       .catch((err) => Dialog.info.show({ message: err.message }))
       .finally(() => setLoading(false))
+    await sleep(50)
   }
 
   const create = async () => {
@@ -186,7 +186,6 @@ export default function CreateOrUpdate(
         Dialog.info.show({ message: err.message })
         return err
       })
-
   const getProductByBarcode = (supermarket_id: string, barcode?: string) =>
     request<ResponseData<{ product: ProductSupermarket }>>(
       `/supermarkets/${supermarket_id}/products/barcode/${barcode ?? ''}`
@@ -221,10 +220,10 @@ export default function CreateOrUpdate(
     }))
   }, [data?.quantity, data?.price])
 
-  useEffectOnce(() => {
+  useEffectOnce(async () => {
     document.getElementById('inpTxtDescription')?.focus()
+    if (id && product_id) await getProduct(id, product_id)
     if (id && path === 'lists') loadSupermarkets()
-    if (id && product_id) getProduct(id, product_id)
     if (id && path === 'reciepts')
       loadReciept(id).then((reciept) => loadProducts(reciept.supermarket_id))
   }, [])
@@ -232,11 +231,24 @@ export default function CreateOrUpdate(
   useEffectOnce(async () => {
     const { _target, _value, ...rest } = state ?? {}
     if (rest?.product) {
-      const { description, category, quantity, unity, supermarket_id, product_id } =
-        (rest?.product ?? {}) as never
+      const {
+        description,
+        category,
+        quantity,
+        unity,
+        supermarket_id,
+        product_id,
+      } = (rest?.product ?? {}) as never
 
       document.getElementById('inpTxtQuantity')?.focus()
-      setData({ description, category, quantity, unity, supermarket_id, product_id })
+      setData({
+        description,
+        category,
+        quantity,
+        unity,
+        supermarket_id,
+        product_id,
+      })
       if (supermarket_id) loadProducts(supermarket_id)
       return setState?.({})
     }
@@ -339,7 +351,7 @@ export default function CreateOrUpdate(
             container={{ style: { flex: '1 0 0' } }}
             mask="currency"
             field="total"
-            nextElement='btnTotal'
+            nextElement="btnTotal"
           />
         )}
         {path === 'supermarkets' && (
@@ -370,7 +382,7 @@ export default function CreateOrUpdate(
           <>
             <Search
               id="inpTxtSupermarket"
-              nextElement='inpTxtProduct'
+              nextElement="inpTxtProduct"
               field="supermarket_id"
               label="Supermercado"
               disabled={!supermarkets.length}

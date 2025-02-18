@@ -41,11 +41,11 @@ const resetDB = (db: any) => {
   try {
     exec(
       db,
-      `PRAGMA writable_schema = 1;
-      DELETE FROM sqlite_master;
-      PRAGMA writable_schema = 0;
-      VACUUM;
-      PRAGMA integrity_check;`
+`PRAGMA writable_schema = 1;
+DELETE FROM sqlite_master;
+PRAGMA writable_schema = 0;
+VACUUM;
+PRAGMA integrity_check;`
     )
     channel.postMessage({ status: false })
     controller.started = false

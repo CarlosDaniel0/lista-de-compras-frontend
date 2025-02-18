@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import Card from '../../components/Card'
 import { Link, useNavigate } from 'react-router-dom'
 import { CredentialResponse, GoogleLogin } from '@react-oauth/google'
-import { request, startOrRestSQLiteDB } from '../../util'
+import { request, databaseSync } from '../../util'
 import { useContext, useState } from 'react'
 import { Loader } from '../../components/Loading'
 import { User } from '../../util/types'
@@ -56,6 +56,7 @@ export default function Home() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const Dialog = useContext(DialogContext)
+  const { token, user, settings } = store.getState()
 
   const handleSuccess = (credentialResponse: CredentialResponse) => {
     setLoading(true)
@@ -66,6 +67,8 @@ export default function Home() {
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
+          const { user } = res.data
+        setTimeout(() => databaseSync(settings.localPersistence, user.id), 250)
         dispatch(signIn(res.data.user))
         setTimeout(() => {
           const theme = document.querySelector('meta[name="theme-color"]')
@@ -85,22 +88,18 @@ export default function Home() {
   }
 
   useEffectOnce(() => {
-    const { token, user, settings } = store.getState()
+    
     const worker = new Worker(
       new URL('../../lib/database/sqlite.ts', import.meta.url),
       { type: 'module' }
     )
     initBackend(worker)
-    setTimeout(() => startOrRestSQLiteDB(settings.localPersistence), 250)
-    setTimeout(() => {
-     
-      if (token && !user?.id)
-        handleSuccess({
-          clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-          select_by: 'btn',
-          credential: token,
-        })
-    }, 450)
+    if (token && !user?.id)
+      handleSuccess({
+        clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        select_by: 'btn',
+        credential: token,
+      })
   }, [])
 
   return (

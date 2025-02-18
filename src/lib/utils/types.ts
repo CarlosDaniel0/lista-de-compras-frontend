@@ -58,6 +58,7 @@ export type CallbackAPI<P = ParamsDictionary, Q = QueryDictionary> = (
 ) => Promise<void>
 
 type Conditions = {
+  in?: any[]
   contains?: string
 }
 

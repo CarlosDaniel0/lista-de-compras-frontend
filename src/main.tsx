@@ -11,6 +11,7 @@ import DialogProvider from './contexts/Dialog.tsx'
 import Dialog from './components/Dialog/index.tsx'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import ServiceWorker from './components/ServiceWorker/index.tsx'
+import BackgroundService from './components/BackgroundService/index.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -24,6 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
               </BrowserRouter>
               <Dialog />
               <ServiceWorker />
+              <BackgroundService />
             </ParamsProvider>
           </DialogProvider>
         </PersistGate>

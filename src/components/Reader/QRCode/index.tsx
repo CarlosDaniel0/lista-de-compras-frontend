@@ -276,7 +276,7 @@ export default function QRCode() {
         </>
       )}
       {[CameraStates.IDLE, CameraStates.NOT_ALLOWED].includes(state) && (
-        <RequestPermission {...{ requestCameraPermission }} />
+        <RequestPermission {...{ requestPermission: requestCameraPermission }} />
       )}
     </ContainerReader>
   )
