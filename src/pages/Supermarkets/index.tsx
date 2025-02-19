@@ -1,7 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { forwardRef, useContext, useState } from 'react'
+import { forwardRef, useContext, useMemo, useState } from 'react'
 import TabBar from '../../components/TabBar'
-import { formatToFilter, genId, getFiles, JSONToFile, request } from '../../util'
+import {
+  formatToFilter,
+  genId,
+  getFiles,
+  JSONToFile,
+  request,
+} from '../../util'
 import { DialogContext } from '../../contexts/Dialog'
 import { Option, Supermarket } from '../../util/types'
 import Loading from '../../components/Loading'
@@ -85,7 +91,7 @@ export default function Supermarkets() {
         setLoading(true)
         handleCreateSupermarket(json)
           .then((res) => {
-              setSupermarkets((prev) => [...prev, ...res.data.supermarket])
+            setSupermarkets((prev) => [...prev, ...res.data.supermarket])
             Dialog.info.show({ message: res.message })
           })
           .finally(() => setLoading(false))
@@ -97,7 +103,17 @@ export default function Supermarkets() {
 
   const handleExport = () => JSONToFile(supermarkets, 'Supermercados')
 
-  const formatString = (item: Supermarket) => formatToFilter(`${item?.name} ${item?.address} ${item?.coords.join(', ')}`)
+  const formatString = (item: Supermarket) =>
+    formatToFilter(`${item?.name} ${item?.address} ${item?.coords.join(', ')}`)
+  const data = useMemo(
+    () =>
+      supermarkets.filter(
+        (item) =>
+          !filter.search ||
+          formatString(item).includes(formatToFilter(filter.search))
+      ),
+    [supermarkets, filter]
+  )
 
   const options: Option[] = [
     {
@@ -127,10 +143,12 @@ export default function Supermarkets() {
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Supermercados" options={options} />
       <Container>
-        {!!supermarkets.length && !!supermarkets?.[0]?.id && <SearchBar {...{ filter, setFilter }} />}
+        {!!supermarkets.length && !!supermarkets?.[0]?.id && (
+          <SearchBar {...{ filter, setFilter }} />
+        )}
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={supermarkets.filter(item => !filter.search || formatString(item).includes(formatToFilter(filter.search)))}
+          data={data}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
@@ -142,6 +160,8 @@ export default function Supermarkets() {
             <ListCard
               key={genId(`supermarket-${i}`)}
               {...{
+                supermarkets: data,
+                index: i,
                 supermarket,
                 handleRemove,
                 loading: !supermarket.id,

@@ -10,7 +10,9 @@ import { skeleton } from '../../../components/Loading/Skeleton'
 import { Link } from 'react-router-dom'
 
 interface ListCardProps {
-  list: List
+  list: List,
+  lists: List[],
+  index: number,
   handleEdit: (list: List) => void
   handleRemove: (id: string) => void
   Dialog: DialogService
@@ -66,7 +68,7 @@ const loadingSkeleton = css`
 `
 
 export default function ListCard(props: ListCardProps) {
-  const { list, handleEdit, handleRemove, Dialog, loading } = props
+  const { list, lists, index, handleEdit, handleRemove, Dialog, loading } = props
   return (
     <Link to={`/lists/${list?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
       <Card
@@ -76,7 +78,7 @@ export default function ListCard(props: ListCardProps) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          margin: '2px 5px',
+          margin: index === lists.length - 1 ? '2px 5px 50px 5px' : '2px 5px',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

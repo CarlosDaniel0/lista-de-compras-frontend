@@ -26,6 +26,7 @@ interface ListCardProps<T extends ProductTypes>
   path: T
   id?: string
   loading: boolean
+  index: number
 }
 
 const loadingSkeleton = css`
@@ -82,6 +83,7 @@ export default function ListCard<T extends ProductTypes>(
     onContextMenu,
     path,
     products: prods,
+    index,
     ...rest
   } = props // handleRemove, path, id
 
@@ -110,7 +112,7 @@ export default function ListCard<T extends ProductTypes>(
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        margin: '2px 5px',
+        margin: index === products.length - 1 ? '2px 5px 50px 5px':  '2px 5px',
       }}
     >
       <div
