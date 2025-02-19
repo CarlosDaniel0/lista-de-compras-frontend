@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import styled from 'styled-components'
 import TabBar from '../../components/TabBar'
-import { forwardRef, useContext, useState } from 'react'
+import { forwardRef, useContext, useMemo, useState } from 'react'
 import { DialogContext } from '../../contexts/Dialog'
 import {
   formatToFilter,
@@ -149,6 +149,12 @@ export default function Lists() {
   const formatString = (item: List) =>
     formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
 
+  const data = useMemo(() => lists.filter(
+    (item) =>
+      !filter.search ||
+      formatString(item).includes(formatToFilter(filter.search))
+  ), [lists, filter])
+
   const options: Option[] = [
     {
       key: 'import',
@@ -182,11 +188,7 @@ export default function Lists() {
         )}
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={lists.filter(
-            (item) =>
-              !filter.search ||
-              formatString(item).includes(formatToFilter(filter.search))
-          )}
+          data={data}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
@@ -199,6 +201,8 @@ export default function Lists() {
               key={genId(`list-${i}`)}
               {...{
                 list,
+                index: i,
+                lists: data,
                 handleEdit,
                 handleRemove,
                 Dialog,
