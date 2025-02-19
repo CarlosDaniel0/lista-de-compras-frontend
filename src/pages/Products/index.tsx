@@ -171,6 +171,16 @@ export default function Products(props: ProductsProps) {
       item?.last_update ? format(new Date(item?.last_update), 'dd/MM/yyyy') : ''
     } ${item?.category ?? ''}`)
 
+  const data = useMemo(
+    () =>
+      productsData.filter(
+        (item) =>
+          !filter.search ||
+          formatString(item).includes(formatToFilter(filter.search))
+      ),
+    [productsData, filter]
+  )
+
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
       Array.isArray(products) &&
@@ -440,11 +450,7 @@ export default function Products(props: ProductsProps) {
         </div>
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={productsData.filter(
-            (item) =>
-              !filter.search ||
-              formatString(item).includes(formatToFilter(filter.search))
-          )}
+          data={data}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
@@ -456,7 +462,8 @@ export default function Products(props: ProductsProps) {
             <ListCard
               key={genId(`product-${path}-${i}`)}
               {...{
-                products,
+                index: i,
+                products: data,
                 onContextMenu,
                 product,
                 id,

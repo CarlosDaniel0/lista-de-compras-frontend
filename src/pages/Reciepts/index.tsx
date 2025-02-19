@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { forwardRef, useContext, useState } from 'react'
+import { forwardRef, useContext, useMemo, useState } from 'react'
 import Loading from '../../components/Loading'
 import TabBar from '../../components/TabBar'
 import { Container } from '../Lists'
@@ -120,6 +120,12 @@ export default function Reciepts() {
   const formatString = (item: Reciept) =>
     formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
 
+  const data = useMemo(() => reciepts.filter(
+    (item) =>
+      !filter.search ||
+      formatString(item).includes(formatToFilter(filter.search))
+  ), [reciepts, filter])
+
   const options: Option[] = [
     {
       key: 'import',
@@ -153,11 +159,7 @@ export default function Reciepts() {
         )}
         <Virtuoso
           style={{ height: 'calc(100% - 45px)' }}
-          data={reciepts.filter(
-            (item) =>
-              !filter.search ||
-              formatString(item).includes(formatToFilter(filter.search))
-          )}
+          data={data}
           components={{
             List: forwardRef(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
@@ -169,6 +171,8 @@ export default function Reciepts() {
             <ListCard
               key={genId(`reciept-${i}`)}
               {...{
+                reciepts: data,
+                index: i,
                 reciept,
                 handleRemove,
                 loading: !reciept.id,

@@ -84,7 +84,10 @@ export default function CreateOrUpdate() {
   }
 
   const importReciept = async () => {
-    const reciept = { ...data, products: products.map(p => Object.assign(p, { user_id: user.id })) }
+    const reciept = {
+      ...data,
+      products: products.map((p) => Object.assign(p, { user_id: user.id })),
+    }
     setLoading(true)
     return request<ResponseData<{ reciept: Reciept }>>(
       '/reciepts/import',
@@ -312,11 +315,7 @@ export default function CreateOrUpdate() {
         back
       />
       <main style={{ padding: '30px 8px', height: 'calc(100dvh - 120px)' }}>
-        <Text 
-          autoFocus 
-          label="Nome" 
-          field="name" 
-          id="inpTxtName" />
+        <Text autoFocus label="Nome" field="name" id="inpTxtName" />
         <Search
           id="inpTxtSupermarket"
           field="supermarket_id"
@@ -350,7 +349,10 @@ export default function CreateOrUpdate() {
                 <span>{currency.format(Number(data?.total ?? 0))}</span>
               </div>
               <Button
-                onClick={() => { setProducts([]); setData(({ discount, total, ...rest }) => rest)}}
+                onClick={() => {
+                  setProducts([])
+                  setData(({ discount, total, ...rest }) => rest)
+                }}
                 style={{
                   padding: '0.1em 0.4em',
                   background: '#b81717',
@@ -374,7 +376,7 @@ export default function CreateOrUpdate() {
                 )),
               }}
               itemContent={(i, product) => (
-                <ListItemProduct {...{ product, i }} />
+                <ListItemProduct {...{ products, product, i }} />
               )}
             />
           </div>

@@ -9,6 +9,8 @@ import { format } from 'date-fns'
 import { currency, decimalSum } from '../../../util'
 
 interface ListCardProps {
+  index: number,
+  reciepts: Reciept[]
   reciept: Reciept
   handleRemove: (id: string) => void
   loading: boolean
@@ -70,7 +72,7 @@ const loadingSkeleton = css`
 
 export default function ListCard(props: ListCardProps) {
   const navigate = useNavigate()
-  const { reciept, handleRemove, loading } = props
+  const { reciept, reciepts, index, handleRemove, loading } = props
   return (
     <Link to={`/reciepts/${reciept?.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
       <Card
@@ -80,7 +82,7 @@ export default function ListCard(props: ListCardProps) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          margin: '2px 5px',
+          margin: index === reciepts.length - 1 ? '2px 5px 50px 5px' : '2px 5px',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

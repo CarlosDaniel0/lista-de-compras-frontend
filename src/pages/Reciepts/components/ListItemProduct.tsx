@@ -3,8 +3,8 @@ import Card from "../../../components/Card";
 import { currency, decimal, genId } from "../../../util";
 import { ProductRecieptImport } from "../../../util/types";
 
-export default function ListItemProduct(props: { product: ProductRecieptImport, i: number }) {
-  const { product, i } = props
+export default function ListItemProduct(props: { products: ProductRecieptImport[], product: ProductRecieptImport, i: number }) {
+  const { product, i, products } = props
   return (
     <Card
       key={genId(`prod-${i}-`)}
@@ -13,7 +13,7 @@ export default function ListItemProduct(props: { product: ProductRecieptImport, 
         display: 'flex',
         gap: 8,
         alignItems: 'center',
-        margin: '2px 5px',
+        margin: i === products.length - 1 ? '2px 5px 50px 5px' : '2px 5px',
       }}
     >
       <div>
