@@ -413,10 +413,13 @@ export default function Products(props: ProductsProps) {
 
   const total = useMemo(
     () =>
-      productsData.reduce(
+      decimalSum(productsData.reduce(
         (tot, item) => decimalSum(tot, Number(item.total ?? 0)),
         0
-      ),
+      ), -productsData.reduce(
+        (tot, item) => decimalSum(tot, Number(item.discount ?? 0)),
+        0
+      )),
     [productsData]
   )
 
