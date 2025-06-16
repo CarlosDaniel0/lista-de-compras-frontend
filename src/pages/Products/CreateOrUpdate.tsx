@@ -339,7 +339,7 @@ export default function CreateOrUpdate(
               }
             />
           )}
-          {['lists'].includes(path) && (
+          {['lists', 'supermarkets'].includes(path) && (
             <Text
               id="inpTxtUnity"
               container={{ style: { flexBasis: '40%' } }}
