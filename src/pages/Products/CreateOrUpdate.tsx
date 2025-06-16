@@ -32,6 +32,7 @@ import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import Search from '../../components/Input/search'
 import { handleCreateProduct } from './functions'
+import Switch from '../../components/Input/switch'
 
 interface CreateOrUpdateCreateOrUpdateProps {
   path: ProductTypes
@@ -48,9 +49,12 @@ export default function CreateOrUpdate(
   const { state, setState } = useContext(ParamsContext)
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const [products, setProducts] = useState<ProductSupermarket[]>([])
-  const [data, setData] = useState<Partial<GeneralProduct>>({
+  const [data, setData] = useState<
+    Partial<GeneralProduct>
+  >({
     [`${path.replace(/s$/, '')}_id`]: id,
     last_update: new Date(),
+    registered_product: true,
   })
   const form = { form: data, setForm: setData } as FormContextProps
   const Dialog = useContext(DialogContext)
@@ -378,40 +382,54 @@ export default function CreateOrUpdate(
             </ButtonNeutral>
           </>
         )}
+
         {path === 'lists' && (
           <>
-            <Search
-              id="inpTxtSupermarket"
-              nextElement="inpTxtProduct"
-              field="supermarket_id"
-              label="Supermercado"
-              disabled={!supermarkets.length}
-              options={supermarkets.map((item) => ({
-                value: item.id,
-                label: item.name,
-              }))}
-            />
-
-            <Search
-              id="inpTxtProduct"
-              field="product_id"
-              label="Produto"
-              disabled={!data?.supermarket_id || !products.length}
-              container={{ style: { flex: '1 0 0' } }}
-              options={products.map((item) => ({
-                value: item.id,
-                label: item.description,
-              }))}
-              icon={{
-                right:
-                  !data?.supermarket_id || !products.length
-                    ? {
-                        value: icons.Barcode('product_id', 'inpTxtProduct')
-                          .value,
-                      }
-                    : icons.Barcode('product_id', 'inpTxtProduct'),
-              }}
-            />
+            <Switch field="registered_product" label="Produto Cadastrado" />
+            {data?.registered_product ? (
+              <>
+                <Search
+                  id="inpTxtSupermarket"
+                  nextElement="inpTxtProduct"
+                  field="supermarket_id"
+                  label="Supermercado"
+                  disabled={!supermarkets.length}
+                  options={supermarkets.map((item) => ({
+                    value: item.id,
+                    label: item.name,
+                  }))}
+                />
+                <Search
+                  id="inpTxtProduct"
+                  field="product_id"
+                  label="Produto"
+                  disabled={!data?.supermarket_id || !products.length}
+                  container={{ style: { flex: '1 0 0' } }}
+                  options={products.map((item) => ({
+                    value: item.id,
+                    label: item.description,
+                  }))}
+                  icon={{
+                    right:
+                      !data?.supermarket_id || !products.length
+                        ? {
+                            value: icons.Barcode('product_id', 'inpTxtProduct')
+                              .value,
+                          }
+                        : icons.Barcode('product_id', 'inpTxtProduct'),
+                  }}
+                />
+              </>
+            ) : (
+              <Text
+                container={{ style: { flex: '1 0 0' } }}
+                id="inpTxtPrice"
+                mask="currency"
+                label="Valor"
+                field="price"
+                nextElement="btnTotal"
+              />
+            )}
           </>
         )}
         <div style={{ marginTop: 10 }}>

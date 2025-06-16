@@ -112,7 +112,7 @@ interface OptionSearch {
 export default function Search(
   props: InputProps & { options?: OptionSearch[] }
 ) {
-  const { label, container, field, options, icon, ...rest } = props
+  const { label, container, field, options, icon, nextElement, ...rest } = props
   const [active, setActive] = useState(false)
   const { form, setForm } = useContext(FormContext)
   const [object, setObject] = useState({ search: '', label: '' })
@@ -165,6 +165,8 @@ export default function Search(
       default:
         evt.preventDefault()
         if (data?.[index]) handleSelect(data?.[index])
+        if (props?.onKeyDown || !props?.mask || !nextElement || !['Tab'].includes(key)) return 
+        document.getElementById(nextElement)?.focus()
     }
 
     if (_index !== null) {

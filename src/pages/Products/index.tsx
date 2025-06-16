@@ -188,7 +188,8 @@ export default function Products(props: ProductsProps) {
       return products.map((item) => ({
         ...item,
         total: (
-          (item?.quantity ?? 0) * Number(item?.product?.price ?? 0)
+          (item?.quantity ?? 0) *
+          Number(item?.product?.price ?? item?.price ?? 0)
         ).toFixed(2),
       }))
     }
@@ -413,13 +414,16 @@ export default function Products(props: ProductsProps) {
 
   const total = useMemo(
     () =>
-      decimalSum(productsData.reduce(
-        (tot, item) => decimalSum(tot, Number(item.total ?? 0)),
-        0
-      ), -productsData.reduce(
-        (tot, item) => decimalSum(tot, Number(item.discount ?? 0)),
-        0
-      )),
+      decimalSum(
+        productsData.reduce(
+          (tot, item) => decimalSum(tot, Number(item.total ?? 0)),
+          0
+        ),
+        -productsData.reduce(
+          (tot, item) => decimalSum(tot, Number(item.discount ?? 0)),
+          0
+        )
+      ),
     [productsData]
   )
 

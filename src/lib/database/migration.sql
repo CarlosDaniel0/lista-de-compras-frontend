@@ -60,6 +60,8 @@ CREATE TABLE "ProductList" (
     "description" TEXT NOT NULL,
     "unity" TEXT,
     "quantity" REAL NOT NULL,
+    "price" DECIMAL NOT NULL,
+    "registered_product" BOOLEAN DEFAULT false,
     "removed" BOOLEAN NOT NULL DEFAULT false,
     "sync" BOOLEAN NOT NULL DEFAULT false,
     "list_id" TEXT NOT NULL,

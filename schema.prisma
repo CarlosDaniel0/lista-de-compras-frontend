@@ -69,18 +69,20 @@ model List {
 }
 
 model ProductList {
-  id             String              @id @default(uuid())
-  description    String
-  unity          String?
-  quantity       Float
-  removed        Boolean             @default(false)
-  sync           Boolean             @default(false)
-  list_id        String
-  product_id     String?
-  supermarket_id String?
-  product        ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  supermarket    Supermarket?        @relation(fields: [supermarket_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  list           List                @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id                 String              @id @default(uuid())
+  description        String
+  unity              String?
+  quantity           Float
+  price              Decimal
+  registered_product Boolean?            @default(false)
+  removed            Boolean             @default(false)
+  sync               Boolean             @default(false)
+  list_id            String
+  product_id         String?
+  supermarket_id     String?
+  product            ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  supermarket        Supermarket?        @relation(fields: [supermarket_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  list               List                @relation(fields: [list_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 //  Receita
@@ -100,17 +102,17 @@ model Reciept {
 }
 
 model ProductReciept {
-  id         String             @id @default(uuid())
+  id         String              @id @default(uuid())
   position   Int
   quantity   Float
   price      Decimal
   total      Decimal
   discount   Decimal
-  removed    Boolean            @default(false)
-  sync       Boolean            @default(false)
+  removed    Boolean             @default(false)
+  sync       Boolean             @default(false)
   receipt_id String
   product_id String?
-  receipt    Reciept            @relation(fields: [receipt_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  receipt    Reciept             @relation(fields: [receipt_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   product    ProductSupermarket? @relation(fields: [product_id], references: [id], onDelete: NoAction)
 }
 

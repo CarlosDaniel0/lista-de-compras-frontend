@@ -13,6 +13,8 @@ export class ProductListData implements ProductList {
   removed: boolean = false;
   sync: boolean = false;
   list_id: string;
+  price?: number;
+  registered_product?: boolean
   product_id?: string;
   supermarket_id?: string;
   list?: ListData;
@@ -27,6 +29,8 @@ export class ProductListData implements ProductList {
     removed: boolean,
     sync: boolean,
     list_id: string,
+    price?: number,
+    registered_product?: boolean,
     product_id?: string,
     supermarket_id?: string,
     list?: Record<string, any>,
@@ -40,6 +44,8 @@ export class ProductListData implements ProductList {
     if (typeof removed === 'boolean') this.removed = removed;
     if (typeof sync === 'boolean') this.sync = sync;
     this.list_id = list_id;
+    this.price = price;
+    this.registered_product = registered_product;
     if (product_id) this.product_id = product_id;
     if (supermarket_id) this.supermarket_id = supermarket_id;
     if (list) this.list = ListData.parse(list);
@@ -48,8 +54,8 @@ export class ProductListData implements ProductList {
   }
 
   static parse(json: Record<string, any>) {
-    const { id, description, unity, quantity, removed, sync, list_id, product_id, supermarket_id, list, product, supermarket } = json;
-    return new ProductListData(id, description, unity, quantity, removed, sync, list_id, product_id, supermarket_id, list, product, supermarket);
+    const { id, description, unity, quantity, removed, sync, list_id, price, registered_product, product_id, supermarket_id, list, product, supermarket } = json;
+    return new ProductListData(id, description, unity, quantity, removed, sync, list_id, price, registered_product, product_id, supermarket_id, list, product, supermarket);
   }
 
   toEntity() {
@@ -58,6 +64,8 @@ export class ProductListData implements ProductList {
       description: this.description,
       unity: this.unity,
       quantity: this.quantity,
+      price: this.price,
+      registered_product: this.registered_product,
       removed: this.removed,
       sync: this.sync,
       list_id: this.list_id,

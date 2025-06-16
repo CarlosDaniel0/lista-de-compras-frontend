@@ -14,6 +14,8 @@ export interface ProductList {
   description: string
   unity: string
   quantity: number
+  price?: number,
+  registered_product?: boolean
   list_id: string
   product_id?: string,
   supermarket_id?: string
