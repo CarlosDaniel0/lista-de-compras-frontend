@@ -147,7 +147,7 @@ export default function Products(props: ProductsProps) {
             decimalSum(
               tot,
               +(
-                Number(p.quantity ?? 0) * Number(p.product?.price ?? 0)
+                Number(p.quantity ?? 0) * Number(p?.price ?? p.product?.price ?? 0)
               ).toFixed(2)
             ),
           0
