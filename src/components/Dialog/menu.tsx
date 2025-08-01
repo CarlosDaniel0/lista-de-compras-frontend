@@ -14,6 +14,7 @@ interface MenuProps {
 const styles = css`
   transform: translateY(-100px);
   border-radius: 0.4em;
+  max-height: 90%;
 
   & li:first-child > button {
     border-radius: 0.4em 0.4em 0 0;
@@ -62,12 +63,22 @@ const styles = css`
   }
 `
 
+const stylePanel = css`
+  max-height: 80%;
+  overflow: auto;
+  
+  &::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+  }
+`
+
 export default function Menu(props: MenuProps) {
   const { show, setShow, options, title } = props
   const close = () => setShow(false)
   if (!show) return null
   return (
-    <Modal {...{ show, setShow }}>
+    <Modal {...{ show, setShow, customize: { panel: stylePanel } }}>
       <Card css={styles} style={{ padding: 0 }}>
         {title && <p>{title}</p>}
         <ul>

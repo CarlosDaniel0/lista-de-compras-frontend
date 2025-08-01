@@ -54,7 +54,7 @@ export default function CreateOrUpdate(
   >({
     [`${path.replace(/s$/, '')}_id`]: id,
     last_update: new Date(),
-    registered_product: true,
+    registered_product: false,
   })
   const form = { form: data, setForm: setData } as FormContextProps
   const Dialog = useContext(DialogContext)
@@ -385,7 +385,7 @@ export default function CreateOrUpdate(
 
         {path === 'lists' && (
           <>
-            <Switch field="registered_product" label="Produto Cadastrado" />
+            <Switch container={{ style: { margin: '8px 0' }}} field="registered_product" size={2} label="Produto Cadastrado" />
             {data?.registered_product ? (
               <>
                 <Search

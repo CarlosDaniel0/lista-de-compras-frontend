@@ -17,7 +17,7 @@ export default function Switch(props: InputProps) {
     setForm?.((prev: Record<string, never>) => ({ ...prev, [field ?? '']: checked }))
   }
 
-  return <div {...container} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+  return <div {...container} style={{ display: 'flex', gap: 6, alignItems: 'center', ...(container?.style ?? {}) }}>
     <CheckboxSwitch $size={size as 1 | 2} checked={checked} onChange={onChange} {...rest} id={id} />
     <Label {...labelProps} htmlFor={id} />
   </div>

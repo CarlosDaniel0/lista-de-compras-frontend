@@ -34,15 +34,21 @@ import ListCard from './components/ListItem'
 import { ListContainer } from '../../components/Containers'
 import ContextMenu from '../../components/ContextMenu'
 import { FaCopy, FaDownload, FaPen, FaTrash, FaUpload } from 'react-icons/fa6'
-import { BsDot } from 'react-icons/bs'
+import { BsArchive, BsDot } from 'react-icons/bs'
 import SearchBar from '../../components/SearchBar'
 import { BiBarcodeReader } from 'react-icons/bi'
 import { handleCreateProduct } from './functions'
 import { store } from '../../redux/store'
 import { aggregateByKey, sum } from '../../util/index'
+import Menu from '../../components/Dialog/menu'
 
 interface ProductsProps {
   path: 'lists' | 'supermarkets' | 'reciepts'
+}
+
+interface ProdutcGroup {
+  show: boolean
+  options: Option[]
 }
 
 const names = {
@@ -126,8 +132,9 @@ export default function Products(props: ProductsProps) {
   const [show, setShow] = useState(false)
   const [menu, setMenu] = useState({ show: false, top: 0, left: 0 })
   const [products, setProducts] = useState<ProductGeneral[]>([])
-  const [product, setProduct] = useState<Partial<Product<typeof path>>>({})
+  const [product, setProduct] = useState<Partial<ProductGeneral>>({})
   const [filter, setFilter] = useState({ show: false, search: '' })
+  const [group, setGroup] = useState<ProdutcGroup>({ show: false, options: [] })
   const navigate = useNavigate()
   const { settings } = store.getState()
   const { id } = useParams()
@@ -147,22 +154,26 @@ export default function Products(props: ProductsProps) {
             decimalSum(
               tot,
               +(
-                Number(p.quantity ?? 0) * Number(p?.price ?? p.product?.price ?? 0)
+                Number(p.quantity ?? 0) *
+                Number(p?.price ?? p.product?.price ?? 0)
               ).toFixed(2)
             ),
           0
         )
+
         return {
           ...prod,
           total,
           quantity,
-          group: true,
+          price: +(total / quantity).toFixed(4),
+          group: prods.length > 1,
         }
       })
     }
 
     return products
   }, [products, path, loading])
+
   const formatString = (item: ProductGeneral) =>
     formatToFilter(`
       ${item?.position ?? ''} ${
@@ -294,15 +305,58 @@ export default function Products(props: ProductsProps) {
   //     })
   // }
 
+  const handleGroupedProduct = (
+    product: Partial<ProductGeneral>,
+    callback: (product: ProductGeneral) => void
+  ) => {
+    if (product?.group)
+      return setGroup({
+        show: true,
+        options: Array.from({ length: 20 }, () => product as ProductGeneral)
+          .filter((p) => p.description === product?.description)
+          .map(
+            (p, i) =>
+              ({
+                key: `product-${i}`,
+                label: (
+                  <>
+                    {' '}
+                    <BsArchive /> {product.description}{' '}
+                    <BsDot style={{ marginRight: 0 }} />
+                    {currency.format(Number(p?.price ?? p.product?.price ?? 0))}
+                  </>
+                ),
+                onClick: () => callback(p),
+              } as Option)
+          ),
+      })
+  }
+
   const onContextMenu = (
     evt: React.MouseEvent<HTMLDivElement>,
-    product: Product<typeof path>
+    product: ProductGeneral
   ) => {
     evt.preventDefault()
     evt.stopPropagation()
     const { left, top } = { left: evt.pageX, top: evt.pageY }
     setProduct(product)
     setMenu({ show: true, left, top })
+  }
+
+  const handleCopy = (product: Partial<ProductGeneral>) => {
+    setState?.({ product } as never)
+    navigate(`/${path}/${id}/create`)
+    setProduct({})
+  }
+
+  const handleEdit = (product: Partial<ProductGeneral>) => {
+    product.id && navigate(`/${path}/${id}/update/${product.id}`)
+    setProduct({})
+  }
+
+  const handleRemoveProduct = (product: Partial<ProductGeneral>) => {
+    product.id && handleRemove(product.id)
+    setProduct({})
   }
 
   useEffectOnce(loadProducts, [])
@@ -318,17 +372,17 @@ export default function Products(props: ProductsProps) {
               </>
             ),
             onClick: () => {
-              setState?.({ product } as never)
-              navigate(`/${path}/${id}/create`)
-              setProduct({})
+              if (product?.group)
+                return handleGroupedProduct(product, handleCopy)
+              handleCopy(product)
             },
           },
         ]
       : []),
     {
       onClick: () => {
-        product.id && navigate(`/${path}/${id}/update/${product.id}`)
-        setProduct({})
+        if (product?.group) return handleGroupedProduct(product, handleEdit)
+        handleEdit(product)
       },
       label: (
         <>
@@ -339,8 +393,9 @@ export default function Products(props: ProductsProps) {
     },
     {
       onClick: () => {
-        product.id && handleRemove(product.id)
-        setProduct({})
+        if (product?.group)
+          return handleGroupedProduct(product, handleRemoveProduct)
+        handleRemoveProduct(product)
       },
       label: (
         <>
@@ -431,6 +486,16 @@ export default function Products(props: ProductsProps) {
     <>
       {menu.show && (
         <ContextMenu {...{ setMenu, menu, options: optionsContext }} />
+      )}
+      {group.show && (
+        <Menu
+          {...{
+            show: group.show,
+            setShow: (show) => setGroup((prev) => ({ ...prev, show } as never)),
+            options: group.options,
+            title: 'Selecione um Produto',
+          }}
+        />
       )}
       <Loading status={loading} label="Aguarde..." />
       <TabBar label="Produtos" options={options} back />

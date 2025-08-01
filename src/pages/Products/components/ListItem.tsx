@@ -13,15 +13,16 @@ import { skeleton } from '../../../components/Loading/Skeleton'
 import { format } from 'date-fns'
 import { currency, decimal, decimalSum } from '../../../util'
 import { BsDot } from 'react-icons/bs'
+import { GeneralProduct } from '../CreateOrUpdate'
 
 type ProductGeneral = ProductList & ProductReciept & ProductSupermarket
 interface ListCardProps<T extends ProductTypes>
   extends Omit<React.ComponentPropsWithoutRef<'div'>, 'onContextMenu'> {
   onContextMenu?: (
     evt: React.MouseEvent<HTMLDivElement>,
-    product: Product<T>
+    product: GeneralProduct
   ) => void
-  product: Product<T>
+  product: GeneralProduct
   products: Product<T>[]
   path: T
   id?: string
@@ -99,12 +100,7 @@ export default function ListCard<T extends ProductTypes>(
     <Card
       {...rest}
       onContextMenu={(evt) => {
-        const prod = product?.group
-          ? products
-              .reverse()
-              .find((p) => p.description === product.description)
-          : product
-        onContextMenu?.(evt, prod as Product<T>)
+        onContextMenu?.(evt, product)
       }}
       css={loading ? loadingSkeleton : undefined}
       style={{
@@ -180,12 +176,11 @@ export default function ListCard<T extends ProductTypes>(
                   {decimal.format(Number(product?.quantity ?? 0))}{' '}
                   {product?.unity ?? product?.product?.unity}
                   {(!!Number(product?.product?.price ?? 0) ||
-                    !!Number(product?.price ?? 0)) &&
-                    !product?.group && (
+                    !!Number(product?.price ?? 0)) && (
                       <>
                         <BsDot />
                         {currency.format(
-                          Number(product?.product?.price ?? product?.price ?? 0)
+                          Number(product?.group ? product?.price ?? 0 : (product?.product?.price ?? product?.price ?? 0))
                         )}
                       </>
                     )}
