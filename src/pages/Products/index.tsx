@@ -312,7 +312,7 @@ export default function Products(props: ProductsProps) {
     if (product?.group)
       return setGroup({
         show: true,
-        options: Array.from({ length: 20 }, () => product as ProductGeneral)
+        options: products
           .filter((p) => p.description === product?.description)
           .map(
             (p, i) =>
