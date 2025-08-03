@@ -14,7 +14,8 @@ interface MenuProps {
 const styles = css`
   transform: translateY(-100px);
   border-radius: 0.4em;
-  max-height: 90%;
+  max-height: 90dvh;
+  max-height: 90vh;
 
   & li:first-child > button {
     border-radius: 0.4em 0.4em 0 0;
