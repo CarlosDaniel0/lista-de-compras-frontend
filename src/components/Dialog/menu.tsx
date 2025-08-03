@@ -12,9 +12,8 @@ interface MenuProps {
 }
 
 const styles = css`
-  transform: translateY(-100px);
   border-radius: 0.4em;
-  max-height: 90%;
+  max-height: 100%;
 
   & li:first-child > button {
     border-radius: 0.4em 0.4em 0 0;
@@ -29,6 +28,9 @@ const styles = css`
     font-size: 1.35em;
     font-weight: 500;
     padding: 0.4em 1.2em;
+    position: sticky;
+    background: var(--bg-card-1);
+    top: 0;
   }
 
   & ul {
@@ -64,10 +66,11 @@ const styles = css`
 `
 
 const stylePanel = css`
-  max-height: 80dvh;
+  border-radius: 0.45em;
+  position: relative;
   max-height: 90%;
   overflow: auto;
-  
+
   &::-webkit-scrollbar {
     width: 0;
     background: transparent;
