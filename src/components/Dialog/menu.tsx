@@ -14,8 +14,7 @@ interface MenuProps {
 const styles = css`
   transform: translateY(-100px);
   border-radius: 0.4em;
-  max-height: 90dvh;
-  max-height: 90vh;
+  max-height: 90%;
 
   & li:first-child > button {
     border-radius: 0.4em 0.4em 0 0;
@@ -65,7 +64,8 @@ const styles = css`
 `
 
 const stylePanel = css`
-  max-height: 80%;
+  max-height: 80dvh;
+  max-height: 90%;
   overflow: auto;
   
   &::-webkit-scrollbar {
