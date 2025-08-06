@@ -30,7 +30,7 @@ import {
 } from '../../util'
 import { ParamsContext } from '../../contexts/Params'
 import useEffectOnce from '../../hooks/useEffectOnce'
-import Search from '../../components/Input/search'
+import Search, { OptionSearch } from '../../components/Input/search'
 import { handleCreateProduct } from './functions'
 import Switch from '../../components/Input/switch'
 
@@ -49,9 +49,7 @@ export default function CreateOrUpdate(
   const { state, setState } = useContext(ParamsContext)
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const [products, setProducts] = useState<ProductSupermarket[]>([])
-  const [data, setData] = useState<
-    Partial<GeneralProduct>
-  >({
+  const [data, setData] = useState<Partial<GeneralProduct>>({
     [`${path.replace(/s$/, '')}_id`]: id,
     last_update: new Date(),
     registered_product: false,
@@ -213,6 +211,17 @@ export default function CreateOrUpdate(
       })
       .finally(() => setProducts((prev) => (!prev[0]?.id ? [] : prev)))
 
+  const onSelectOption = (option: OptionSearch) => {
+    const { value } = option
+    const prod = products.find((p) => p.id === value)
+    if (!prod) return
+    setData((prev) => ({
+      ...prev,
+      barcode: prod?.barcode,
+      price: Number(prod?.price ?? 0),
+    }))
+  }
+
   useEffect(() => {
     const [q, p] = [data?.quantity, data?.price]
       .filter((item) => item)
@@ -292,6 +301,28 @@ export default function CreateOrUpdate(
       loadProducts(data?.supermarket_id)
   }, [data?.supermarket_id])
 
+  useEffect(() => {
+    if (path !== 'lists') return
+    setData((prev) => {
+      const rest = !prev?.product_id
+        ? { price: undefined, barcode: undefined }
+        : !prev?.registered_product
+        ? {
+            product_id: undefined,
+            supermarket_id: undefined,
+            price: undefined,
+            barcode: undefined,
+          }
+        : {}
+
+      return {
+        ...prev,
+        ...rest,
+      }
+    })
+  }, [data?.product_id, data?.registered_product])
+
+  console.log(form)
   return (
     <Form {...form}>
       <Loading label="Aguarde..." status={loading} />
@@ -371,7 +402,6 @@ export default function CreateOrUpdate(
               <Text
                 id="inpTxtBarcode"
                 container={{ style: { flexBasis: '100%' } }}
-                icon={{ right: icons.Barcode('barcode', 'inpTxtBarcode') }}
                 label="Código de Barras"
                 field="barcode"
               />
@@ -385,7 +415,12 @@ export default function CreateOrUpdate(
 
         {path === 'lists' && (
           <>
-            <Switch container={{ style: { margin: '8px 0' }}} field="registered_product" size={2} label="Produto Cadastrado" />
+            <Switch
+              container={{ style: { margin: '8px 0' } }}
+              field="registered_product"
+              size={2}
+              label="Produto Cadastrado"
+            />
             {data?.registered_product ? (
               <>
                 <Search
@@ -401,6 +436,7 @@ export default function CreateOrUpdate(
                 />
                 <Search
                   id="inpTxtProduct"
+                  nextElement="btnTotal"
                   field="product_id"
                   label="Produto"
                   disabled={!data?.supermarket_id || !products.length}
@@ -418,7 +454,25 @@ export default function CreateOrUpdate(
                           }
                         : icons.Barcode('product_id', 'inpTxtProduct'),
                   }}
+                  onSelectOption={onSelectOption}
                 />
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Text
+                    container={{ style: { flex: '1 0 0' } }}
+                    id="inpTxtPrice"
+                    mask="currency"
+                    label="Valor"
+                    field="price"
+                    disabled
+                  />
+                  <Text
+                    id="inpTxtBarcode"
+                    container={{ style: { flexBasis: '60%' } }}
+                    label="Código de Barras"
+                    field="barcode"
+                    disabled
+                  />
+                </div>
               </>
             ) : (
               <Text

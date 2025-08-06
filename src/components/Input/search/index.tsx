@@ -104,22 +104,23 @@ const Empty = (props: { message: string }) => {
   )
 }
 
-interface OptionSearch {
+export interface OptionSearch {
   label?: string
   value: string | number | boolean
 }
 
 export default function Search(
-  props: InputProps & { options?: OptionSearch[] }
+  props: InputProps & { options?: OptionSearch[], onSelectOption?: (item: OptionSearch) => void }
 ) {
-  const { label, container, field, options, icon, nextElement, ...rest } = props
+  const { label, container, field, options, icon, nextElement, onSelectOption, ...rest } = props
   const [active, setActive] = useState(false)
   const { form, setForm } = useContext(FormContext)
   const [object, setObject] = useState({ search: '', label: '' })
   const [index, setIndex] = useState(-1)
   const labelProps = typeof label === 'string' ? { value: label } : label
   const id = rest?.id ?? genId('txt')
-  const value = active ? object?.search : object?.label ?? ''
+  const showValue = active ? object?.search : object?.label ?? ''
+  const value = form?.[(field ?? '') as never]
   const ref = useRef<VirtuosoHandle>(null)
   const listRef = useRef<HTMLElement | Window | null>(null)
 
@@ -165,7 +166,7 @@ export default function Search(
       default:
         evt.preventDefault()
         if (data?.[index]) handleSelect(data?.[index])
-        if (props?.onKeyDown || !props?.mask || !nextElement || !['Tab'].includes(key)) return 
+        if (props?.onKeyDown || !nextElement || !['Tab'].includes(key)) return 
         document.getElementById(nextElement)?.focus()
     }
 
@@ -196,22 +197,28 @@ export default function Search(
 
   const handleSelect = (item: OptionSearch) => {
     setActive(false)
-    setObject((prev) => ({ ...prev, label: item.label ?? '' }))
+    setObject((prev) => ({ ...prev, label: item?.label ?? '' }))
     setForm((prev: Record<string, never>) => ({
       ...prev,
-      [field ?? '']: item.value,
+      [field ?? '']: item?.value,
     }))
+    onSelectOption?.(item)
     setIndex(-1)
   }
 
   useEffect(() => {
-    const value = form?.[(field ?? '') as never]
-    if (!value) return
-    const item = options?.find((el) => el?.value === value)
+    const item = options?.find((el) => value && el?.value === value)
     const label = item?.label ?? ''
     const search = item?.label ?? ''
     setObject({ label, search })
-  }, [options, form?.[(field ?? '') as never]])
+  }, [options, value])
+
+  useEffect(() => {
+    if (!active && !object?.label) setForm((prev: Record<string, never>) => ({
+      ...prev,
+      [field ?? '']: undefined,
+    }))
+  }, [active])
 
   return (
     <Container $active={active} onClick={handleShow} {...container}>
@@ -234,7 +241,7 @@ export default function Search(
           },
         }}
         {...rest}
-        value={value}
+        value={showValue}
         onChange={onChange}
         onFocus={handleShow}
         onKeyDown={(evt) => onKeyDown(evt as unknown as KeyboardEvent)}

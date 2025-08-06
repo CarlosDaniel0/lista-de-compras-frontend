@@ -223,7 +223,7 @@ export default function Barcode() {
 
   const read = () => {
     handleChangePermissions()
-    requestCameraPermission(true).catch(() => console.log('teste'))
+    requestCameraPermission(true).catch(() => {})
   }
 
   const handleBack = () => stopCamera()

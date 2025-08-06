@@ -29,11 +29,8 @@ export default function Settings() {
         <Card style={{ padding: '0.6em 1.2em', borderRadius: '0.4em', margin: '5px 10px' }}>
           <p style={{ fontSize: '1.4em', textAlign: 'center', fontWeight: 500 }}>Geral</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 10 }}>
-            <Switch field="groupProducts" label="Agrupar Produtos da Lista" />
-            <Switch
-              field="localPersistence"
-              label="Persistência Local"
-            />
+            <Switch size={2} field="groupProducts" label="Agrupar Produtos da Lista" />
+            <Switch size={2} field="localPersistence" label="Persistência Local" />
           </div>
         </Card>
       </Container>

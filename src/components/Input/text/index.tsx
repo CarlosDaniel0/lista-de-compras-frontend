@@ -1,13 +1,20 @@
 import { useContext, useRef } from 'react'
 import Input, { InputProps } from '..'
-import { genId } from '../../../util'
+import { currency, genId } from '../../../util'
 import Label from '../label'
 import { FormContext } from '../../../contexts/Form'
 import useEffectOnce from '../../../hooks/useEffectOnce'
 
 const maskOptions = ['currency', 'decimal']
 export default function Text(props: InputProps) {
-  const { label, container, field, nextElement, format: formatter, ...rest } = props
+  const {
+    label,
+    container,
+    field,
+    nextElement,
+    format: formatter,
+    ...rest
+  } = props
   const { form, setForm } = useContext(FormContext)
   const input = useRef<HTMLInputElement>(null)
   const labelProps = typeof label === 'string' ? { value: label } : label
@@ -20,6 +27,8 @@ export default function Text(props: InputProps) {
 
   const format = (value: string) => {
     if (/(\d{4})-(\d{2})-(\d{2})/.test(value)) return value.substring(0, 10)
+    if (rest?.disabled && rest?.mask === 'currency' && !!value)
+      return currency.format(Number(value))
     return value
   }
 
@@ -39,7 +48,13 @@ export default function Text(props: InputProps) {
   }
 
   const onKeyDown = (evt: React.KeyboardEvent<HTMLInputElement>) => {
-    if (props?.onKeyDown || !props?.mask || !nextElement || !['Tab'].includes(evt.key)) return 
+    if (
+      props?.onKeyDown ||
+      !props?.mask ||
+      !nextElement ||
+      !['Tab'].includes(evt.key)
+    )
+      return
     document.getElementById(nextElement)?.focus()
   }
 

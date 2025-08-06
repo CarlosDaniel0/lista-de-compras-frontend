@@ -473,7 +473,7 @@ export default function Camera() {
 
   const read = () => {
     handleChangePermissions()
-    requestCameraPermission(true).catch(() => console.log('teste'))
+    requestCameraPermission(true).catch(() => {})
   }
 
   useEffect(() => {

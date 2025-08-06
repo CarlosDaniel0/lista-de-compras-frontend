@@ -216,7 +216,6 @@ export default function QRCode() {
     if (image && reader.current) {
       reader.current.reset()
       const img = await readFile(image)
-      console.log(img)
       stopCamera()
       setTimeout(() => setImage(img), 50)
     }
@@ -224,7 +223,7 @@ export default function QRCode() {
 
   const read = () => {
     handleChangePermissions()
-    requestCameraPermission(true).catch(() => console.log('teste'))
+    requestCameraPermission(true).catch(() => {})
   }
 
   const handleBack = () => stopCamera()
