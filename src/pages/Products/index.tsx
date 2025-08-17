@@ -195,7 +195,7 @@ export default function Products(props: ProductsProps) {
   const formatProducts = (products: ProductGeneral[]) => {
     if (path === 'lists') {
       Array.isArray(products) &&
-        setShow(products.some((item) => item?.product?.price))
+        setShow(products.some((item) => item?.product?.price || item?.price))
       return products.map((item) => ({
         ...item,
         total: (
