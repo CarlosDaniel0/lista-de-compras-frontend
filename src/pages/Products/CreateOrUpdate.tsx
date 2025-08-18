@@ -268,6 +268,7 @@ export default function CreateOrUpdate(
     if (!_target || !_value) return
     const element = document.getElementById(String(_target))
     const product = {
+      supermarket_id: String(rest?.supermarket_id  ?? ''),
       product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
       barcode: '',
       price: 0
