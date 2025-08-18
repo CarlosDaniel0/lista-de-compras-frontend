@@ -208,8 +208,8 @@ export const setTheme = (theme: 'dark' | 'light') => {
   html.setAttribute('theme', theme)
 }
 
-export const parseCurrencyToNumber = (value: string) =>
-  Number(value.replace(/\./g, '').replace(/,/g, '.'))
+export const parseCurrencyToNumber = (value?: string) => Number.isNaN(Number(value ?? '+')) ? undefined :
+  Number(String(value).replace(/\./g, '').replace(/,/g, '.'))
 export const parseNumberToCurrency = (value?: string | number) =>
   currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
 

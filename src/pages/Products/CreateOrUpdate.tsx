@@ -269,6 +269,8 @@ export default function CreateOrUpdate(
     const element = document.getElementById(String(_target))
     const product = {
       product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
+      barcode: '',
+      price: 0
     }
     setData({
       ...rest,
@@ -283,12 +285,15 @@ export default function CreateOrUpdate(
         Dialog.info.show({ message: res.message })
         return setState?.({})
       }
-      const { id } = res.data.product ?? {}
+      const { id, barcode, price } = res.data.product ?? {}
       if (!id)
         return Dialog.info.show({
           message: 'Produto não encontrado na base de dados',
         })
       product.product_id = id
+     if (barcode) product.barcode = barcode
+     if (price) product.price = Number(price)
+
       await loadProducts(rest?.supermarket_id + '')
     }
     setData((prev) => ({ ...prev, ...product }))
@@ -322,7 +327,6 @@ export default function CreateOrUpdate(
     })
   }, [data?.product_id, data?.registered_product])
 
-  console.log(form)
   return (
     <Form {...form}>
       <Loading label="Aguarde..." status={loading} />
