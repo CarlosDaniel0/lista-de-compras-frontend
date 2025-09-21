@@ -204,7 +204,7 @@ export default function Products(props: ProductsProps) {
         ).toFixed(4),
       }))
     }
-    Array.isArray(products) && setShow(products.some((item) => item?.price))
+    Array.isArray(products) && setShow(products.some((item) => item?.product?.price ?? item?.price))
     return products.sort((a, b) =>
       path === 'reciepts'
         ? 0
