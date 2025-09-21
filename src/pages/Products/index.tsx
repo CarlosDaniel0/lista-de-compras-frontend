@@ -198,10 +198,10 @@ export default function Products(props: ProductsProps) {
         setShow(products.some((item) => item?.product?.price || item?.price))
       return products.map((item) => ({
         ...item,
-        total: (
-          (item?.quantity ?? 0) *
+        total: +(
+          Number(item?.quantity ?? 0) *
           Number(item?.product?.price ?? item?.price ?? 0)
-        ).toFixed(2),
+        ).toFixed(4),
       }))
     }
     Array.isArray(products) && setShow(products.some((item) => item?.price))
