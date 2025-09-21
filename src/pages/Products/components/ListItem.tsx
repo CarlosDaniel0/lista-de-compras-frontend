@@ -175,12 +175,11 @@ export default function ListCard<T extends ProductTypes>(
                 <>
                   {decimal.format(Number(product?.quantity ?? 0))}{' '}
                   {product?.unity ?? product?.product?.unity}
-                  {(!!Number(product?.product?.price ?? 0) ||
-                    !!Number(product?.price ?? 0)) && (
+                  {!!Number(product?.product?.price ?? product?.price ?? 0) && (
                       <>
                         <BsDot />
                         {currency.format(
-                          Number(product?.group ? product?.price ?? 0 : (product?.product?.price ?? product?.price ?? 0))
+                          Number(product?.group ? product?.product?.price ?? product?.price ?? 0 : (product?.product?.price ?? product?.price ?? 0))
                         )}
                       </>
                     )}
@@ -202,7 +201,7 @@ export default function ListCard<T extends ProductTypes>(
             alignItems: path === 'supermarkets' ? 'center' : 'end',
           }}
         >
-          {(!!Number(product?.total ?? 0) || !!Number(product?.price ?? 0)) && (
+          {(!!Number(product?.total ?? 0) || !!Number(product?.product?.price ?? product?.price ?? 0)) && (
             <b
               className="price"
               style={{ color: 'var(--color-title-card)', fontSize: '1.25em' }}
@@ -212,7 +211,7 @@ export default function ListCard<T extends ProductTypes>(
                 : currency.format(
                     Number(
                       calcTotal(product?.total, product?.discount) ??
-                        product?.price ??
+                        product?.product?.price ?? product?.price ??
                         0
                     )
                   )}
