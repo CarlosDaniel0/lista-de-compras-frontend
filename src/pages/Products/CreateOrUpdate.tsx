@@ -57,6 +57,16 @@ export default function CreateOrUpdate(
   const form = { form: data, setForm: setData } as FormContextProps
   const Dialog = useContext(DialogContext)
   const navigate = useNavigate()
+  const removed =
+    path === 'lists'
+      ? ((data?.registered_product
+          ? ['price', 'barcode']
+          : [
+              'barcode',
+              'product_id',
+              'supermarket_id',
+            ]) as (keyof GeneralProduct)[])
+      : undefined
 
   const icons = {
     Barcode: (field: string, target: string) => ({
@@ -94,32 +104,40 @@ export default function CreateOrUpdate(
   }
   const getProduct = async (id: string, product_id: string) => {
     setLoading(true)
-    request<{
+    return request<{
       status: boolean
       message: string
-      data: { product: Product<typeof path> }
+      data: { product: GeneralProduct }
     }>(`/${path}/${id}/products/${product_id}`, '', 'GET')
       .then((res) => {
         if (!res.status) throw new Error(res.message)
-        if (!res.data.product) return
+        if (!res.data.product) return null
         const { product } = res.data
-        setData({
-          ...res.data.product,
-          ...(Object.fromEntries(
-            ['price', 'quantity', 'total'].map((key) => [
-              key,
-              parseNumberToCurrency(
-                key in product
-                  ? product?.[key as keyof Product<ProductTypes>]
-                  : 0
-              ) as unknown as number,
-            ])
-          ) as unknown as GeneralProduct),
-        })
+        setData(product)
+        setTimeout(
+          () =>
+            setData((prev) => ({
+              ...prev,
+              ...(Object.fromEntries(
+                ['price', 'quantity', 'total'].map((key) => [
+                  key,
+                  parseNumberToCurrency(
+                    key in product
+                      ? product?.[key as keyof Product<ProductTypes>]
+                      : 0
+                  ) as unknown as number,
+                ])
+              ) as unknown as GeneralProduct),
+            })),
+          50
+        )
+        return product
       })
-      .catch((err) => Dialog.info.show({ message: err.message }))
+      .catch((err) => {
+        Dialog.info.show({ message: err.message })
+        return null
+      })
       .finally(() => setLoading(false))
-    await sleep(50)
   }
 
   const create = async () => {
@@ -127,7 +145,11 @@ export default function CreateOrUpdate(
     return handleCreateProduct(
       path,
       id!,
-      formatFormNumbers(data as GeneralProduct, ['price', 'quantity', 'total'])
+      formatFormNumbers(
+        data as GeneralProduct,
+        ['price', 'quantity', 'total'],
+        removed
+      )
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
@@ -151,7 +173,11 @@ export default function CreateOrUpdate(
       data: { reciept: Product<typeof path> }
     }>(
       `/${path}/${id}/products/${product_id}`,
-      formatFormNumbers(data as GeneralProduct, ['price', 'quantity', 'total']),
+      formatFormNumbers(
+        data as GeneralProduct,
+        ['price', 'quantity', 'total'],
+        removed
+      ),
       'PUT'
     )
       .then((res) => {
@@ -211,8 +237,10 @@ export default function CreateOrUpdate(
       })
       .finally(() => setProducts((prev) => (!prev[0]?.id ? [] : prev)))
 
-  const onSelectOption = (option: OptionSearch) => {
-    const { value } = option
+  const handleProductSelected = (
+    value: string | number | boolean | undefined,
+    products: ProductSupermarket[]
+  ) => {
     const prod = products.find((p) => p.id === value)
     if (!prod) return
     setData((prev) => ({
@@ -220,6 +248,11 @@ export default function CreateOrUpdate(
       barcode: prod?.barcode,
       price: Number(prod?.price ?? 0),
     }))
+  }
+
+  const onSelectOption = (option: OptionSearch) => {
+    const { value } = option
+    handleProductSelected(value, products)
   }
 
   useEffect(() => {
@@ -235,7 +268,14 @@ export default function CreateOrUpdate(
 
   useEffectOnce(async () => {
     document.getElementById('inpTxtDescription')?.focus()
-    if (id && product_id) await getProduct(id, product_id)
+    if (id && product_id)
+      await getProduct(id, product_id).then((prod) => {
+        if (prod?.supermarket_id)
+          loadProducts(prod?.supermarket_id).then((prods) =>
+            handleProductSelected(prod?.product_id, prods)
+          )
+        return prod
+      })
     if (id && path === 'lists') loadSupermarkets()
     if (id && path === 'reciepts')
       loadReciept(id).then((reciept) => loadProducts(reciept.supermarket_id))
@@ -268,10 +308,10 @@ export default function CreateOrUpdate(
     if (!_target || !_value) return
     const element = document.getElementById(String(_target))
     const product = {
-      supermarket_id: String(rest?.supermarket_id  ?? ''),
+      supermarket_id: String(rest?.supermarket_id ?? ''),
       product_id: String(typeof _value === 'object' ? _value?.product_id : ''),
       barcode: '',
-      price: 0
+      price: 0,
     }
     setData({
       ...rest,
@@ -292,8 +332,8 @@ export default function CreateOrUpdate(
           message: 'Produto não encontrado na base de dados',
         })
       product.product_id = id
-     if (barcode) product.barcode = barcode
-     if (price) product.price = Number(price)
+      if (barcode) product.barcode = barcode
+      if (price) product.price = Number(price)
 
       await loadProducts(rest?.supermarket_id + '')
     }
@@ -301,11 +341,6 @@ export default function CreateOrUpdate(
     element?.focus()
     setState?.({})
   }, [state])
-
-  useEffectOnce(() => {
-    if (data?.supermarket_id && path === 'lists')
-      loadProducts(data?.supermarket_id)
-  }, [data?.supermarket_id])
 
   useEffect(() => {
     if (path !== 'lists') return

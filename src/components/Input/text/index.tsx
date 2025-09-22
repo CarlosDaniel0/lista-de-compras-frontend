@@ -28,7 +28,7 @@ export default function Text(props: InputProps) {
   const format = (value: string) => {
     if (/(\d{4})-(\d{2})-(\d{2})/.test(value)) return value.substring(0, 10)
     if (rest?.disabled && rest?.mask === 'currency' && !!value)
-      return currency.format(Number(value))
+      return currency.format(Number.isNaN(Number(value)) ? 0 : Number(value))
     return value
   }
 

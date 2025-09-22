@@ -187,10 +187,7 @@ export const startDatabase = () => {
   dbChannel.postMessage({ start: true })
 }
 
-export const databaseSync = async (
-  isStart: boolean,
-  user_id?: string
-) => {
+export const databaseSync = async (isStart: boolean, user_id?: string) => {
   if (DEBUG) console.log(`${isStart ? 'Iniciando' : 'Limpando'} DB`)
   dbChannel.postMessage(isStart ? { start: true } : { reset: true })
   await sleep(50)
@@ -208,8 +205,11 @@ export const setTheme = (theme: 'dark' | 'light') => {
   html.setAttribute('theme', theme)
 }
 
-export const parseCurrencyToNumber = (value?: string) => Number.isNaN(Number(value ?? '+')) ? undefined :
-  Number(String(value).replace(/\./g, '').replace(/,/g, '.'))
+export const parseCurrencyToNumber = (value?: string) => {
+  const number = Number(String(value).replace(/\./g, '').replace(/,/g, '.'))
+  if (Number.isNaN(number)) return undefined
+  return number
+}
 export const parseNumberToCurrency = (value?: string | number) =>
   currency.format(Number(value ?? 0)).replace(/R\$(\s)/g, '')
 
@@ -273,11 +273,17 @@ export const getFiles = async (
     })
   })
 
-export const formatFormNumbers = <T>(obj: T, keys: (keyof T)[]): T =>
+export const formatFormNumbers = <T>(
+  obj: T,
+  keys: (keyof T)[],
+  removed: (keyof T)[] = []
+): T =>
   Object.fromEntries(
-    Object.entries(obj as Record<string, never>).map(([k, v]) =>
-      keys.includes(k as keyof T) ? [k, parseCurrencyToNumber(v)] : [k, v]
-    )
+    Object.entries(obj as Record<string, never>)
+      .filter(([k]) => !removed.includes(k as keyof T))
+      .map(([k, v]) =>
+        keys.includes(k as keyof T) ? [k, parseCurrencyToNumber(v)] : [k, v]
+      )
   ) as T
 
 export const sleep = (time: number) =>

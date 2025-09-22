@@ -214,7 +214,7 @@ export default function Search(
   }, [options, value])
 
   useEffect(() => {
-    if (!active && !object?.label) setForm((prev: Record<string, never>) => ({
+    if (!active && !object?.label && options?.length) setForm((prev: Record<string, never>) => ({
       ...prev,
       [field ?? '']: undefined,
     }))
