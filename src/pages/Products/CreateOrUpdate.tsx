@@ -309,7 +309,7 @@ export default function CreateOrUpdate(
         supermarket_id,
         product_id,
         registered_product,
-        price
+        price: Number(price ?? 0)
       })
       if (supermarket_id) loadProducts(supermarket_id).then((prods) => handleProductSelected(product_id, prods))
       return setState?.({})
