@@ -264,7 +264,7 @@ export default function Search(
             ref={ref}
             scrollerRef={scrollerRef}
             components={{
-              List: forwardRef(({ context, ...props }, ref) => <List {...props} ref={ref} />),
+              List: forwardRef<any, any>(({ context, ...props }, ref) => <List {...props} ref={ref} />),
             }}
             itemContent={(i, option) => (
               <Item

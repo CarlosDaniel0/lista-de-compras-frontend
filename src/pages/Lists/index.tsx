@@ -149,11 +149,15 @@ export default function Lists() {
   const formatString = (item: List) =>
     formatToFilter(`${item?.name} ${format(new Date(item.date), 'dd/MM/yyyy')}`)
 
-  const data = useMemo(() => lists.filter(
-    (item) =>
-      !filter.search ||
-      formatString(item).includes(formatToFilter(filter.search))
-  ), [lists, filter])
+  const data = useMemo(
+    () =>
+      lists.filter(
+        (item) =>
+          !filter.search ||
+          formatString(item).includes(formatToFilter(filter.search))
+      ),
+    [lists, filter]
+  )
 
   const options: Option[] = [
     {
@@ -190,10 +194,8 @@ export default function Lists() {
           style={{ height: 'calc(100% - 45px)' }}
           data={data}
           components={{
-            List: forwardRef(({ children, context, ...props }, ref) => (
-              <ListContainer ref={ref} {...props}>
-                {children}
-              </ListContainer>
+            List: forwardRef(({ ...props }, ref) => (
+              <ListContainer ref={ref} {...props} />
             )),
           }}
           itemContent={(i, list) => (

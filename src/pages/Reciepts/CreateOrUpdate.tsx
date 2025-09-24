@@ -369,7 +369,7 @@ export default function CreateOrUpdate() {
               style={{ height: 'calc(100% - 26px)' }}
               data={products}
               components={{
-                List: forwardRef(({ children, context, ...props }, ref) => (
+                List: forwardRef<any, any>(({ children, context, ...props }, ref) => (
                   <ListContainer ref={ref} {...props}>
                     {children}
                   </ListContainer>

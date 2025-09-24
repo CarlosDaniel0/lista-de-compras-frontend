@@ -524,7 +524,7 @@ export default function Products(props: ProductsProps) {
           style={{ height: 'calc(100% - 45px)' }}
           data={data}
           components={{
-            List: forwardRef(({ children, context, ...props }, ref) => (
+            List: forwardRef<any, any>(({ children, context, ...props }, ref) => (
               <ListContainer ref={ref} {...props}>
                 {children}
               </ListContainer>
