@@ -250,6 +250,11 @@ export default function CreateOrUpdate(
     }))
   }
 
+  const onSelectSupermarket = (option: OptionSearch) => {
+    const { value } = option
+    loadProducts(String(value))
+  }
+
   const onSelectOption = (option: OptionSearch) => {
     const { value } = option
     handleProductSelected(value, products)
@@ -473,6 +478,7 @@ export default function CreateOrUpdate(
                     value: item.id,
                     label: item.name,
                   }))}
+                  onSelectOption={onSelectSupermarket}
                 />
                 <Search
                   id="inpTxtProduct"
