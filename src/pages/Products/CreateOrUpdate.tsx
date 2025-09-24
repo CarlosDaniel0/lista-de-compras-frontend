@@ -321,9 +321,10 @@ export default function CreateOrUpdate(
       if (price)
         setTimeout(
           () =>
-            setData((prev) =>
-              parseNumbers({ ...prev, price } as GeneralProduct)
-            ),
+            setData((prev) => ({
+              ...prev,
+              ...parseNumbers({ price } as never as GeneralProduct),
+            })),
           50
         )
       return setState?.({})
