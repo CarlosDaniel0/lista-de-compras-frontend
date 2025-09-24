@@ -14,6 +14,7 @@ const options: Partial<VitePWAOptions> = {
     'browserconfig.xml',
     'safari-pinned-tab.svg',
   ],
+  registerType: 'autoUpdate',
   devOptions: {
     suppressWarnings: true,
     enabled: process.env.SW_DEV === 'true',

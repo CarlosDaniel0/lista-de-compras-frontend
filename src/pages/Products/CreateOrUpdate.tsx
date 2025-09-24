@@ -399,6 +399,7 @@ export default function CreateOrUpdate(
               id="inpTxtQuantity"
               label="Quantidade"
               field="quantity"
+              inputMode='decimal'
               format={decimalFormatter}
               nextElement={path === 'lists' ? 'inpTxtUnity' : 'inpTxtPrice'}
             />
