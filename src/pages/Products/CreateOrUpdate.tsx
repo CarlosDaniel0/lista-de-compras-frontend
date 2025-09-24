@@ -102,6 +102,17 @@ export default function CreateOrUpdate(
       .catch((err) => Dialog.info.show({ message: err.message }))
       .finally(() => setSupermarkets((prev) => (!prev[0]?.id ? [] : prev)))
   }
+
+  const parseNumbers = (product: GeneralProduct) =>
+    Object.fromEntries(
+      ['price', 'quantity', 'total'].map((key) => [
+        key,
+        parseNumberToCurrency(
+          key in product ? product?.[key as keyof Product<ProductTypes>] : 0
+        ) as unknown as number,
+      ])
+    ) as unknown as GeneralProduct
+
   const getProduct = async (id: string, product_id: string) => {
     setLoading(true)
     return request<{
@@ -118,16 +129,7 @@ export default function CreateOrUpdate(
           () =>
             setData((prev) => ({
               ...prev,
-              ...(Object.fromEntries(
-                ['price', 'quantity', 'total'].map((key) => [
-                  key,
-                  parseNumberToCurrency(
-                    key in product
-                      ? product?.[key as keyof Product<ProductTypes>]
-                      : 0
-                  ) as unknown as number,
-                ])
-              ) as unknown as GeneralProduct),
+              ...parseNumbers(product),
             })),
           50
         )
@@ -276,8 +278,9 @@ export default function CreateOrUpdate(
     if (id && product_id)
       await getProduct(id, product_id).then((prod) => {
         if (prod?.supermarket_id)
-          loadProducts(prod?.supermarket_id).then((prods) =>
-            handleProductSelected(prod?.product_id, prods)
+          loadProducts(prod?.supermarket_id).then(
+            (prods) =>
+              path === 'lists' && handleProductSelected(prod?.product_id, prods)
           )
         return prod
       })
@@ -297,7 +300,7 @@ export default function CreateOrUpdate(
         supermarket_id,
         registered_product,
         product_id,
-        price
+        price,
       } = (rest?.product ?? {}) as never
 
       document.getElementById('inpTxtQuantity')?.focus()
@@ -310,8 +313,19 @@ export default function CreateOrUpdate(
         product_id,
         registered_product,
       })
-      if (supermarket_id) loadProducts(supermarket_id).then((prods) => handleProductSelected(product_id, prods))
-      setTimeout(() => setData(prev => ({ ...prev, price })), 50)
+      if (supermarket_id)
+        loadProducts(supermarket_id).then(
+          (prods) =>
+            path === 'lists' && handleProductSelected(product_id, prods)
+        )
+      if (price)
+        setTimeout(
+          () =>
+            setData((prev) =>
+              parseNumbers({ ...prev, price } as GeneralProduct)
+            ),
+          50
+        )
       return setState?.({})
     }
     if (!_target || !_value) return
@@ -535,7 +549,7 @@ export default function CreateOrUpdate(
                 mask="currency"
                 label="Valor"
                 field="price"
-                inputMode='decimal'
+                inputMode="decimal"
                 nextElement="btnTotal"
               />
             )}
