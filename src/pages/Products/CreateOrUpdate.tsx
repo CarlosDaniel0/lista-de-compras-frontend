@@ -399,7 +399,7 @@ export default function CreateOrUpdate(
               id="inpTxtQuantity"
               label="Quantidade"
               field="quantity"
-              inputMode='decimal'
+              inputMode="decimal"
               format={decimalFormatter}
               nextElement={path === 'lists' ? 'inpTxtUnity' : 'inpTxtPrice'}
             />
@@ -410,6 +410,7 @@ export default function CreateOrUpdate(
               id="inpTxtPrice"
               mask="currency"
               label="Valor"
+              inputMode="decimal"
               field="price"
               nextElement={
                 path === 'supermarkets' ? 'inpTxtUnity' : 'inpTxtTotal'
@@ -429,6 +430,7 @@ export default function CreateOrUpdate(
           <Text
             label="Total"
             id="inpTxtTotal"
+            inputMode="decimal"
             container={{ style: { flex: '1 0 0' } }}
             mask="currency"
             field="total"
@@ -450,6 +452,7 @@ export default function CreateOrUpdate(
                 container={{ style: { flexBasis: '100%' } }}
                 label="Código de Barras"
                 field="barcode"
+                inputMode="numeric"
               />
             </div>
             <ButtonNeutral>
@@ -528,6 +531,7 @@ export default function CreateOrUpdate(
                 mask="currency"
                 label="Valor"
                 field="price"
+                inputMode='decimal'
                 nextElement="btnTotal"
               />
             )}
