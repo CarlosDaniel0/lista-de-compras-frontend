@@ -309,9 +309,9 @@ export default function CreateOrUpdate(
         supermarket_id,
         product_id,
         registered_product,
-        price: Number(price ?? 0)
       })
       if (supermarket_id) loadProducts(supermarket_id).then((prods) => handleProductSelected(product_id, prods))
+      setTimeout(() => setData(prev => ({ ...prev, price })), 50)
       return setState?.({})
     }
     if (!_target || !_value) return
