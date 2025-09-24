@@ -295,7 +295,9 @@ export default function CreateOrUpdate(
         quantity,
         unity,
         supermarket_id,
+        registered_product,
         product_id,
+        price
       } = (rest?.product ?? {}) as never
 
       document.getElementById('inpTxtQuantity')?.focus()
@@ -306,6 +308,8 @@ export default function CreateOrUpdate(
         unity,
         supermarket_id,
         product_id,
+        registered_product,
+        price
       })
       if (supermarket_id) loadProducts(supermarket_id)
       return setState?.({})
