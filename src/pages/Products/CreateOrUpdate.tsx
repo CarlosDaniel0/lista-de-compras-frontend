@@ -301,6 +301,7 @@ export default function CreateOrUpdate(
         registered_product,
         product_id,
         price,
+        total
       } = (rest?.product ?? {}) as never
 
       document.getElementById('inpTxtQuantity')?.focus()
@@ -312,6 +313,7 @@ export default function CreateOrUpdate(
         supermarket_id,
         product_id,
         registered_product,
+        total
       })
       if (supermarket_id)
         loadProducts(supermarket_id).then(
@@ -323,7 +325,7 @@ export default function CreateOrUpdate(
           () =>
             setData((prev) => ({
               ...prev,
-              ...parseNumbers({ price } as never as GeneralProduct),
+              ...parseNumbers({ quantity, price, total } as never as GeneralProduct),
             })),
           50
         )
