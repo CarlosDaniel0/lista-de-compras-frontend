@@ -80,7 +80,7 @@ export default function ContextMenu <T extends Menu>({
       style={{
         left: flip.horizontal ? undefined : menu.left,
         top: flip.vertical ? undefined : menu.top,
-        bottom: flip.vertical ? menu.top : undefined,
+        bottom: flip.vertical ? window.innerHeight - menu.top : undefined,
         right: flip.horizontal ? window.innerWidth - menu.left : undefined,
       }}
     >
