@@ -88,7 +88,7 @@ export default function ListCard(props: ListCardProps) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <span className="label" style={{ color: 'var(--color-title-card)' }}>{reciept.name}</span> 
           <span className="date" style={{ color: 'var(--color-subtitle-card)' }}>
-            {!!reciept.date && format(new Date(reciept.date), 'dd/MM/yyyy')}
+            {!!reciept.date && format(new Date(reciept.date.substring(0, 10) + ' 00:00:00'), 'dd/MM/yyyy')}
           </span>
           <span className='price'>
             {reciept.total && currency.format(decimalSum(Number(reciept.total ?? 0)))}
