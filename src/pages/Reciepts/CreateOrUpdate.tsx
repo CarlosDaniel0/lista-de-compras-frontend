@@ -13,6 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import {
   currency,
+  extractBarcodesFromHTML,
   extractPDF,
   formatFormNumbers,
   getFiles,
@@ -162,6 +163,22 @@ export default function CreateOrUpdate() {
       .finally(() => setSupermarkets((prev) => (!prev[0]?.id ? [] : prev)))
   }
 
+  const getBarcodes = async () => {
+    return getFiles({ accept: '.mht,.html' }).then(async (files) => {
+      if (!files?.item(0))
+        throw new Error(`Página de Produtos da NFC-e inválido`)
+      const doc = (await files.item(0)?.text()) ?? ''
+      const barcodes = extractBarcodesFromHTML(doc)
+      setProducts((products) =>
+        products.map((prod) => {
+          const barcode = barcodes?.[prod?.description]
+          if (barcode && /\d+/.test(barcode)) return { ...prod, barcode }
+          return prod
+        }),
+      )
+    })
+  }
+
   const getProducts = async (
     type: 'xml' | 'json' | 'txt' | 'qrcode' | 'ocr' | 'pdf',
     files: FileList | null,
@@ -174,29 +191,47 @@ export default function CreateOrUpdate() {
     }
 
     const input = document.getElementById('inpTxtName')
-    if (document.activeElement && document.activeElement === input) input.blur()  
-    const promise = type === 'pdf' && file 
-    ? extractPDF(file) 
-    : request<
-      ResponseData<{
-        chavenfe?: string
-        discount: number
-        total: number
-        products: ProductRecieptImport[]
-      }>
-    >(
-      `/reciepts/products/capture/${type}`,
-      {
-        content: type === 'json' ? JSON.parse(content) : content,
-      },
-      'POST',
-    ) 
+    if (document.activeElement && document.activeElement === input) input.blur()
+    const promise =
+      type === 'pdf' && file
+        ? extractPDF(file)
+        : request<
+            ResponseData<{
+              barcode?: boolean
+              chavenfe?: string
+              discount: number
+              total: number
+              products: ProductRecieptImport[]
+            }>
+          >(
+            `/reciepts/products/capture/${type}`,
+            {
+              content: type === 'json' ? JSON.parse(content) : content,
+            },
+            'POST',
+          )
     setLoading(true)
-    return await promise.then((res) => {
+    return await promise
+      .then((res) => {
         if (!res.status) throw new Error(res.message)
         const { discount, total, products } = res.data
         setProducts(products)
         setData((prev) => ({ ...prev, discount, total }))
+        if (!res.data.barcode)
+          return Dialog.option.show({
+            message:
+              'Comprovante sem códigos de barra\n\nDeseja informá-los enviando o arquivo da Página de Produtos da NFC-e (.mht,.html)?',
+            onConfirm: {
+              label: 'Sim',
+              onClick: (setShow) => {
+                getBarcodes()
+                setShow(false)
+              },
+            },
+            onCancel: {
+              label: 'Não',
+            },
+          })
       })
       .catch((err) => {
         Dialog.info.show({ message: err instanceof Error ? err.message : '' })
@@ -227,15 +262,15 @@ export default function CreateOrUpdate() {
             break
           case 'txt':
             return getFiles({ accept: 'text/plain' }).then((file) =>
-              getProducts('txt', file)
+              getProducts('txt', file),
             )
           case 'xml':
             return getFiles({ accept: 'text/xml' }).then((file) =>
-              getProducts('xml', file)
+              getProducts('xml', file),
             )
           case 'pdf':
-            return getFiles({ accept: 'application/pdf' }).then((file) => 
-              getProducts('pdf', file)
+            return getFiles({ accept: 'application/pdf' }).then((file) =>
+              getProducts('pdf', file),
             )
         }
       } catch (e) {
@@ -254,7 +289,7 @@ export default function CreateOrUpdate() {
       ),
       onClick: handleImportProducts('qrcode'),
     },
-     {
+    {
       key: 'pdf',
       label: (
         <>

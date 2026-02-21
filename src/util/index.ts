@@ -226,6 +226,9 @@ export const uuidv4 = () => {
   )
 }
 
+export const extractValue = (text: string, regex: RegExp) =>
+  text.match(regex)?.[0]
+
 /**
  * Somar valores decimais sem erro na precisão decimal
  *
@@ -388,6 +391,22 @@ export function round(value: number, decimals = 2) {
   return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals)
 }
 
+export function getElementsByXPath(doc: Document, expression: string) {
+  const result = doc.evaluate(
+    expression,
+    doc,
+    null,
+    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+    null,
+  )
+
+  const nodes = []
+  for (let i = 0; i < result.snapshotLength; i++) {
+    nodes.push(result.snapshotItem(i))
+  }
+  return nodes
+}
+
 export async function extractPDF(file: File) {
   const blob = await fileToArrayBuffer(file)
   const loadingTask = pdfjs.getDocument({ data: blob })
@@ -404,12 +423,14 @@ export async function extractPDF(file: File) {
     total: { label: 'Vl Total', type: 'monetary' },
   })
   data.shift()
-  const total = Number(
-    source
-      .match(/(?<=Valor Total R\$ ).*/g)?.[0]
-      ?.replace(/\./g, '')
-      .replace(',', '.') ?? 0,
+  const total = parseCurrencyToNumber(
+    extractValue(source, /(?<=Valor Total R\$ ).*/g),
   )
+  const chavenfe = extractValue(source, /(?<=CHAVE DE ACESSO\n).*$/gm)?.replace(
+    /\D/g,
+    '',
+  )
+  const barcode = false
   let discount = 0
   const products = data.map((item: ProductRecieptImport, index) => {
     const value = Math.max(
@@ -431,10 +452,25 @@ export async function extractPDF(file: File) {
       discount,
       total,
       products,
+      chavenfe,
+      barcode,
     },
   } as ResponseData<{
     discount: number
     total: number
     products: ProductRecieptImport[]
+    chavenfe?: string
+    barcode?: boolean
   }>
+}
+
+export function extractBarcodesFromHTML(documentStr: string) {
+  if (!documentStr) return
+  const html =
+    documentStr.replace(/\t|\n/g, '').match(/<html>(.*?)<\/html>/g)?.[0] ?? ''
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+  const labels = getElementsByXPath(doc, '//label[contains(text(), \'Descrição\')]//following-sibling::*[1]').map(span => span?.textContent)
+  const barcodes = getElementsByXPath(doc, "//label[contains(text(), \'Código EAN Comercial\')]//following-sibling::*[1]").map(span => span?.textContent)
+  return Object.fromEntries(labels.map((label, i) => [label, barcodes[i]]))
 }

@@ -17,18 +17,22 @@ export default async function pdfTableExtractor(doc: PDFDocumentProxy) {
       let text = ''
       return page.getTextContent().then((content) => {
         let lastY = null
+        let lastX = null
         let pageText = ''
 
         for (let item of content.items) {
           if (!('transform' in item)) return
-          if (lastY !== null && Math.abs(lastY - item.transform[5]) > 5) {
+          if (lastY !== null 
+            && lastX !== null
+            && (lastY - item.transform[5]) > 5 
+            && (lastX !== item.transform[4] || lastY - item.transform[5] > 16)) {
             pageText += '\n'
-          } else if (lastY !== null) {
           }
           pageText += item.str
+          lastX = item.transform[4]
           lastY = item.transform[5]
         }
-        text += pageText + '\n\n'
+        text += pageText + '\n'
 
         if (text) {
           result.pageTables.push({
