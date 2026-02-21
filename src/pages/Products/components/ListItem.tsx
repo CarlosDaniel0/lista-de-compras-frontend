@@ -160,7 +160,7 @@ export default function ListCard<T extends ProductTypes>(
                 ? ''
                 : `Atualizado em: ${
                     !!product.last_update &&
-                    format(new Date(product?.last_update.substring(0, 10) + ' 00:00:00'), 'dd/MM/yyyy')
+                    format(new Date(String(product?.last_update).substring(0, 10) + ' 00:00:00'), 'dd/MM/yyyy')
                   }`}
             </span>
           )}
