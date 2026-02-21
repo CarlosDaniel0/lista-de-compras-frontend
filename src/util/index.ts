@@ -384,8 +384,8 @@ export async function fileToArrayBuffer(file: File) {
   })
 }
 
-export function round (value: number, decimals = 2) {
-  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+export function round(value: number, decimals = 2) {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals)
 }
 
 export async function extractPDF(file: File) {
@@ -393,14 +393,7 @@ export async function extractPDF(file: File) {
   const loadingTask = pdfjs.getDocument({ data: blob })
   const pdf = await loadingTask.promise
   const { pageTables } = await pdfTableExtractor(pdf)
-  const source = pageTables
-    .reduce((acc, table) => {
-      table.tables.forEach((content) =>
-        content.forEach((c) => c.length && acc.push(c)),
-      )
-      return acc
-    }, [] as string[])
-    .join('')
+  const source = pageTables.map((e) => e.table).join('')
   const [start, end] = Array.from(source.matchAll(/Código|Qtd\. Total/g))
   const data = parseTextToJSON(source.substring(start.index, end.index), {
     barcode: { label: 'Código', type: 'integer' },
@@ -411,10 +404,18 @@ export async function extractPDF(file: File) {
     total: { label: 'Vl Total', type: 'monetary' },
   })
   data.shift()
-  const total = Number(source.match(/(?<=Valor Total R\$ ).*/g)?.[0]?.replace(/\./g, '').replace(',', '.') ?? 0)
+  const total = Number(
+    source
+      .match(/(?<=Valor Total R\$ ).*/g)?.[0]
+      ?.replace(/\./g, '')
+      .replace(',', '.') ?? 0,
+  )
   let discount = 0
   const products = data.map((item: ProductRecieptImport, index) => {
-    const value = Math.max(0, decimalSum(item!.total, -round(item?.price * item?.quantity, 2)))
+    const value = Math.max(
+      0,
+      decimalSum(item!.total, -round(item?.price * item?.quantity, 2)),
+    )
     discount = decimalSum(discount, value)
     return {
       ...item,
