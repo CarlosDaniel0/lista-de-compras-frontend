@@ -41,7 +41,7 @@ router.post('/', async (req, res, channel) => {
   try {
     const content = Array.isArray(req.body) ? req.body : [req.body]
     const data = content.map((item) =>
-      RecieptData.parse({ ...item, sync: false }).toEntity()
+      RecieptData.parse({ ...item, sync: false }).toEntity(),
     )
     const reciept = await sqlite.reciept.createMany({ data })
     res.send({
@@ -58,19 +58,22 @@ router.post('/products/capture/:type', async (req, res) => {
   try {
     const { type: t } = req.params
     const type = t as CaptureType
-    const { products, chavenfe, discount, total } = await handleProducts(type, req.body.content)
+    const { products, chavenfe, discount, total } = await handleProducts(
+      type,
+      req.body.content,
+    )
     res.send({
       status: !!type,
-      message:
-        !type
-          ? 'O parâmetro :type é obrigatório na requisição'
-          : 'Produtos importados com sucesso!',
+      message: !type
+        ? 'O parâmetro :type é obrigatório na requisição'
+        : 'Produtos importados com sucesso!',
       data: {
-          ...(chavenfe ? { chavenfe } : {}),
-          discount,
-          total,
-          products,
-        },
+        ...(chavenfe ? { chavenfe } : {}),
+        barcode: true,
+        discount,
+        total,
+        products,
+      },
     })
   } catch (e: any) {
     res.send(databaseErrorResponse(e?.message ?? ''))
@@ -130,9 +133,9 @@ router.delete('/:id', async (req, res, channel) => {
   try {
     const { id } = req.params
     const reciept = await sqlite.reciept.update({
-        data: { removed: true },
-        where: { id },
-      })
+      data: { removed: true },
+      where: { id },
+    })
     res.send({
       status: true,
       message: 'Comprovante removido com sucesso!',
@@ -185,7 +188,7 @@ router.post('/:id/products', async (req, res, channel) => {
   try {
     const { id: receipt_id } = req.params
     const content = (Array.isArray(req.body) ? req.body : [req.body]).map((e) =>
-      Object.assign(e, { receipt_id, sync: false })
+      Object.assign(e, { receipt_id, sync: false }),
     )
     const data = content.map(ProductRecieptData.parse).map((e) => e.toEntity())
     const product = await sqlite.productReciept.createMany({ data })
@@ -239,9 +242,9 @@ router.delete('/:id/products/:id_product', async (req, res, channel) => {
   try {
     const { id: receipt_id, id_product: id } = req.params
     const product = await sqlite.productReciept.update({
-        data: { removed: true },
-        where: { id, receipt_id },
-      })
+      data: { removed: true },
+      where: { id, receipt_id },
+    })
     res.send({
       status: true,
       message: 'Produto atualizado com sucesso!',
