@@ -190,6 +190,7 @@ export default function CreateOrUpdate() {
         content = (await files.item(0)?.text()) ?? ''
     }
 
+    let focus = true;
     const input = document.getElementById('inpTxtName')
     if (document.activeElement && document.activeElement === input) input.blur()
     const promise =
@@ -217,6 +218,7 @@ export default function CreateOrUpdate() {
         const { discount, total, products } = res.data
         setProducts(products)
         setData((prev) => ({ ...prev, discount, total }))
+        focus = res.data.barcode
         if (!res.data.barcode)
           return Dialog.option.show({
             message:
@@ -234,11 +236,12 @@ export default function CreateOrUpdate() {
           })
       })
       .catch((err) => {
+        focus = false
         Dialog.info.show({ message: err instanceof Error ? err.message : '' })
       })
       .finally(() => {
         setLoading(false)
-        if (input) input.focus()
+        if (input && focus) input.focus()
       })
   }
 
