@@ -1,6 +1,10 @@
 import { format } from 'date-fns'
 import { API_URL, DEBUG, MAX_REQUEST_TIMEOUT, online } from './constants'
-import { HTTPMethods } from './types'
+import { HTTPMethods, ProductRecieptImport, ResponseData } from './types'
+import 'pdfjs-dist/build/pdf.worker.min.mjs'
+import * as pdfjs from 'pdfjs-dist'
+import pdfTableExtractor from './pdf-table-extractor'
+import parseTextToJSON from './pdf-table-extractor/parser'
 
 // const colors = {
 //   error: 'color: #fc5858;',
@@ -20,7 +24,7 @@ dbChannel.addEventListener('message', (evt) => {
 })
 
 const hightlight = (
-  value: string
+  value: string,
   // type: 'error' | 'warn' | 'info' | 'log'
 ) => {
   let str = value
@@ -36,7 +40,7 @@ const hightlight = (
 
 const groupConsoles = <T extends [(...value: string[]) => void, string[]]>(
   acc: T[],
-  item: T
+  item: T,
 ) => {
   const index = Math.max(acc.length - 1, 0)
   if (
@@ -76,7 +80,7 @@ const print =
     type: 'req' | 'res',
     message: string | Record<string, unknown>,
     url: string = '',
-    method: HTTPMethods = 'GET'
+    method: HTTPMethods = 'GET',
   ) => {
     if (!DEBUG) return
     const now = format(new Date(), 'dd/MM/yyyy, HH:mm:ss')
@@ -85,8 +89,8 @@ const print =
     }`
     console.log(
       `${type === 'req' ? 'Requisição' : 'Resposta'}${' '.repeat(
-        5
-      )}${now}${header}`
+        5,
+      )}${now}${header}`,
     )
     if (!message) return
     console.log('Body: ')
@@ -119,7 +123,7 @@ const sendMessageToWorker = (message: Record<string, boolean>) => {
 export const request = async <T = never, K = unknown>(
   params: string,
   body?: K,
-  method?: HTTPMethods
+  method?: HTTPMethods,
 ): Promise<T> => {
   const controller = new AbortController()
   setTimeout(() => controller.abort(), MAX_REQUEST_TIMEOUT)
@@ -141,7 +145,7 @@ export const request = async <T = never, K = unknown>(
           return res.text()
         default:
           throw new Error(
-            `Ocorreu um erro inesperado: Status Code: ${res.status}`
+            `Ocorreu um erro inesperado: Status Code: ${res.status}`,
           )
       }
     })
@@ -218,7 +222,7 @@ export const uuidv4 = () => {
     (
       +c ^
       (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
-    ).toString(16)
+    ).toString(16),
   )
 }
 
@@ -252,7 +256,7 @@ export const decimalSum = (...numbers: number[]): number =>
   }, 0)
 
 export const getFiles = async (
-  props?: React.ComponentPropsWithoutRef<'input'>
+  props?: React.ComponentPropsWithoutRef<'input'>,
 ) =>
   new Promise<FileList | null>((resolve) => {
     const input: HTMLInputElement = document.createElement('input')
@@ -276,14 +280,14 @@ export const getFiles = async (
 export const formatFormNumbers = <T>(
   obj: T,
   keys: (keyof T)[],
-  removed: (keyof T)[] = []
+  removed: (keyof T)[] = [],
 ): T =>
   Object.fromEntries(
     Object.entries(obj as Record<string, never>)
       .filter(([k]) => !removed.includes(k as keyof T))
       .map(([k, v]) =>
-        keys.includes(k as keyof T) ? [k, parseCurrencyToNumber(v)] : [k, v]
-      )
+        keys.includes(k as keyof T) ? [k, parseCurrencyToNumber(v)] : [k, v],
+      ),
   ) as T
 
 export const sleep = (time: number) =>
@@ -348,7 +352,7 @@ export const aggregateByKey = <T>(arr: T[], field: keyof T) => {
 export const sum = <T>(arr: T[], field: keyof T) => {
   return arr.reduce(
     (tot, item) => decimalSum(tot, Number(item?.[field] ?? 0)),
-    0
+    0,
   )
 }
 
@@ -370,3 +374,66 @@ export const formatToFilter = (text: string) =>
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '')
     .replace(/[']/g, '')
+
+export async function fileToArrayBuffer(file: File) {
+  return new Promise<Uint8Array<ArrayBufferLike>>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(new Uint8Array(reader.result as ArrayBuffer))
+    reader.onerror = () => reject(reader.error)
+    reader.readAsArrayBuffer(file)
+  })
+}
+
+export function round (value: number, decimals = 2) {
+  return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+}
+
+export async function extractPDF(file: File) {
+  const blob = await fileToArrayBuffer(file)
+  const loadingTask = pdfjs.getDocument({ data: blob })
+  const pdf = await loadingTask.promise
+  const { pageTables } = await pdfTableExtractor(pdf)
+  const source = pageTables
+    .reduce((acc, table) => {
+      table.tables.forEach((content) =>
+        content.forEach((c) => c.length && acc.push(c)),
+      )
+      return acc
+    }, [] as string[])
+    .join('')
+  const [start, end] = Array.from(source.matchAll(/Código|Qtd\. Total/g))
+  const data = parseTextToJSON(source.substring(start.index, end.index), {
+    barcode: { label: 'Código', type: 'integer' },
+    description: { label: 'Descrição', type: 'rest' },
+    quantity: { label: 'Qtde', type: 'decimal' },
+    unity: { label: 'Un', type: 'text:2' },
+    price: { label: 'Vl Unit', type: 'decimal:3' },
+    total: { label: 'Vl Total', type: 'monetary' },
+  })
+  data.shift()
+  const total = Number(source.match(/(?<=Valor Total R\$ ).*/g)?.[0]?.replace(/\./g, '').replace(',', '.') ?? 0)
+  let discount = 0
+  const products = data.map((item: ProductRecieptImport, index) => {
+    const value = Math.max(0, decimalSum(item!.total, -round(item?.price * item?.quantity, 2)))
+    discount = decimalSum(discount, value)
+    return {
+      ...item,
+      barcode: String(item.barcode).padStart(14, '0'),
+      discount: value,
+      position: index + 1,
+    }
+  })
+  return {
+    message: 'Produtos importados com sucesso!',
+    status: true,
+    data: {
+      discount,
+      total,
+      products,
+    },
+  } as ResponseData<{
+    discount: number
+    total: number
+    products: ProductRecieptImport[]
+  }>
+}

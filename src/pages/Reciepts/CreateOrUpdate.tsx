@@ -13,6 +13,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import useEffectOnce from '../../hooks/useEffectOnce'
 import {
   currency,
+  extractPDF,
   formatFormNumbers,
   getFiles,
   parseNumberToCurrency,
@@ -30,6 +31,7 @@ import {
   BsFiletypeJson,
   BsFiletypeTxt,
   BsFiletypeXml,
+  BsFillFileEarmarkPdfFill,
   BsQrCode,
   BsX,
 } from 'react-icons/bs'
@@ -92,7 +94,7 @@ export default function CreateOrUpdate() {
     return request<ResponseData<{ reciept: Reciept }>>(
       '/reciepts/import',
       reciept,
-      'POST'
+      'POST',
     )
       .then((res) => {
         if (!res.status) throw new Error(res.message)
@@ -161,19 +163,21 @@ export default function CreateOrUpdate() {
   }
 
   const getProducts = async (
-    type: 'xml' | 'json' | 'txt' | 'qrcode' | 'ocr',
+    type: 'xml' | 'json' | 'txt' | 'qrcode' | 'ocr' | 'pdf',
     files: FileList | null,
-    content: string = ''
+    content: string = '',
   ) => {
+    const file = files?.item(0)!
     if (files && !content && !!files?.[0]) {
       if (['json', 'txt', 'xml'].includes(type))
         content = (await files.item(0)?.text()) ?? ''
     }
 
     const input = document.getElementById('inpTxtName')
-    if (document.activeElement && document.activeElement === input) input.blur()
-    setLoading(true)
-    return await request<
+    if (document.activeElement && document.activeElement === input) input.blur()  
+    const promise = type === 'pdf' && file 
+    ? extractPDF(file) 
+    : request<
       ResponseData<{
         chavenfe?: string
         discount: number
@@ -185,9 +189,10 @@ export default function CreateOrUpdate() {
       {
         content: type === 'json' ? JSON.parse(content) : content,
       },
-      'POST'
-    )
-      .then((res) => {
+      'POST',
+    ) 
+    setLoading(true)
+    return await promise.then((res) => {
         if (!res.status) throw new Error(res.message)
         const { discount, total, products } = res.data
         setProducts(products)
@@ -203,14 +208,14 @@ export default function CreateOrUpdate() {
   }
 
   const handleImportProducts =
-    (type: 'ocr' | 'txt' | 'json' | 'xml' | 'qrcode') =>
+    (type: 'ocr' | 'txt' | 'json' | 'xml' | 'qrcode' | 'pdf') =>
     (__: React.MouseEvent<HTMLButtonElement>, close: () => void) => {
       close()
       try {
         switch (type) {
           case 'json':
             return getFiles({ accept: 'application/json' }).then((file) =>
-              getProducts('json', file)
+              getProducts('json', file),
             )
           case 'ocr':
             setState?.(data as never)
@@ -228,6 +233,10 @@ export default function CreateOrUpdate() {
             return getFiles({ accept: 'text/xml' }).then((file) =>
               getProducts('xml', file)
             )
+          case 'pdf':
+            return getFiles({ accept: 'application/pdf' }).then((file) => 
+              getProducts('pdf', file)
+            )
         }
       } catch (e) {
         Dialog.info.show({ message: e instanceof Error ? e.message : '' })
@@ -244,6 +253,15 @@ export default function CreateOrUpdate() {
         </>
       ),
       onClick: handleImportProducts('qrcode'),
+    },
+     {
+      key: 'pdf',
+      label: (
+        <>
+          <BsFillFileEarmarkPdfFill /> Arquivo PDF
+        </>
+      ),
+      onClick: handleImportProducts('pdf'),
     },
     {
       key: 'xml',
@@ -369,11 +387,13 @@ export default function CreateOrUpdate() {
               style={{ height: 'calc(100% - 26px)' }}
               data={products}
               components={{
-                List: forwardRef<any, any>(({ children, context, ...props }, ref) => (
-                  <ListContainer ref={ref} {...props}>
-                    {children}
-                  </ListContainer>
-                )),
+                List: forwardRef<any, any>(
+                  ({ children, context, ...props }, ref) => (
+                    <ListContainer ref={ref} {...props}>
+                      {children}
+                    </ListContainer>
+                  ),
+                ),
               }}
               itemContent={(i, product) => (
                 <ListItemProduct {...{ products, product, i }} />
