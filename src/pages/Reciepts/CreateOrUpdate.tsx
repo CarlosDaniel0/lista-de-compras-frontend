@@ -218,7 +218,7 @@ export default function CreateOrUpdate() {
         const { discount, total, products } = res.data
         setProducts(products)
         setData((prev) => ({ ...prev, discount, total }))
-        focus = res.data.barcode
+        focus = res.data.barcode!
         if (!res.data.barcode)
           return Dialog.option.show({
             message:
