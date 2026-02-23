@@ -418,7 +418,12 @@ export async function extractPDF(file: File) {
     return {
       message: 'Erro ao importar os produtos\nComprovante com formato inválido',
       status: false,
-      data: null
+      data: {
+        discount: 0,
+        total: 0,
+        products: [],
+        barcode: false,
+     },
     }
   const data = parseTextToJSON(source.substring(start.index, end.index), {
     barcode: { label: 'Código', type: 'integer' },
