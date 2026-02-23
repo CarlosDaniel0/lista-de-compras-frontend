@@ -222,7 +222,7 @@ export default function CreateOrUpdate() {
         if (!res.data.barcode)
           return Dialog.option.show({
             message:
-              'Comprovante sem códigos de barra\n\nDeseja informá-los enviando o arquivo da Página de Produtos da NFC-e (.mht,.html)?',
+              'Comprovante sem códigos de barra\n\nDeseja enviar a Página (.mht,.html) com Produtos da NFC-e para informá-los?',
             onConfirm: {
               label: 'Sim',
               onClick: (setShow) => {
