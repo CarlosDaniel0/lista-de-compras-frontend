@@ -48,7 +48,7 @@ Faça suas listas de compras e acompanhe o valor gasto em um só lugar
 yarn
 ```
 
-4 - Para configurar o funcionamento da PWA offile é necessário configurar
+4 - Para configurar o funcionamento da PWA offline é necessário configurar
 a estrutura do Banco de Dados embutido (SQLite) utilizando o prisma
 
 Tipos de dados aceitos:
