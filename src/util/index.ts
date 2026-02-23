@@ -414,6 +414,12 @@ export async function extractPDF(file: File) {
   const { pageTables } = await pdfTableExtractor(pdf)
   const source = pageTables.map((e) => e.table).join('')
   const [start, end] = Array.from(source.matchAll(/Código|Qtd\. Total/g))
+  if (!start || !end) 
+    return {
+      message: 'Erro ao importar os produtos\nComprovante com formato inválido',
+      status: false,
+      data: null
+    }
   const data = parseTextToJSON(source.substring(start.index, end.index), {
     barcode: { label: 'Código', type: 'integer' },
     description: { label: 'Descrição', type: 'rest' },
